@@ -50,6 +50,17 @@ const Home: React.FC = () => {
           </button>
         ))}
       </div>
+
+      {/* Support Link */}
+      <button
+        onClick={() => navigate("/donate")}
+        className="w-full mt-6 py-3 rounded-2xl bg-card border border-gold/10 hover:border-gold/30 transition-smooth text-center animate-fade-in"
+        style={{ animationDelay: `${MENU_ITEMS.length * 0.07 + 0.1}s` }}
+      >
+        <p className="text-xs text-muted-foreground">
+          💝 If you enjoy using this app, a small contribution helps support future updates
+        </p>
+      </button>
     </div>
   );
 };
