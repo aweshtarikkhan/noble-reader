@@ -33,7 +33,12 @@ export const QuranAPI = {
   },
 
   getMushafPageImage: (num: number) =>
+    `https://surahquran.com/img/pages-quran/page${String(num).padStart(3, '0')}.png`,
+
+  getMushafPageImageFallbacks: (num: number) => [
     `https://www.mp3quran.net/api/quran_pages_arabic/${num}.png`,
+    `https://raw.githubusercontent.com/niceDev0908/quran/master/static/images/pages/page${String(num).padStart(3, '0')}.png`,
+  ],
 
   async getPrayerTimes(lat: number, lng: number, method: number = 1, school: number = 0) {
     const today = new Date();
