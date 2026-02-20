@@ -1,5 +1,7 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import ExitDialog from "./ExitDialog";
+import { useBackHandler } from "@/hooks/useBackHandler";
 
 const NAV_ITEMS = [
   { path: "/", icon: "🏠", label: "Home" },
@@ -13,6 +15,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const isHome = location.pathname === "/";
+  const { showExitDialog, confirmExit, cancelExit } = useBackHandler();
 
   const getTitle = () => {
     const p = location.pathname;
@@ -31,39 +34,53 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background relative z-10">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-md border-b border-gold safe-top">
-        <div className="flex items-center h-[60px] px-4">
-          {!isHome && (
+      {/* Header - accounts for status bar / notch */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-gold">
+        <div 
+          className="flex items-center px-4"
+          style={{ 
+            paddingTop: "calc(env(safe-area-inset-top, 20px) + 4px)", 
+            height: "calc(56px + env(safe-area-inset-top, 20px))" 
+          }}
+        >
+          {!isHome ? (
             <button
               onClick={() => navigate(-1)}
-              className="mr-3 w-8 h-8 flex items-center justify-center rounded-lg bg-card transition-smooth hover:bg-muted"
+              className="mr-3 w-9 h-9 flex items-center justify-center rounded-xl bg-card transition-smooth hover:bg-muted active:scale-95"
             >
-              <span className="text-foreground">←</span>
+              <span className="text-foreground text-lg">←</span>
             </button>
+          ) : (
+            <div className="w-9" />
           )}
           <div className="flex-1 text-center">
             {isHome ? (
               <div>
-                <h1 className="font-arabic text-xl text-gold leading-tight">القرآن الكريم</h1>
-                <p className="text-xs text-muted-foreground">The Holy Quran</p>
+                <h1 className="font-arabic text-lg text-gold leading-tight">القرآن الكريم</h1>
+                <p className="text-[10px] text-muted-foreground">The Holy Quran</p>
               </div>
             ) : (
               <h1 className="text-base font-semibold text-foreground">{getTitle()}</h1>
             )}
           </div>
-          {!isHome && <div className="w-8" />}
+          <div className="w-9" />
         </div>
       </header>
 
-      {/* Content */}
-      <main className="flex-1 pt-[calc(60px+env(safe-area-inset-top,0px))] pb-[calc(64px+env(safe-area-inset-bottom,0px))]">
+      {/* Content - properly offset for header and bottom nav with safe areas */}
+      <main 
+        className="flex-1"
+        style={{
+          paddingTop: "calc(56px + env(safe-area-inset-top, 20px))",
+          paddingBottom: "calc(60px + env(safe-area-inset-bottom, 0px))",
+        }}
+      >
         {children}
       </main>
 
-      {/* Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-md border-t border-gold safe-bottom">
-        <div className="flex items-center justify-around h-16">
+      {/* Bottom Nav - accounts for home indicator / nav bar */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-gold">
+        <div className="flex items-center justify-around h-[56px]">
           {NAV_ITEMS.map((item) => {
             const isActive = location.pathname === item.path || 
               (item.path !== "/" && location.pathname.startsWith(item.path));
@@ -71,8 +88,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-smooth ${
-                  isActive ? "text-gold scale-110" : "text-muted-foreground hover:text-foreground"
+                className={`flex flex-col items-center gap-0.5 py-1.5 px-3 rounded-xl transition-smooth active:scale-95 ${
+                  isActive ? "text-gold" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <span className="text-xl">{item.icon}</span>
@@ -81,7 +98,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             );
           })}
         </div>
+        <div style={{ height: "env(safe-area-inset-bottom, 0px)" }} className="bg-background/95" />
       </nav>
+
+      {/* Exit Confirmation Dialog */}
+      <ExitDialog open={showExitDialog} onConfirm={confirmExit} onCancel={cancelExit} />
     </div>
   );
 };
