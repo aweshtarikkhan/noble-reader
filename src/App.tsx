@@ -16,8 +16,34 @@ import TafseerRead from "@/pages/TafseerRead";
 import ReadQuran from "@/pages/ReadQuran";
 import PrayerTimes from "@/pages/PrayerTimes";
 import NotFound from "@/pages/NotFound";
+import { useLocationPermission } from "@/hooks/useLocationPermission";
 
 const queryClient = new QueryClient();
+
+const AppContent = () => {
+  // Request location permission on first launch
+  useLocationPermission();
+
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/surah" element={<SurahList />} />
+        <Route path="/surah-read/:num" element={<SurahRead />} />
+        <Route path="/mushaf" element={<Mushaf />} />
+        <Route path="/mushaf/:page" element={<Mushaf />} />
+        <Route path="/para" element={<ParaList />} />
+        <Route path="/para-read/:num" element={<ParaRead />} />
+        <Route path="/translation" element={<Translation />} />
+        <Route path="/tafseer-reader" element={<TafseerReader />} />
+        <Route path="/tafseer-read/:num" element={<TafseerRead />} />
+        <Route path="/read-quran" element={<ReadQuran />} />
+        <Route path="/prayer-times" element={<PrayerTimes />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Layout>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -25,23 +51,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <HashRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/surah" element={<SurahList />} />
-            <Route path="/surah-read/:num" element={<SurahRead />} />
-            <Route path="/mushaf" element={<Mushaf />} />
-            <Route path="/mushaf/:page" element={<Mushaf />} />
-            <Route path="/para" element={<ParaList />} />
-            <Route path="/para-read/:num" element={<ParaRead />} />
-            <Route path="/translation" element={<Translation />} />
-            <Route path="/tafseer-reader" element={<TafseerReader />} />
-            <Route path="/tafseer-read/:num" element={<TafseerRead />} />
-            <Route path="/read-quran" element={<ReadQuran />} />
-            <Route path="/prayer-times" element={<PrayerTimes />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Layout>
+        <AppContent />
       </HashRouter>
     </TooltipProvider>
   </QueryClientProvider>
