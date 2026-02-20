@@ -11,30 +11,31 @@ export function useLocationPermission() {
       return;
     }
 
-    // Ask for location permission on first launch
     const requestPermission = async () => {
       try {
-        // For Capacitor native
-        if ((window as any).Capacitor?.Plugins?.Geolocation) {
-          const result = await (window as any).Capacitor.Plugins.Geolocation.requestPermissions();
-          setGranted(result.location === "granted");
-        } else if (navigator.geolocation) {
-          // For PWA/browser
-          navigator.geolocation.getCurrentPosition(
-            () => setGranted(true),
-            () => setGranted(false),
-            { timeout: 10000 }
-          );
-        }
+        // Try Capacitor Geolocation first
+        const { Geolocation } = await import("@capacitor/geolocation");
+        const result = await Geolocation.requestPermissions();
+        setGranted(result.location === "granted");
       } catch {
-        setGranted(false);
+        // Fallback to browser API
+        try {
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              () => setGranted(true),
+              () => setGranted(false),
+              { timeout: 10000 }
+            );
+          }
+        } catch {
+          setGranted(false);
+        }
       } finally {
         setAsked(true);
         localStorage.setItem("location-permission-asked", "true");
       }
     };
 
-    // Small delay to let app render first
     const timer = setTimeout(requestPermission, 1500);
     return () => clearTimeout(timer);
   }, []);
