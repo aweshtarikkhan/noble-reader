@@ -95,12 +95,6 @@ const Mushaf: React.FC = () => {
         >
           {bookmarks.includes(page) ? "🔖" : "📑"}
         </button>
-        <button
-          onClick={() => navigate("/indian-mushaf")}
-          className="px-3 py-2 rounded-xl bg-card border border-gold/10 text-xs text-muted-foreground hover:border-gold/30 transition-smooth"
-        >
-          🇮🇳 Indian
-        </button>
       </div>
 
       {/* Page Label */}
