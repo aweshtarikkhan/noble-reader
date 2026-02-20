@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const UPI_ID = "7049402994-4@gmail.com";
+const UPI_ID = "7049402994-4@ybl";
 const DEVELOPER_NAME = "Awesh Tarik Khan";
 
 const PRESET_AMOUNTS = [100, 200, 500, 1000];
