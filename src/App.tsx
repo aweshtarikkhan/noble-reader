@@ -14,6 +14,7 @@ import Translation from "@/pages/Translation";
 import TafseerReader from "@/pages/TafseerReader";
 import TafseerRead from "@/pages/TafseerRead";
 import ReadQuran from "@/pages/ReadQuran";
+import IndianMushaf from "@/pages/IndianMushaf";
 import PrayerTimes from "@/pages/PrayerTimes";
 import NotFound from "@/pages/NotFound";
 import { useLocationPermission } from "@/hooks/useLocationPermission";
@@ -38,6 +39,8 @@ const AppContent = () => {
         <Route path="/tafseer-reader" element={<TafseerReader />} />
         <Route path="/tafseer-read/:num" element={<TafseerRead />} />
         <Route path="/read-quran" element={<ReadQuran />} />
+        <Route path="/indian-mushaf" element={<IndianMushaf />} />
+        <Route path="/indian-mushaf/:page" element={<IndianMushaf />} />
         <Route path="/prayer-times" element={<PrayerTimes />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

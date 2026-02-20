@@ -71,7 +71,7 @@ const Mushaf: React.FC = () => {
 
   return (
     <div className="px-4 py-4" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-      {/* Mode Switcher + Bookmark */}
+      {/* Mode Switcher + Bookmark + Indian toggle */}
       <div className="flex items-center gap-2 mb-4 animate-fade-in">
         <div className="flex flex-1 bg-card rounded-xl p-1 border border-gold/10">
           <button
@@ -94,6 +94,12 @@ const Mushaf: React.FC = () => {
           }`}
         >
           {bookmarks.includes(page) ? "🔖" : "📑"}
+        </button>
+        <button
+          onClick={() => navigate("/indian-mushaf")}
+          className="px-3 py-2 rounded-xl bg-card border border-gold/10 text-xs text-muted-foreground hover:border-gold/30 transition-smooth"
+        >
+          🇮🇳 Indian
         </button>
       </div>
 
