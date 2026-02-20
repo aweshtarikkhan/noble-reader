@@ -1,12 +1,12 @@
 // 16-line Indo-Pak Mushaf (Taj Company style) data
 // This mushaf has ruku markers and is commonly used in South Asian countries
 
-export const TOTAL_PAGES_INDIAN = 548;
+export const TOTAL_PAGES_INDIAN = 559;
 
-// Archive.org BookReader image source for 16-line Quran
+// Archive.org Single Page JP2 source - Taj Company 16-line Quran (single pages)
 export function getIndianPageImage(pageNum: number): string {
-  const padded = String(pageNum + 1).padStart(4, '0'); // +1 because index 0001 is usually the cover
-  return `https://ia801203.us.archive.org/BookReader/BookReaderImages.php?zip=/29/items/16-line-quran-with-large-font-size/16%20Line%20Quran%20with%20Large%20font%20size_jp2.zip&file=16%20Line%20Quran%20with%20Large%20font%20size_jp2/16%20Line%20Quran%20with%20Large%20font%20size_${padded}.jp2&id=16-line-quran-with-large-font-size&scale=2&rotate=0`;
+  const padded = String(pageNum).padStart(4, '0');
+  return `https://ia801202.us.archive.org/BookReader/BookReaderImages.php?zip=/1/items/AlQuranAlKareem16LinesTajCompany/AlQuranAlKareem16Lines-TajCompany_jp2.zip&file=AlQuranAlKareem16Lines-TajCompany_jp2/AlQuranAlKareem16Lines-TajCompany_${padded}.jp2&id=AlQuranAlKareem16LinesTajCompany&scale=2&rotate=0`;
 }
 
 export function getIndianPageImageFallback(pageNum: number): string {
@@ -53,5 +53,5 @@ export const INDIAN_JUZ_DATA: IndianJuzInfo[] = [
   { number: 27, name: "قال فما خطبكم", startPage: 471, endPage: 488 },
   { number: 28, name: "قد سمع الله", startPage: 489, endPage: 506 },
   { number: 29, name: "تبارك الذي", startPage: 507, endPage: 526 },
-  { number: 30, name: "عم يتساءلون", startPage: 527, endPage: 548 },
+  { number: 30, name: "عم يتساءلون", startPage: 527, endPage: 559 },
 ];

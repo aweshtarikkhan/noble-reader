@@ -5,7 +5,7 @@ import { useBackHandler } from "@/hooks/useBackHandler";
 
 const NAV_ITEMS = [
   { path: "/", icon: "🏠", label: "Home" },
-  { path: "/mushaf", icon: "📖", label: "Mushaf" },
+  { path: "/indian-mushaf", icon: "📖", label: "Mushaf" },
   { path: "/para", icon: "📚", label: "Para" },
   { path: "/prayer-times", icon: "🕌", label: "Namaz" },
   { path: "/translation", icon: "🌐", label: "Tarjuma" },
@@ -21,6 +21,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const p = location.pathname;
     if (p.startsWith("/surah-read")) return "Surah Reading";
     if (p.startsWith("/surah")) return "Surahs";
+    if (p.startsWith("/indian-mushaf")) return "Mushaf";
     if (p.startsWith("/mushaf")) return "Mushaf";
     if (p.startsWith("/para-read")) return "Para Reading";
     if (p.startsWith("/para")) return "Para / Juz";
