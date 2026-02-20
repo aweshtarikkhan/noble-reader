@@ -10,7 +10,8 @@ interface MenuItem {
 }
 
 const MENU_ITEMS: MenuItem[] = [
-  { icon: "📖", iconBg: "bg-primary/20", title: "15 Line Quran Sharif", description: "Read page by page in traditional 15-line Mushaf format", path: "/mushaf" },
+  { icon: "📖", iconBg: "bg-primary/20", title: "15 Line Quran (Saudi)", description: "Read page by page in traditional 15-line Mushaf format", path: "/mushaf" },
+  { icon: "🕌", iconBg: "bg-emerald/20", title: "16 Line Quran (Indian)", description: "Indo-Pak style with Ruku markers • 16-line Mushaf", path: "/indian-mushaf" },
   { icon: "🌐", iconBg: "bg-secondary/20", title: "Line by Line Translation", description: "Arabic with English & Urdu translations (Tarjuma)", path: "/translation" },
   { icon: "📗", iconBg: "bg-emerald/20", title: "Tafseer Reader", description: "Translation + Tafseer in Roman Urdu (Surah / Ayat mode)", path: "/tafseer-reader" },
   { icon: "📋", iconBg: "bg-primary/20", title: "Read by Surah", description: "Browse all 114 Surahs of the Holy Quran", path: "/surah" },
