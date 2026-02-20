@@ -1,0 +1,15 @@
+{
+  "appId": "app.lovable.2c68fdcb9aa84ea2b5ed9db4dbe3d2e0",
+  "appName": "Quran Reader",
+  "webDir": "dist",
+  "server": {
+    "url": "https://2c68fdcb-9aa8-4ea2-b5ed-9db4dbe3d2e0.lovableproject.com?forceHideBadge=true",
+    "cleartext": true
+  },
+  "plugins": {
+    "App": {
+      "appUrlOpen": false
+    },
+    "Geolocation": {}
+  }
+}

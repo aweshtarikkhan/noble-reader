@@ -16,32 +16,43 @@ export function useBackHandler() {
   }, [isHome, navigate]);
 
   useEffect(() => {
-    // Push a dummy state so we can intercept the back button
+    // Browser back button handling
     const handlePopState = (e: PopStateEvent) => {
       e.preventDefault();
-      // Re-push state to prevent actual navigation
       window.history.pushState(null, "", window.location.href);
       handleBack();
     };
 
-    // Push initial state
     window.history.pushState(null, "", window.location.href);
     window.addEventListener("popstate", handlePopState);
 
+    // Capacitor hardware back button
+    let backButtonListener: any = null;
+    const setupCapacitor = async () => {
+      try {
+        const { App } = await import("@capacitor/app");
+        backButtonListener = await App.addListener("backButton", ({ canGoBack }) => {
+          handleBack();
+        });
+      } catch {
+        // Not running in Capacitor, ignore
+      }
+    };
+    setupCapacitor();
+
     return () => {
       window.removeEventListener("popstate", handlePopState);
+      if (backButtonListener) backButtonListener.remove();
     };
   }, [handleBack]);
 
-  const confirmExit = useCallback(() => {
+  const confirmExit = useCallback(async () => {
     setShowExitDialog(false);
-    // For Capacitor/native apps
-    if ((window as any).Capacitor?.Plugins?.App) {
-      (window as any).Capacitor.Plugins.App.exitApp();
-    } else {
-      // For PWA/browser - close the window
+    try {
+      const { App } = await import("@capacitor/app");
+      await App.exitApp();
+    } catch {
       window.close();
-      // Fallback: navigate away
       window.location.href = "about:blank";
     }
   }, []);
