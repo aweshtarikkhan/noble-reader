@@ -2,9 +2,20 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
+import { HashRouter, Routes, Route } from "react-router-dom";
+import Layout from "@/components/Layout";
+import Home from "@/pages/Home";
+import SurahList from "@/pages/SurahList";
+import SurahRead from "@/pages/SurahRead";
+import Mushaf from "@/pages/Mushaf";
+import ParaList from "@/pages/ParaList";
+import ParaRead from "@/pages/ParaRead";
+import Translation from "@/pages/Translation";
+import TafseerReader from "@/pages/TafseerReader";
+import TafseerRead from "@/pages/TafseerRead";
+import ReadQuran from "@/pages/ReadQuran";
+import PrayerTimes from "@/pages/PrayerTimes";
+import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -13,13 +24,25 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <HashRouter>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/surah" element={<SurahList />} />
+            <Route path="/surah-read/:num" element={<SurahRead />} />
+            <Route path="/mushaf" element={<Mushaf />} />
+            <Route path="/mushaf/:page" element={<Mushaf />} />
+            <Route path="/para" element={<ParaList />} />
+            <Route path="/para-read/:num" element={<ParaRead />} />
+            <Route path="/translation" element={<Translation />} />
+            <Route path="/tafseer-reader" element={<TafseerReader />} />
+            <Route path="/tafseer-read/:num" element={<TafseerRead />} />
+            <Route path="/read-quran" element={<ReadQuran />} />
+            <Route path="/prayer-times" element={<PrayerTimes />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Layout>
+      </HashRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );
