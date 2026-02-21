@@ -19,6 +19,7 @@ import IndianMushaf from "@/pages/IndianMushaf";
 import PrayerTimes from "@/pages/PrayerTimes";
 import AzaanSettings from "@/pages/AzaanSettings";
 import Donate from "@/pages/Donate";
+import QiblaDirection from "@/pages/QiblaDirection";
 import NotFound from "@/pages/NotFound";
 import { useLocationPermission } from "@/hooks/useLocationPermission";
 
@@ -48,6 +49,7 @@ const AppContent = () => {
         <Route path="/prayer-times" element={<PrayerTimes />} />
         <Route path="/azaan-settings" element={<AzaanSettings />} />
         <Route path="/donate" element={<Donate />} />
+        <Route path="/qibla" element={<QiblaDirection />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>

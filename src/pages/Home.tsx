@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Languages, List, BookCopy, MapPin, Share2, ListOrdered, Building, Clock, LocateFixed } from "lucide-react";
+import { BookOpen, Languages, List, BookCopy, MapPin, Share2, ListOrdered, Building, Clock, LocateFixed, Compass } from "lucide-react";
 import { QuranAPI } from "@/lib/quranApi";
 
 const QUICK_TOOLS = [
-  { icon: ListOrdered, title: "16 line", path: "/indian-mushaf" },
+  { icon: BookOpen, title: "Read Quran", path: "/read-quran" },
   { icon: Languages, title: "Translation", path: "/translation" },
   { icon: List, title: "By Surah", path: "/surah" },
-  { icon: BookOpen, title: "Full Quraan", path: "/read-quran" },
-  { icon: BookCopy, title: "Para/Zuz", path: "/para" },
+  { icon: BookCopy, title: "Para/Juz", path: "/para" },
   { icon: Clock, title: "Namaz", path: "/prayer-times" },
+  { icon: Compass, title: "Qibla", path: "/qibla" },
 ];
 
 const DAILY_AYAHS = [
