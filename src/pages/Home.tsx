@@ -48,9 +48,12 @@ const Home: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Fetch real prayer times and location
-  useEffect(() => {
-    if (!navigator.geolocation) return;
+  const detectLocation = () => {
+    setCityName("Detecting...");
+    if (!navigator.geolocation) {
+      setCityName("Not supported");
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
@@ -66,6 +69,11 @@ const Home: React.FC = () => {
       },
       () => setCityName("Location denied")
     );
+  };
+
+  // Fetch real prayer times and location on mount
+  useEffect(() => {
+    detectLocation();
   }, []);
 
   const islamicDate = getIslamicDate();
@@ -115,13 +123,13 @@ const Home: React.FC = () => {
     <div className="px-4 py-4 space-y-6">
       {/* Location & Date Header */}
       <div className="flex items-start justify-between">
-        <div className="flex items-start gap-2">
+        <button onClick={detectLocation} className="flex items-start gap-2 text-left active:scale-95 transition-smooth">
           <MapPin className="w-5 h-5 text-primary mt-0.5" />
           <div>
             <p className="text-sm font-bold text-foreground">{cityName}</p>
-            <p className="text-[11px] text-muted-foreground">Auto-detecting location</p>
+            <p className="text-[11px] text-primary underline">Tap to detect location</p>
           </div>
-        </div>
+        </button>
         <div className="text-right">
           <p className="text-sm font-bold text-foreground">{islamicDate}</p>
           <p className="text-[11px] text-muted-foreground">{gregorianDate}</p>
