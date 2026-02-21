@@ -1,9 +1,21 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { JUZ_DATA } from "@/data/surahs";
+import { CheckCircle2 } from "lucide-react";
 
 const ParaList: React.FC = () => {
   const navigate = useNavigate();
+  const [downloadedParas, setDownloadedParas] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    const downloaded = new Set<number>();
+    for (let i = 1; i <= 30; i++) {
+      if (localStorage.getItem(`para_downloaded_${i}`) === "true") {
+        downloaded.add(i);
+      }
+    }
+    setDownloadedParas(downloaded);
+  }, []);
 
   return (
     <div className="px-4 py-4">
@@ -27,7 +39,11 @@ const ParaList: React.FC = () => {
                 Pages {juz.startPage}–{juz.endPage} • {juz.startSurah.split(" ")[0]}
               </p>
             </div>
-            <span className="text-muted-foreground">›</span>
+            {downloadedParas.has(juz.number) ? (
+              <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+            ) : (
+              <span className="text-muted-foreground">›</span>
+            )}
           </button>
         ))}
       </div>
