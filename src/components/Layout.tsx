@@ -1,16 +1,16 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, BookOpen, Layers, Clock, Languages } from "lucide-react";
+import { Home, BookOpen, Layers, Clock, Languages, Compass } from "lucide-react";
 import ExitDialog from "./ExitDialog";
 import ThemeToggle from "./ThemeToggle";
 import { useBackHandler } from "@/hooks/useBackHandler";
 
 const NAV_ITEMS = [
   { path: "/", icon: Home, label: "Home" },
-  { path: "/indian-mushaf", icon: BookOpen, label: "Mushraf" },
+  { path: "/read-quran", icon: BookOpen, label: "Quran" },
   { path: "/para", icon: Layers, label: "Para" },
   { path: "/prayer-times", icon: Clock, label: "Namaz" },
-  { path: "/translation", icon: Languages, label: "Tarjuma" },
+  { path: "/qibla", icon: Compass, label: "Qibla" },
 ];
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -23,8 +23,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const p = location.pathname;
     if (p.startsWith("/surah-read")) return "Surah Reading";
     if (p.startsWith("/surah")) return "Surahs";
-    if (p.startsWith("/indian-mushaf")) return "Mushaf";
-    if (p.startsWith("/mushaf")) return "Mushaf";
+    if (p.startsWith("/indian-mushaf")) return "Read Quran";
+    if (p.startsWith("/mushaf")) return "Read Quran";
+    if (p.startsWith("/read-quran")) return "Read Quran";
+    if (p.startsWith("/qibla")) return "Qibla Direction";
     if (p.startsWith("/para-read")) return "Para Reading";
     if (p.startsWith("/para")) return "Para / Juz";
     if (p.startsWith("/prayer-times")) return "Prayer Times";

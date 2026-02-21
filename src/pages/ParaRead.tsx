@@ -1,9 +1,42 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { JUZ_DATA } from "@/data/surahs";
 import { INDIAN_JUZ_DATA, getIndianPageImage, getIndianPageImageFallback } from "@/data/indianMushaf";
 import { QuranAPI } from "@/lib/quranApi";
 import { Download, Loader2, CheckCircle2, HardDriveDownload } from "lucide-react";
+
+// Hook for pinch-to-zoom on touch devices
+function usePinchZoom(initialZoom = 1, minZoom = 1, maxZoom = 4) {
+  const [zoom, setZoom] = useState(initialZoom);
+  const lastDistance = useRef<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      lastDistance.current = Math.hypot(dx, dy);
+    }
+  }, []);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2 && lastDistance.current !== null) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.hypot(dx, dy);
+      const scale = dist / lastDistance.current;
+      setZoom((z) => Math.min(maxZoom, Math.max(minZoom, z * scale)));
+      lastDistance.current = dist;
+    }
+  }, [minZoom, maxZoom]);
+
+  const onTouchEnd = useCallback(() => {
+    lastDistance.current = null;
+  }, []);
+
+  return { zoom, setZoom, containerRef, onTouchStart, onTouchMove, onTouchEnd };
+}
 
 type QuranStyle = "indopak" | "saudi";
 
@@ -297,6 +330,7 @@ const IndianPage: React.FC<{ page: number; paraDownloaded: boolean }> = ({ page,
   const [error, setError] = useState(false);
   const [cached, setCached] = useState(false);
   const [downloadingPage, setDownloadingPage] = useState(false);
+  const { zoom, setZoom, containerRef: pinchRef, onTouchStart, onTouchMove, onTouchEnd } = usePinchZoom();
 
   useEffect(() => {
     let cancelled = false;
@@ -347,16 +381,22 @@ const IndianPage: React.FC<{ page: number; paraDownloaded: boolean }> = ({ page,
     <div className="rounded-2xl overflow-hidden border border-gold/10 shadow-gold bg-card">
       <div className="flex items-center justify-between px-3 py-1 bg-surface">
         <span className="text-xs text-muted-foreground">Page {page}</span>
-        {/* Per-page download icon */}
-        {cached || paraDownloaded ? (
-          <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
-        ) : downloadingPage ? (
-          <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
-        ) : (
-          <button onClick={handleDownloadSingle} className="p-0.5 active:scale-90 transition-smooth">
-            <Download className="w-3.5 h-3.5 text-muted-foreground" />
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {/* Zoom controls */}
+          <button onClick={() => setZoom((z) => Math.max(1, z - 0.5))} disabled={zoom <= 1} className="text-xs text-muted-foreground disabled:opacity-30 px-1">−</button>
+          <span className="text-[10px] text-muted-foreground">{Math.round(zoom * 100)}%</span>
+          <button onClick={() => setZoom((z) => Math.min(4, z + 0.5))} disabled={zoom >= 4} className="text-xs text-muted-foreground disabled:opacity-30 px-1">+</button>
+          {/* Download icon */}
+          {cached || paraDownloaded ? (
+            <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
+          ) : downloadingPage ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+          ) : (
+            <button onClick={handleDownloadSingle} className="p-0.5 active:scale-90 transition-smooth">
+              <Download className="w-3.5 h-3.5 text-muted-foreground" />
+            </button>
+          )}
+        </div>
       </div>
       {loading ? (
         <div className="flex items-center justify-center py-16">
@@ -365,7 +405,23 @@ const IndianPage: React.FC<{ page: number; paraDownloaded: boolean }> = ({ page,
       ) : error ? (
         <div className="text-center py-8 text-muted-foreground text-xs">Failed to load</div>
       ) : (
-        <img src={src!} alt={`Page ${page}`} className="w-full" loading="lazy" onError={handleError} />
+        <div
+          ref={pinchRef}
+          className="overflow-auto"
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          style={{ touchAction: zoom > 1 ? "none" : "auto" }}
+        >
+          <img
+            src={src!}
+            alt={`Page ${page}`}
+            className="transition-transform duration-100"
+            style={{ width: `${zoom * 100}%`, maxWidth: "none", transformOrigin: "top center" }}
+            loading="lazy"
+            onError={handleError}
+          />
+        </div>
       )}
     </div>
   );
