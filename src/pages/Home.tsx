@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Languages, List, BookCopy, MapPin, Clock, Share2, PlayCircle, ListOrdered, Building } from "lucide-react";
-
-const PRAYER_TIMES = [
-  { name: "Fajr", time: "04:12" },
-  { name: "Dhuhr", time: "12:08" },
-  { name: "Asr", time: "15:42" },
-  { name: "Maghrib", time: "18:24" },
-  { name: "Isha", time: "20:01" },
-];
+import { BookOpen, Languages, List, BookCopy, MapPin, Share2, PlayCircle, ListOrdered, Building, Clock } from "lucide-react";
+import { QuranAPI } from "@/lib/quranApi";
 
 const QUICK_TOOLS = [
   { icon: ListOrdered, title: "16 line", path: "/indian-mushaf" },
@@ -16,7 +9,7 @@ const QUICK_TOOLS = [
   { icon: List, title: "By Surah", path: "/surah" },
   { icon: BookOpen, title: "Full Quraan", path: "/read-quran" },
   { icon: BookCopy, title: "Para/Zuz", path: "/para" },
-  { icon: Building, title: "Namaz", path: "/prayer-times" },
+  { icon: Clock, title: "Namaz", path: "/prayer-times" },
 ];
 
 const DAILY_AYAHS = [
@@ -27,9 +20,11 @@ const DAILY_AYAHS = [
   { surah: "Surah Al-Ankabut [29:69]", arabic: "وَٱلَّذِينَ جَـٰهَدُوا۟ فِينَا لَنَهْدِيَنَّهُمْ سُبُلَنَا", translation: '"Those who strive for Us, We will guide them to Our ways."' },
 ];
 
+const PRAYER_ORDER = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
+
 const getIslamicDate = () => {
   try {
-    const formatter = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
+    const formatter = new Intl.DateTimeFormat('en-u-ca-islamic-civil', {
       day: 'numeric', month: 'long', year: 'numeric'
     });
     return formatter.format(new Date());
@@ -41,6 +36,8 @@ const getIslamicDate = () => {
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [cityName, setCityName] = useState("Detecting...");
+  const [prayerTimings, setPrayerTimings] = useState<Record<string, string> | null>(null);
   const [dailyAyah] = useState(() => {
     const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
     return DAILY_AYAHS[dayOfYear % DAILY_AYAHS.length];
@@ -51,21 +48,68 @@ const Home: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // Fetch real prayer times and location
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const [result, city] = await Promise.all([
+            QuranAPI.getPrayerTimes(pos.coords.latitude, pos.coords.longitude, 1, 1),
+            QuranAPI.reverseGeocode(pos.coords.latitude, pos.coords.longitude),
+          ]);
+          setPrayerTimings(result.timings);
+          setCityName(city);
+        } catch {
+          setCityName("Unknown");
+        }
+      },
+      () => setCityName("Location denied")
+    );
+  }, []);
+
   const islamicDate = getIslamicDate();
   const gregorianDate = currentTime.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
 
-  // Calculate countdown to next prayer (mock: Maghrib 18:24)
-  const getCountdown = () => {
+  // Calculate upcoming prayer dynamically
+  const getUpcomingPrayer = () => {
+    if (!prayerTimings) return { name: "Loading...", time: "--:--", countdown: "00:00:00" };
     const now = currentTime;
-    const target = new Date(now);
-    target.setHours(18, 24, 0, 0);
-    if (now > target) target.setDate(target.getDate() + 1);
-    const diff = target.getTime() - now.getTime();
-    const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
-    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
-    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-    return `${h}:${m}:${s}`;
+    for (const name of PRAYER_ORDER) {
+      const timeStr = prayerTimings[name];
+      if (!timeStr) continue;
+      const [h, m] = timeStr.split(":").map(Number);
+      const target = new Date(now);
+      target.setHours(h, m, 0, 0);
+      if (now < target) {
+        const diff = target.getTime() - now.getTime();
+        const hh = String(Math.floor(diff / 3600000)).padStart(2, '0');
+        const mm = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+        const ss = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+        return { name, time: timeStr.split(" ")[0], countdown: `${hh}:${mm}:${ss}` };
+      }
+    }
+    // All prayers passed, next is Fajr tomorrow
+    const fajrStr = prayerTimings.Fajr;
+    if (fajrStr) {
+      const [h, m] = fajrStr.split(":").map(Number);
+      const target = new Date(now);
+      target.setDate(target.getDate() + 1);
+      target.setHours(h, m, 0, 0);
+      const diff = target.getTime() - now.getTime();
+      const hh = String(Math.floor(diff / 3600000)).padStart(2, '0');
+      const mm = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+      const ss = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+      return { name: "Fajr", time: fajrStr.split(" ")[0], countdown: `${hh}:${mm}:${ss}` };
+    }
+    return { name: "Fajr", time: "--:--", countdown: "00:00:00" };
   };
+
+  const upcoming = getUpcomingPrayer();
+  const prayerList = PRAYER_ORDER.map((name) => ({
+    name,
+    time: prayerTimings?.[name]?.split(" ")[0] || "--:--",
+  }));
 
   return (
     <div className="px-4 py-4 space-y-6">
@@ -74,7 +118,7 @@ const Home: React.FC = () => {
         <div className="flex items-start gap-2">
           <MapPin className="w-5 h-5 text-primary mt-0.5" />
           <div>
-            <p className="text-sm font-bold text-foreground">London, UK</p>
+            <p className="text-sm font-bold text-foreground">{cityName}</p>
             <p className="text-[11px] text-muted-foreground">Auto-detecting location</p>
           </div>
         </div>
@@ -92,7 +136,6 @@ const Home: React.FC = () => {
           background: "linear-gradient(135deg, #064e3b, #0f3d2e, #052e22)",
         }}
       >
-        {/* Mosque silhouette decoration */}
         <div className="absolute right-4 top-4 opacity-20">
           <Building className="w-20 h-20 text-white" />
         </div>
@@ -101,11 +144,11 @@ const Home: React.FC = () => {
           <div className="flex items-center justify-between mb-1">
             <p className="text-sm text-white/80 font-medium">Upcoming Prayer</p>
             <span className="text-[11px] bg-primary text-white px-3 py-1 rounded-full font-bold">
-              ATHAN AT 18:24
+              ATHAN AT {upcoming.time}
             </span>
           </div>
 
-          <p className="text-3xl font-bold text-white mb-1">Maghrib</p>
+          <p className="text-3xl font-bold text-white mb-1">{upcoming.name}</p>
 
           <div className="flex items-center gap-2 mb-4">
             <span className="text-[11px] text-white/60 flex items-center gap-1">
@@ -117,14 +160,13 @@ const Home: React.FC = () => {
           </div>
 
           <div className="flex items-baseline gap-2 mb-6">
-            <p className="text-4xl font-bold text-primary font-mono tracking-wider">{getCountdown()}</p>
+            <p className="text-4xl font-bold text-primary font-mono tracking-wider">{upcoming.countdown}</p>
             <p className="text-sm text-white/60">remaining</p>
           </div>
 
-          {/* Prayer times row */}
           <div className="flex justify-between border-t border-white/10 pt-3">
-            {PRAYER_TIMES.map((p) => {
-              const isActive = p.name === "Maghrib";
+            {prayerList.map((p) => {
+              const isActive = p.name === upcoming.name;
               return (
                 <div key={p.name} className="text-center">
                   <p className={`text-[11px] mb-0.5 ${isActive ? "text-primary font-bold" : "text-white/50"}`}>

@@ -16,7 +16,6 @@ const PrayerTimes: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState("");
-  const [school, setSchool] = useState(() => parseInt(localStorage.getItem("prayer-school") || "1"));
   const [countdown, setCountdown] = useState("");
   const [cityName, setCityName] = useState("");
   const azaanSettings = loadAzaanSettings();
@@ -25,7 +24,6 @@ const PrayerTimes: React.FC = () => {
   useAzaanScheduler(data?.timings || null);
 
   useEffect(() => {
-    localStorage.setItem("prayer-school", String(school));
     setLoading(true);
     setError("");
 
@@ -38,9 +36,8 @@ const PrayerTimes: React.FC = () => {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
-          const method = school === 1 ? 1 : 3;
           const [result, city] = await Promise.all([
-            QuranAPI.getPrayerTimes(pos.coords.latitude, pos.coords.longitude, method, school),
+            QuranAPI.getPrayerTimes(pos.coords.latitude, pos.coords.longitude, 1, 1),
             QuranAPI.reverseGeocode(pos.coords.latitude, pos.coords.longitude),
           ]);
           setData(result);
@@ -55,7 +52,7 @@ const PrayerTimes: React.FC = () => {
         setLoading(false);
       }
     );
-  }, [school]);
+  }, []);
 
   // Countdown timer
   useEffect(() => {
@@ -111,21 +108,6 @@ const PrayerTimes: React.FC = () => {
 
   return (
     <div className="px-4 py-4">
-      {/* Madhab toggle */}
-      <div className="flex bg-card rounded-xl p-1 border border-gold/10 mb-4 animate-fade-in">
-        <button
-          onClick={() => setSchool(1)}
-          className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-smooth ${school === 1 ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-        >
-          Hanafi
-        </button>
-        <button
-          onClick={() => setSchool(0)}
-          className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-smooth ${school === 0 ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-        >
-          Shafi
-        </button>
-      </div>
 
       {loading && <LoadingSpinner message="Detecting location..." />}
       {error && (
