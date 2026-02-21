@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { JUZ_DATA } from "@/data/surahs";
 import { INDIAN_JUZ_DATA, getIndianPageImage, getIndianPageImageFallback } from "@/data/indianMushaf";
 import { QuranAPI } from "@/lib/quranApi";
-import { Download, Loader2, CheckCircle2 } from "lucide-react";
+import { Download, Loader2, CheckCircle2, HardDriveDownload } from "lucide-react";
 
 type QuranStyle = "indopak" | "saudi";
 
@@ -39,6 +39,11 @@ async function getCachedPage(page: number): Promise<string | null> {
   }
 }
 
+async function isPageCached(page: number): Promise<boolean> {
+  const cached = await getCachedPage(page);
+  return cached !== null;
+}
+
 async function cachePage(page: number, dataUrl: string): Promise<void> {
   try {
     const db = await openDB();
@@ -50,6 +55,10 @@ async function cachePage(page: number, dataUrl: string): Promise<void> {
 }
 
 async function downloadAndCachePage(page: number): Promise<string> {
+  // Check if already cached
+  const existing = await getCachedPage(page);
+  if (existing) return existing;
+
   const urls = [getIndianPageImage(page), getIndianPageImageFallback(page)];
   for (const url of urls) {
     try {
@@ -71,6 +80,35 @@ async function downloadAndCachePage(page: number): Promise<string> {
     }
   }
   throw new Error("Failed to download page");
+}
+
+async function requestStoragePermission(): Promise<boolean> {
+  try {
+    // Try Capacitor Filesystem permission
+    const { Filesystem } = await import("@capacitor/filesystem");
+    const perm = await Filesystem.requestPermissions();
+    return perm.publicStorage === "granted";
+  } catch {
+    // Not on Capacitor or plugin not available
+    // For web, check persistent storage
+    if (navigator.storage && navigator.storage.persist) {
+      const granted = await navigator.storage.persist();
+      return granted;
+    }
+    return true; // IndexedDB works without explicit permission on web
+  }
+}
+
+async function checkParaDownloaded(pages: number[]): Promise<boolean> {
+  try {
+    for (const p of pages) {
+      const cached = await isPageCached(p);
+      if (!cached) return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 const ParaRead: React.FC = () => {
@@ -130,7 +168,7 @@ const ParaRead: React.FC = () => {
                 />
               </div>
             ))
-          : <IndianPagesLoader pages={indianPages} />
+          : <IndianPagesLoader pages={indianPages} juzNum={juzNum} />
         }
       </div>
 
@@ -151,18 +189,21 @@ const ParaRead: React.FC = () => {
 };
 
 // Progressive loader: loads pages in batches as user scrolls
-const IndianPagesLoader: React.FC<{ pages: number[] }> = ({ pages }) => {
+const IndianPagesLoader: React.FC<{ pages: number[]; juzNum: number }> = ({ pages, juzNum }) => {
   const [visibleCount, setVisibleCount] = useState(PAGES_PER_BATCH);
   const [downloading, setDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
-  const [downloadComplete, setDownloadComplete] = useState(false);
+  const [paraDownloaded, setParaDownloaded] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
+  // Check if this para is already fully downloaded
   useEffect(() => {
     setVisibleCount(PAGES_PER_BATCH);
-    setDownloadComplete(false);
     setDownloadProgress(0);
-  }, [pages]);
+    setDownloading(false);
+    checkParaDownloaded(pages).then(setParaDownloaded);
+  }, [pages, juzNum]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -182,6 +223,13 @@ const IndianPagesLoader: React.FC<{ pages: number[] }> = ({ pages }) => {
   }, [pages.length]);
 
   const handleDownloadAll = async () => {
+    // Request storage permission first
+    const permGranted = await requestStoragePermission();
+    if (!permGranted) {
+      alert("Storage permission is needed to download pages for offline use.");
+      return;
+    }
+
     setDownloading(true);
     setDownloadProgress(0);
     for (let i = 0; i < pages.length; i++) {
@@ -193,40 +241,43 @@ const IndianPagesLoader: React.FC<{ pages: number[] }> = ({ pages }) => {
       setDownloadProgress(Math.round(((i + 1) / pages.length) * 100));
     }
     setDownloading(false);
-    setDownloadComplete(true);
-    // Force re-render of visible pages to use cached versions
-    setVisibleCount((prev) => prev);
+    setParaDownloaded(true);
+    // Mark in localStorage so we know this para is downloaded
+    localStorage.setItem(`para_downloaded_${juzNum}`, "true");
+    // Force refresh pages to use cached data
+    setRefreshKey((k) => k + 1);
+    setVisibleCount(pages.length);
   };
 
   const visiblePages = pages.slice(0, visibleCount);
 
   return (
     <>
-      {/* Download option */}
-      <div className="flex items-center justify-center gap-2 mb-3">
+      {/* Download Complete Para button at top - compact */}
+      <div className="flex items-center justify-center mb-3">
         {downloading ? (
-          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-gold/10 text-sm text-muted-foreground">
-            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-gold/10 text-xs text-muted-foreground">
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
             <span>Downloading... {downloadProgress}%</span>
           </div>
-        ) : downloadComplete ? (
-          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-gold/10 text-sm text-primary">
-            <CheckCircle2 className="w-4 h-4" />
-            <span>Downloaded for offline</span>
+        ) : paraDownloaded ? (
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card border border-gold/10 text-xs text-primary">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>Downloaded</span>
           </div>
         ) : (
           <button
             onClick={handleDownloadAll}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-gold/10 text-sm text-muted-foreground hover:border-gold/30 transition-smooth active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card border border-gold/10 text-xs text-muted-foreground hover:border-gold/30 transition-smooth active:scale-95"
           >
-            <Download className="w-4 h-4" />
-            <span>Download for faster loading</span>
+            <HardDriveDownload className="w-3.5 h-3.5" />
+            <span>Download Complete Para</span>
           </button>
         )}
       </div>
 
       {visiblePages.map((p) => (
-        <IndianPage key={p} page={p} />
+        <IndianPage key={`${p}_${refreshKey}`} page={p} paraDownloaded={paraDownloaded} />
       ))}
 
       {visibleCount < pages.length && (
@@ -239,18 +290,21 @@ const IndianPagesLoader: React.FC<{ pages: number[] }> = ({ pages }) => {
   );
 };
 
-const IndianPage: React.FC<{ page: number }> = ({ page }) => {
+const IndianPage: React.FC<{ page: number; paraDownloaded: boolean }> = ({ page, paraDownloaded }) => {
   const [src, setSrc] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [useFallback, setUseFallback] = useState(false);
   const [error, setError] = useState(false);
+  const [cached, setCached] = useState(false);
+  const [downloadingPage, setDownloadingPage] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const cached = await getCachedPage(page);
-      if (cached && !cancelled) {
-        setSrc(cached);
+      const cachedData = await getCachedPage(page);
+      if (cachedData && !cancelled) {
+        setSrc(cachedData);
+        setCached(true);
         setLoading(false);
         return;
       }
@@ -271,9 +325,39 @@ const IndianPage: React.FC<{ page: number }> = ({ page }) => {
     }
   };
 
+  const handleDownloadSingle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const permGranted = await requestStoragePermission();
+    if (!permGranted) {
+      alert("Storage permission is needed to download.");
+      return;
+    }
+    setDownloadingPage(true);
+    try {
+      const dataUrl = await downloadAndCachePage(page);
+      setSrc(dataUrl);
+      setCached(true);
+    } catch {
+      // failed
+    }
+    setDownloadingPage(false);
+  };
+
   return (
     <div className="rounded-2xl overflow-hidden border border-gold/10 shadow-gold bg-card">
-      <div className="text-center py-1 bg-surface text-xs text-muted-foreground">Page {page}</div>
+      <div className="flex items-center justify-between px-3 py-1 bg-surface">
+        <span className="text-xs text-muted-foreground">Page {page}</span>
+        {/* Per-page download icon */}
+        {cached || paraDownloaded ? (
+          <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
+        ) : downloadingPage ? (
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+        ) : (
+          <button onClick={handleDownloadSingle} className="p-0.5 active:scale-90 transition-smooth">
+            <Download className="w-3.5 h-3.5 text-muted-foreground" />
+          </button>
+        )}
+      </div>
       {loading ? (
         <div className="flex items-center justify-center py-16">
           <div className="w-8 h-8 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
