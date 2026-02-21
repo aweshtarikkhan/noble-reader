@@ -156,7 +156,7 @@ const Home: React.FC = () => {
           <div className="flex items-center justify-between mb-1">
             <p className="text-sm text-white/80 font-medium">Upcoming Prayer</p>
             <span className="text-[11px] bg-primary text-white px-3 py-1 rounded-full font-bold">
-              ATHAN AT {upcoming.time}
+              AZAN AT {upcoming.time}
             </span>
           </div>
 
