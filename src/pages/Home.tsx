@@ -24,10 +24,14 @@ const PRAYER_ORDER = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
 const getIslamicDate = () => {
   try {
+    // Indian Barelvi calendar runs ~1 day behind islamic-civil
+    // Subtract 1 day from current date before formatting
+    const now = new Date();
+    const adjusted = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
     const formatter = new Intl.DateTimeFormat('en-u-ca-islamic-civil', {
       day: 'numeric', month: 'long', year: 'numeric'
     });
-    return formatter.format(new Date());
+    return formatter.format(adjusted);
   } catch {
     return "";
   }
