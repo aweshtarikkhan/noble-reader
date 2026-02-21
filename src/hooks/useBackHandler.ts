@@ -1,6 +1,29 @@
 import { useEffect, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+// Map sub-pages to their parent routes
+const PARENT_ROUTES: Record<string, string> = {
+  "/surah": "/",
+  "/surah-read": "/surah",
+  "/mushaf": "/",
+  "/read-quran": "/",
+  "/tafseer-reader": "/",
+  "/tafseer-read": "/tafseer-reader",
+  "/azaan-settings": "/prayer-times",
+  "/donate": "/",
+};
+
+function getParentRoute(pathname: string): string {
+  // Check exact match first
+  if (PARENT_ROUTES[pathname]) return PARENT_ROUTES[pathname];
+  // Check prefix match for dynamic routes like /surah-read/5
+  for (const prefix of Object.keys(PARENT_ROUTES)) {
+    if (pathname.startsWith(prefix + "/")) return PARENT_ROUTES[prefix];
+  }
+  // Default: go home
+  return "/";
+}
+
 export function useBackHandler() {
   const [showExitDialog, setShowExitDialog] = useState(false);
   const location = useLocation();
@@ -11,37 +34,43 @@ export function useBackHandler() {
     if (isHome) {
       setShowExitDialog(true);
     } else {
-      navigate(-1);
+      const parent = getParentRoute(location.pathname);
+      navigate(parent);
     }
-  }, [isHome, navigate]);
+  }, [isHome, navigate, location.pathname]);
 
   useEffect(() => {
-    // Browser back button handling
+    if (!isHome) return; // Only intercept popstate on home page
+
     const handlePopState = (e: PopStateEvent) => {
       e.preventDefault();
       window.history.pushState(null, "", window.location.href);
-      handleBack();
+      setShowExitDialog(true);
     };
 
     window.history.pushState(null, "", window.location.href);
     window.addEventListener("popstate", handlePopState);
 
-    // Capacitor hardware back button
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [isHome]);
+
+  // Capacitor hardware back button
+  useEffect(() => {
     let backButtonListener: any = null;
     const setupCapacitor = async () => {
       try {
         const { App } = await import("@capacitor/app");
-        backButtonListener = await App.addListener("backButton", ({ canGoBack }) => {
+        backButtonListener = await App.addListener("backButton", () => {
           handleBack();
         });
       } catch {
-        // Not running in Capacitor, ignore
+        // Not running in Capacitor
       }
     };
     setupCapacitor();
-
     return () => {
-      window.removeEventListener("popstate", handlePopState);
       if (backButtonListener) backButtonListener.remove();
     };
   }, [handleBack]);
@@ -61,5 +90,5 @@ export function useBackHandler() {
     setShowExitDialog(false);
   }, []);
 
-  return { showExitDialog, confirmExit, cancelExit };
+  return { showExitDialog, confirmExit, cancelExit, handleBack };
 }
