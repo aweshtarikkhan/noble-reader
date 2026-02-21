@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { SURAHS } from "@/data/surahs";
 import { QuranAPI } from "@/lib/quranApi";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { Settings, Search, Bookmark, BookmarkCheck, Play, X, ChevronDown } from "lucide-react";
 
 interface TranslationEdition {
   id: string;
@@ -106,13 +107,21 @@ const Translation: React.FC = () => {
   const [selectedTafseer, setSelectedTafseer] = useState<string | null>(() => {
     return localStorage.getItem("trans-tafseer") || null;
   });
-  const [showTransPanel, setShowTransPanel] = useState(false);
-  const [showTafseerPanel, setShowTafseerPanel] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [arabicAyahs, setArabicAyahs] = useState<any[]>([]);
   const [translations, setTranslations] = useState<Record<string, any[]>>({});
   const [tafseerData, setTafseerData] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [bookmarkedAyahs, setBookmarkedAyahs] = useState<number[]>(() => {
+    try { return JSON.parse(localStorage.getItem("trans-bookmarks") || "[]"); } catch { return []; }
+  });
+  const [showSurahDropdown, setShowSurahDropdown] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const surahInfo = SURAHS.find((s) => s.number === surahNum);
 
   useEffect(() => {
     localStorage.setItem("trans-surah", String(surahNum));
@@ -120,6 +129,10 @@ const Translation: React.FC = () => {
     if (selectedTafseer) localStorage.setItem("trans-tafseer", selectedTafseer);
     else localStorage.removeItem("trans-tafseer");
   }, [surahNum, selectedEditions, selectedTafseer]);
+
+  useEffect(() => {
+    localStorage.setItem("trans-bookmarks", JSON.stringify(bookmarkedAyahs));
+  }, [bookmarkedAyahs]);
 
   useEffect(() => {
     const load = async () => {
@@ -145,7 +158,6 @@ const Translation: React.FC = () => {
         }
         setTranslations(results);
 
-        // Load tafseer
         if (selectedTafseer) {
           const allTafseers = TAFSEERS.flatMap((g) => g.editions);
           const taf = allTafseers.find((t) => t.id === selectedTafseer);
@@ -181,96 +193,175 @@ const Translation: React.FC = () => {
     setExpandedGroups((prev) => ({ ...prev, [group]: !prev[group] }));
   };
 
+  const toggleBookmark = (ayahNum: number) => {
+    setBookmarkedAyahs((prev) =>
+      prev.includes(ayahNum) ? prev.filter((a) => a !== ayahNum) : [...prev, ayahNum]
+    );
+  };
+
+  useEffect(() => {
+    if (showSearch && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [showSearch]);
+
   const allEditions = EDITIONS.flatMap((g) => g.editions);
   const allTafseers = TAFSEERS.flatMap((g) => g.editions);
   const selectedTafseerLabel = allTafseers.find((t) => t.id === selectedTafseer)?.label;
 
+  // Filter ayahs by search
+  const filteredAyahs = searchQuery.trim()
+    ? arabicAyahs.filter((ayah: any) => {
+        const num = ayah.numberInSurah;
+        if (String(num).includes(searchQuery)) return true;
+        // Search in translations
+        for (const edId of selectedEditions) {
+          const trans = translations[edId]?.[num - 1];
+          if (trans?.text?.toLowerCase().includes(searchQuery.toLowerCase())) return true;
+        }
+        return false;
+      })
+    : arabicAyahs;
+
   return (
-    <div className="px-4 py-4">
-      {/* Surah selector */}
-      <select
-        value={surahNum}
-        onChange={(e) => setSurahNum(parseInt(e.target.value))}
-        className="w-full px-4 py-3 rounded-xl bg-card border border-gold/10 text-foreground focus:outline-none focus:border-gold/40 mb-3 text-sm"
-        style={{ backgroundColor: "hsl(222 35% 16%)" }}
-      >
-        {SURAHS.map((s) => (
-          <option key={s.number} value={s.number} style={{ backgroundColor: "hsl(222 35% 16%)", color: "hsl(210 40% 96%)" }}>
-            {s.number}. {s.englishName} — {s.name}
-          </option>
-        ))}
-      </select>
+    <div className="flex flex-col h-full">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-20 bg-background border-b border-border px-4 py-3">
+        <div className="flex items-center justify-between">
+          {/* Surah Selector */}
+          <div className="relative">
+            <button
+              onClick={() => setShowSurahDropdown(!showSurahDropdown)}
+              className="flex items-center gap-1 text-left"
+            >
+              <div>
+                <h1 className="text-base font-bold text-foreground leading-tight">{surahInfo?.englishName}</h1>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                  Ayah 1 of {surahInfo?.ayahs}
+                </p>
+              </div>
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            </button>
 
-      {/* Translation Authors Button */}
-      <button
-        onClick={() => { setShowTransPanel(!showTransPanel); setShowTafseerPanel(false); }}
-        className={`w-full px-4 py-3 rounded-xl border text-sm mb-2 transition-smooth text-left flex items-center justify-between ${
-          showTransPanel ? "bg-primary/10 border-gold/30 text-gold" : "bg-card border-gold/10 text-foreground hover:border-gold/30"
-        }`}
-      >
-        <span className="flex items-center gap-2">
-          <span>🌐</span>
-          <span>Translations & Authors</span>
-          <span className="text-[10px] bg-primary/20 text-gold px-2 py-0.5 rounded-full">{selectedEditions.length}</span>
-        </span>
-        <span>{showTransPanel ? "▲" : "▼"}</span>
-      </button>
+            {showSurahDropdown && (
+              <div className="absolute top-full left-0 mt-1 w-72 max-h-80 overflow-y-auto bg-card border border-border rounded-xl shadow-lg z-30 animate-fade-in">
+                {SURAHS.map((s) => (
+                  <button
+                    key={s.number}
+                    onClick={() => { setSurahNum(s.number); setShowSurahDropdown(false); }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm hover:bg-muted transition-smooth ${
+                      s.number === surahNum ? "bg-primary/10 text-primary" : "text-foreground"
+                    }`}
+                  >
+                    <span className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary shrink-0">
+                      {s.number}
+                    </span>
+                    <span className="flex-1">{s.englishName}</span>
+                    <span className="font-arabic text-xs text-muted-foreground">{s.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-      {/* Tafseer Button */}
-      <button
-        onClick={() => { setShowTafseerPanel(!showTafseerPanel); setShowTransPanel(false); }}
-        className={`w-full px-4 py-3 rounded-xl border text-sm mb-4 transition-smooth text-left flex items-center justify-between ${
-          showTafseerPanel ? "bg-primary/10 border-gold/30 text-gold" : "bg-card border-gold/10 text-foreground hover:border-gold/30"
-        }`}
-      >
-        <span className="flex items-center gap-2">
-          <span>📗</span>
-          <span>{selectedTafseerLabel ? `Tafseer: ${selectedTafseerLabel}` : "Select Tafseer (Commentary)"}</span>
-        </span>
-        <span>{showTafseerPanel ? "▲" : "▼"}</span>
-      </button>
+          {/* Action Icons */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => { setShowSettings(!showSettings); setShowSearch(false); }}
+              className={`w-9 h-9 flex items-center justify-center rounded-xl transition-smooth active:scale-90 ${
+                showSettings ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
+              aria-label="Settings"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => { setShowSearch(!showSearch); setShowSettings(false); }}
+              className={`w-9 h-9 flex items-center justify-center rounded-xl transition-smooth active:scale-90 ${
+                showSearch ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
+              aria-label="Search"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+            <button
+              className="w-9 h-9 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-smooth active:scale-90"
+              aria-label="Bookmarks"
+              onClick={() => {
+                // Scroll to first bookmarked ayah
+                if (bookmarkedAyahs.length > 0) {
+                  const el = document.getElementById(`ayah-${bookmarkedAyahs[0]}`);
+                  el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+              }}
+            >
+              <Bookmark className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
 
-      {/* Translations Panel */}
-      {showTransPanel && (
-        <div className="mb-4 p-3 rounded-xl bg-card border border-gold/10 space-y-1 animate-fade-in max-h-[60vh] overflow-y-auto">
-          <p className="text-[10px] text-muted-foreground mb-2 px-1">Select one or more translations to display below each ayah</p>
+        {/* Search Bar */}
+        {showSearch && (
+          <div className="mt-3 flex items-center gap-2 animate-fade-in">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search ayah or translation..."
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-muted border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40"
+              />
+            </div>
+            <button
+              onClick={() => { setShowSearch(false); setSearchQuery(""); }}
+              className="w-9 h-9 flex items-center justify-center rounded-xl text-muted-foreground hover:bg-muted"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Settings Panel (overlay) */}
+      {showSettings && (
+        <div className="sticky top-[60px] z-10 bg-card border-b border-border px-4 py-3 max-h-[70vh] overflow-y-auto animate-fade-in">
+          <h3 className="text-xs font-bold text-foreground uppercase tracking-wide mb-3">Translations</h3>
           {EDITIONS.map((group) => {
-            const isExpanded = expandedGroups[group.group] !== false; // default open
+            const isExpanded = expandedGroups[group.group] !== false;
             const selectedCount = group.editions.filter((e) => selectedEditions.includes(e.id)).length;
             return (
-              <div key={group.group} className="rounded-lg overflow-hidden">
+              <div key={group.group} className="mb-1">
                 <button
                   onClick={() => toggleGroup(group.group)}
-                  className="w-full flex items-center justify-between px-3 py-2.5 bg-surface rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-smooth"
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-smooth"
                 >
                   <span className="flex items-center gap-2">
                     <span>{group.groupIcon}</span>
                     <span>{group.group}</span>
                     {selectedCount > 0 && (
-                      <span className="text-[10px] bg-primary/20 text-gold px-1.5 py-0.5 rounded-full">{selectedCount}</span>
+                      <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">{selectedCount}</span>
                     )}
                   </span>
                   <span className="text-muted-foreground text-xs">{isExpanded ? "▲" : "▼"}</span>
                 </button>
                 {isExpanded && (
-                  <div className="px-2 py-1.5 space-y-0.5">
+                  <div className="px-2 py-1 space-y-0.5">
                     {group.editions.map((ed) => (
                       <label
                         key={ed.id}
                         className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm cursor-pointer transition-smooth ${
-                          selectedEditions.includes(ed.id) ? "bg-primary/10 text-gold" : "text-foreground hover:bg-muted/50"
+                          selectedEditions.includes(ed.id) ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted/50"
                         }`}
                       >
                         <input
                           type="checkbox"
                           checked={selectedEditions.includes(ed.id)}
                           onChange={() => toggleEdition(ed.id)}
-                          className="accent-[hsl(43,65%,52%)] w-4 h-4 rounded"
+                          className="accent-[hsl(var(--primary))] w-4 h-4 rounded"
                         />
                         <span className="flex-1">{ed.label}</span>
-                        <span className="text-[9px] text-muted-foreground uppercase">
-                          {ed.source === "fawaz" ? "CDN" : "API"}
-                        </span>
                       </label>
                     ))}
                   </div>
@@ -278,37 +369,23 @@ const Translation: React.FC = () => {
               </div>
             );
           })}
-        </div>
-      )}
 
-      {/* Tafseer Panel */}
-      {showTafseerPanel && (
-        <div className="mb-4 p-3 rounded-xl bg-card border border-gold/10 space-y-1 animate-fade-in max-h-[60vh] overflow-y-auto">
-          <p className="text-[10px] text-muted-foreground mb-2 px-1">Select a tafseer to display commentary below each ayah</p>
-          
-          {/* None option */}
+          <h3 className="text-xs font-bold text-foreground uppercase tracking-wide mb-3 mt-4">Tafseer</h3>
           <label
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-smooth ${
-              !selectedTafseer ? "bg-primary/10 text-gold" : "text-foreground hover:bg-muted/50"
+              !selectedTafseer ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted/50"
             }`}
           >
-            <input
-              type="radio"
-              name="tafseer"
-              checked={!selectedTafseer}
-              onChange={() => setSelectedTafseer(null)}
-              className="accent-[hsl(43,65%,52%)] w-4 h-4"
-            />
-            <span>None (No Tafseer)</span>
+            <input type="radio" name="tafseer" checked={!selectedTafseer} onChange={() => setSelectedTafseer(null)} className="accent-[hsl(var(--primary))] w-4 h-4" />
+            <span>None</span>
           </label>
-
           {TAFSEERS.map((group) => {
             const isExpanded = expandedGroups[`taf-${group.group}`] !== false;
             return (
-              <div key={group.group} className="rounded-lg overflow-hidden">
+              <div key={group.group} className="mb-1">
                 <button
                   onClick={() => toggleGroup(`taf-${group.group}`)}
-                  className="w-full flex items-center justify-between px-3 py-2.5 bg-surface rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-smooth"
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-smooth"
                 >
                   <span className="flex items-center gap-2">
                     <span>{group.groupIcon}</span>
@@ -317,25 +394,16 @@ const Translation: React.FC = () => {
                   <span className="text-muted-foreground text-xs">{isExpanded ? "▲" : "▼"}</span>
                 </button>
                 {isExpanded && (
-                  <div className="px-2 py-1.5 space-y-0.5">
+                  <div className="px-2 py-1 space-y-0.5">
                     {group.editions.map((taf) => (
                       <label
                         key={taf.id}
                         className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm cursor-pointer transition-smooth ${
-                          selectedTafseer === taf.id ? "bg-primary/10 text-gold" : "text-foreground hover:bg-muted/50"
+                          selectedTafseer === taf.id ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted/50"
                         }`}
                       >
-                        <input
-                          type="radio"
-                          name="tafseer"
-                          checked={selectedTafseer === taf.id}
-                          onChange={() => setSelectedTafseer(taf.id)}
-                          className="accent-[hsl(43,65%,52%)] w-4 h-4"
-                        />
+                        <input type="radio" name="tafseer" checked={selectedTafseer === taf.id} onChange={() => setSelectedTafseer(taf.id)} className="accent-[hsl(var(--primary))] w-4 h-4" />
                         <span className="flex-1">{taf.label}</span>
-                        <span className="text-[9px] text-muted-foreground uppercase">
-                          {taf.source === "fawaz" ? "CDN" : "API"}
-                        </span>
                       </label>
                     ))}
                   </div>
@@ -347,57 +415,88 @@ const Translation: React.FC = () => {
       )}
 
       {/* Content */}
-      {loading ? (
-        <LoadingSpinner message="Loading translations..." />
-      ) : (
-        <div className="space-y-4 animate-fade-in">
-          {arabicAyahs.map((ayah: any) => (
-            <div key={ayah.numberInSurah} className="p-4 rounded-xl bg-card border border-gold/5 space-y-3">
-              {/* Arabic */}
-              <div dir="rtl" className="flex items-start gap-2">
-                <span className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-[10px] text-gold font-bold shrink-0 mt-1">
-                  {ayah.numberInSurah}
-                </span>
-                <p className="font-arabic text-arabic text-lg leading-[2.2] flex-1">{ayah.text}</p>
-              </div>
-
-              {/* Translations */}
-              {selectedEditions.map((edId) => {
-                const ed = allEditions.find((e) => e.id === edId);
-                const trans = translations[edId]?.[ayah.numberInSurah - 1];
-                if (!trans) return null;
-                const isUrdu = edId.startsWith("ur.");
-                const isHindi = edId.startsWith("hi.");
-                return (
-                  <div key={edId} className={`border-l-2 border-gold/20 pl-3 ${isUrdu ? "font-urdu" : ""}`}>
-                    <p className="text-[10px] text-gold/60 mb-0.5">{ed?.label}</p>
-                    <p
-                      className={`text-sm leading-relaxed ${
-                        isUrdu ? "text-urdu" : isHindi ? "text-foreground" : edId.startsWith("fawaz") ? "text-muted-foreground" : "text-english"
-                      }`}
-                      dir={isUrdu ? "rtl" : "ltr"}
-                    >
-                      {trans.text}
-                    </p>
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        {loading ? (
+          <LoadingSpinner message="Loading translations..." />
+        ) : (
+          <div className="space-y-4 animate-fade-in">
+            {filteredAyahs.map((ayah: any) => {
+              const isBookmarked = bookmarkedAyahs.includes(ayah.numberInSurah);
+              return (
+                <div
+                  key={ayah.numberInSurah}
+                  id={`ayah-${ayah.numberInSurah}`}
+                  className={`p-4 rounded-2xl border space-y-4 ${
+                    isBookmarked ? "bg-primary/5 border-primary/20" : "bg-card border-border"
+                  }`}
+                >
+                  {/* Ayah header: number + play + bookmark */}
+                  <div className="flex items-center justify-between">
+                    <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs text-primary font-bold">
+                      {ayah.numberInSurah}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => toggleBookmark(ayah.numberInSurah)}
+                        className="active:scale-90 transition-smooth"
+                        aria-label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
+                      >
+                        {isBookmarked ? (
+                          <BookmarkCheck className="w-4 h-4 text-primary" />
+                        ) : (
+                          <Bookmark className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </button>
+                      <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground text-background text-xs font-medium active:scale-95 transition-smooth">
+                        <Play className="w-3 h-3 fill-current" />
+                        Play
+                      </button>
+                    </div>
                   </div>
-                );
-              })}
 
-              {/* Tafseer */}
-              {tafseerData && tafseerData[ayah.numberInSurah - 1] && (
-                <div className="border-l-2 border-secondary/40 pl-3 bg-secondary/5 rounded-r-lg py-2 pr-2">
-                  <p className="text-[10px] text-secondary mb-0.5 font-medium">
-                    📗 {selectedTafseerLabel}
-                  </p>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    {tafseerData[ayah.numberInSurah - 1].text}
-                  </p>
+                  {/* Arabic */}
+                  <div dir="rtl" className="py-3">
+                    <p className="font-arabic text-arabic text-xl leading-[2.4] text-center">{ayah.text}</p>
+                  </div>
+
+                  {/* Translations */}
+                  {selectedEditions.map((edId) => {
+                    const ed = allEditions.find((e) => e.id === edId);
+                    const trans = translations[edId]?.[ayah.numberInSurah - 1];
+                    if (!trans) return null;
+                    const isUrdu = edId.startsWith("ur.");
+                    return (
+                      <div key={edId} className={`space-y-1 ${isUrdu ? "font-urdu" : ""}`}>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
+                          {ed?.label}
+                        </p>
+                        <p
+                          className={`text-sm leading-relaxed ${isUrdu ? "text-urdu" : "text-foreground"}`}
+                          dir={isUrdu ? "rtl" : "ltr"}
+                        >
+                          {trans.text}
+                        </p>
+                      </div>
+                    );
+                  })}
+
+                  {/* Tafseer */}
+                  {tafseerData && tafseerData[ayah.numberInSurah - 1] && (
+                    <div className="space-y-1">
+                      <p className="text-[10px] text-primary uppercase tracking-wide font-bold">
+                        {selectedTafseerLabel}
+                      </p>
+                      <p className="text-sm leading-relaxed text-muted-foreground italic">
+                        {tafseerData[ayah.numberInSurah - 1].text}
+                      </p>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
