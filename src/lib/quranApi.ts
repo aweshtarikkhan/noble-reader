@@ -46,4 +46,16 @@ export const QuranAPI = {
     const url = `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${lat}&longitude=${lng}&method=${method}&school=${school}`;
     return fetchJSON(url);
   },
+
+  async reverseGeocode(lat: number, lng: number): Promise<string> {
+    try {
+      const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=10`;
+      const res = await fetch(url, { headers: { "Accept-Language": "en" } });
+      const data = await res.json();
+      const addr = data.address;
+      return addr?.city || addr?.town || addr?.village || addr?.county || addr?.state || "Unknown";
+    } catch {
+      return "Unknown";
+    }
+  },
 };
