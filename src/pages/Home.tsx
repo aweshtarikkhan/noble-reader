@@ -30,19 +30,19 @@ const Home: React.FC = () => {
       </div>
 
       {/* Menu Cards */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2.5">
         {MENU_ITEMS.map((item, i) => (
           <button
             key={item.path}
             onClick={() => navigate(item.path)}
-            className="flex flex-col items-center justify-center aspect-square p-4 rounded-2xl bg-card border border-gold/10 hover:border-gold/30 transition-smooth shadow-gold hover:shadow-gold-lg text-center animate-fade-in group"
+            className="flex flex-col items-center justify-center p-3 rounded-xl bg-card border border-gold/10 hover:border-gold/30 transition-smooth shadow-gold hover:shadow-gold-lg text-center animate-fade-in group active:scale-90 active:shadow-none"
             style={{ animationDelay: `${i * 0.07}s` }}
           >
-            <div className={`w-14 h-14 rounded-xl ${item.iconBg} flex items-center justify-center text-3xl mb-3`}>
+            <div className={`w-11 h-11 rounded-lg ${item.iconBg} flex items-center justify-center text-2xl mb-2 group-active:scale-110 transition-smooth`}>
               {item.icon}
             </div>
-            <h3 className="font-semibold text-foreground text-sm leading-tight">{item.title}</h3>
-            <p className="text-[10px] text-muted-foreground mt-1">{item.description}</p>
+            <h3 className="font-semibold text-foreground text-xs leading-tight">{item.title}</h3>
+            <p className="text-[9px] text-muted-foreground mt-0.5">{item.description}</p>
           </button>
         ))}
       </div>

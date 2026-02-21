@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ExitDialog from "./ExitDialog";
+import ThemeToggle from "./ThemeToggle";
 import { useBackHandler } from "@/hooks/useBackHandler";
 
 const NAV_ITEMS = [
@@ -66,7 +67,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <h1 className="text-base font-semibold text-foreground">{getTitle()}</h1>
             )}
           </div>
-          <div className="w-9" />
+          <ThemeToggle />
         </div>
       </header>
 
