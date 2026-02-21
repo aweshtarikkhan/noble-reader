@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { SURAHS } from "@/data/surahs";
 import { QuranAPI } from "@/lib/quranApi";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { Settings, Search, Bookmark, BookmarkCheck, Play, X, ChevronDown } from "lucide-react";
+import { Settings, Search, Bookmark, BookmarkCheck, X, ChevronDown } from "lucide-react";
 
 interface TranslationEdition {
   id: string;
@@ -446,10 +446,6 @@ const Translation: React.FC = () => {
                         ) : (
                           <Bookmark className="w-4 h-4 text-muted-foreground" />
                         )}
-                      </button>
-                      <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground text-background text-xs font-medium active:scale-95 transition-smooth">
-                        <Play className="w-3 h-3 fill-current" />
-                        Play
                       </button>
                     </div>
                   </div>
