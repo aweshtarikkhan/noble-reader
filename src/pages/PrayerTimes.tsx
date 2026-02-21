@@ -77,7 +77,23 @@ const PrayerTimes: React.FC = () => {
       ]
     : [];
 
-  const hijri = data?.date?.hijri;
+  // Adjust Hijri date: API returns next Islamic day, but it only starts at Maghrib
+  const hijri = React.useMemo(() => {
+    if (!data?.date?.hijri || !data?.timings?.Maghrib) return data?.date?.hijri;
+    const now = new Date();
+    const [mH, mM] = data.timings.Maghrib.split(":").map(Number);
+    const maghrib = new Date();
+    maghrib.setHours(mH, mM, 0, 0);
+    if (now < maghrib) {
+      // Before Maghrib: show previous Hijri day
+      const h = { ...data.date.hijri };
+      const day = parseInt(h.day) - 1;
+      if (day >= 1) {
+        return { ...h, day: String(day) };
+      }
+    }
+    return data.date.hijri;
+  }, [data]);
   const gregorian = data?.date?.gregorian;
 
   return (
