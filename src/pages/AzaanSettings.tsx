@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -72,6 +72,20 @@ const AzaanSettingsPage: React.FC = () => {
     [previewAudio, previewPlaying, settings.volume]
   );
 
+  const [permStatus, setPermStatus] = useState({ notification: "", location: "" });
+
+  const checkPermissions = useCallback(async () => {
+    const notif = "Notification" in window ? Notification.permission : "unavailable";
+    let loc = "unknown";
+    try {
+      const result = await navigator.permissions.query({ name: "geolocation" as PermissionName });
+      loc = result.state;
+    } catch { loc = "unknown"; }
+    setPermStatus({ notification: notif, location: loc });
+  }, []);
+
+  useEffect(() => { checkPermissions(); }, [checkPermissions]);
+
   const requestPermissions = async () => {
     // Notification permission
     if ("Notification" in window && Notification.permission !== "granted") {
@@ -79,8 +93,15 @@ const AzaanSettingsPage: React.FC = () => {
     }
     // Geolocation
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(() => {}, () => {});
+      navigator.geolocation.getCurrentPosition(() => {}, () => {}, { timeout: 10000 });
     }
+    // Wake Lock (keep screen/process alive)
+    try {
+      if ("wakeLock" in navigator) {
+        await (navigator as any).wakeLock.request("screen");
+      }
+    } catch {}
+    await checkPermissions();
   };
 
   const handleToggleEnabled = (checked: boolean) => {
@@ -105,6 +126,34 @@ const AzaanSettingsPage: React.FC = () => {
 
       {settings.enabled && (
         <>
+          {/* Permissions Status */}
+          <div className="p-4 rounded-2xl bg-card border border-gold/10 space-y-2">
+            <p className="text-xs text-muted-foreground font-semibold mb-2">Permissions</p>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-foreground">🔔 Notifications</span>
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                permStatus.notification === "granted" ? "bg-secondary/20 text-secondary" : "bg-destructive/20 text-destructive"
+              }`}>
+                {permStatus.notification === "granted" ? "Allowed" : permStatus.notification === "denied" ? "Blocked" : "Not set"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-foreground">📍 Location</span>
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                permStatus.location === "granted" ? "bg-secondary/20 text-secondary" : "bg-destructive/20 text-destructive"
+              }`}>
+                {permStatus.location === "granted" ? "Allowed" : permStatus.location === "denied" ? "Blocked" : "Not set"}
+              </span>
+            </div>
+            {(permStatus.notification !== "granted" || permStatus.location !== "granted") && (
+              <button
+                onClick={requestPermissions}
+                className="w-full mt-2 py-2 text-xs font-medium rounded-lg bg-primary text-primary-foreground transition-smooth"
+              >
+                Grant Required Permissions
+              </button>
+            )}
+          </div>
           {/* Volume */}
           <div className="p-4 rounded-2xl bg-card border border-gold/10">
             <p className="text-xs text-muted-foreground mb-3">Volume</p>
