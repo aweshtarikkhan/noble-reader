@@ -11,6 +11,22 @@ const HIJRI_MONTHS = [
   "رَمَضَان", "شَوَّال", "ذُو القَعْدَة", "ذُو الحِجَّة"
 ];
 
+const PRAYER_CACHE_KEY = "cached_prayer_page_data";
+
+function loadCachedPrayerData(): { data: any; city: string; date: string } | null {
+  try {
+    const raw = localStorage.getItem(PRAYER_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed.date === new Date().toDateString()) return parsed;
+    return null;
+  } catch { return null; }
+}
+
+function saveCachedPrayerData(data: any, city: string) {
+  localStorage.setItem(PRAYER_CACHE_KEY, JSON.stringify({ data, city, date: new Date().toDateString() }));
+}
+
 const PrayerTimes: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -24,6 +40,15 @@ const PrayerTimes: React.FC = () => {
   useAzaanScheduler(data?.timings || null);
 
   useEffect(() => {
+    // Try cache first
+    const cached = loadCachedPrayerData();
+    if (cached) {
+      setData(cached.data);
+      setCityName(cached.city);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError("");
 
@@ -42,6 +67,7 @@ const PrayerTimes: React.FC = () => {
           ]);
           setData(result);
           setCityName(city);
+          saveCachedPrayerData(result, city);
         } catch {
           setError("Failed to load prayer times");
         }

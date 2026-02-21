@@ -37,10 +37,27 @@ const getIslamicDate = () => {
   }
 };
 
+const LOCATION_CACHE_KEY = "cached_location_data";
+
+function loadCachedLocation(): { city: string; timings: Record<string, string>; date: string } | null {
+  try {
+    const raw = localStorage.getItem(LOCATION_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const today = new Date().toDateString();
+    if (parsed.date === today) return parsed;
+    return null; // expired (different day)
+  } catch { return null; }
+}
+
+function saveCachedLocation(city: string, timings: Record<string, string>) {
+  localStorage.setItem(LOCATION_CACHE_KEY, JSON.stringify({ city, timings, date: new Date().toDateString() }));
+}
+
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [cityName, setCityName] = useState("Detecting...");
+  const [cityName, setCityName] = useState("Loading...");
   const [prayerTimings, setPrayerTimings] = useState<Record<string, string> | null>(null);
   const [dailyAyah] = useState(() => {
     const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
@@ -52,7 +69,15 @@ const Home: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const detectLocation = () => {
+  const detectLocation = (force = false) => {
+    if (!force) {
+      const cached = loadCachedLocation();
+      if (cached) {
+        setCityName(cached.city);
+        setPrayerTimings(cached.timings);
+        return;
+      }
+    }
     setCityName("Detecting...");
     if (!navigator.geolocation) {
       setCityName("Not supported");
@@ -67,6 +92,7 @@ const Home: React.FC = () => {
           ]);
           setPrayerTimings(result.timings);
           setCityName(city);
+          saveCachedLocation(city, result.timings);
         } catch {
           setCityName("Unknown");
         }
@@ -75,9 +101,9 @@ const Home: React.FC = () => {
     );
   };
 
-  // Fetch real prayer times and location on mount
+  // Load from cache or detect on mount
   useEffect(() => {
-    detectLocation();
+    detectLocation(false);
   }, []);
 
   const islamicDate = getIslamicDate();
@@ -130,7 +156,7 @@ const Home: React.FC = () => {
         <div className="flex items-center gap-2">
           <MapPin className="w-5 h-5 text-primary" />
           <p className="text-sm font-bold text-foreground">{cityName}</p>
-          <button onClick={detectLocation} className="active:scale-90 transition-smooth" aria-label="Detect location">
+          <button onClick={() => detectLocation(true)} className="active:scale-90 transition-smooth" aria-label="Detect location">
             <LocateFixed className="w-4 h-4 text-primary" />
           </button>
         </div>
@@ -230,7 +256,15 @@ const Home: React.FC = () => {
             {dailyAyah.translation}
           </p>
           <div className="flex items-center justify-center gap-6 pt-2">
-            <button className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-smooth">
+            <button
+              onClick={() => {
+                const text = `${dailyAyah.arabic}\n\n${dailyAyah.translation}\n\n— ${dailyAyah.surah}\n\nNoble Quran Reader`;
+                if (navigator.share) {
+                  navigator.share({ title: "Daily Ayah", text }).catch(() => {});
+                }
+              }}
+              className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-smooth"
+            >
               <Share2 className="w-4 h-4" />
               SHARE
             </button>
