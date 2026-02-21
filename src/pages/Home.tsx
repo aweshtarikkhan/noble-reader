@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Languages, List, BookCopy, MapPin, Share2, PlayCircle, ListOrdered, Building, Clock } from "lucide-react";
+import { BookOpen, Languages, List, BookCopy, MapPin, Share2, PlayCircle, ListOrdered, Building, Clock, LocateFixed } from "lucide-react";
 import { QuranAPI } from "@/lib/quranApi";
 
 const QUICK_TOOLS = [
@@ -127,13 +127,13 @@ const Home: React.FC = () => {
     <div className="px-4 py-4 space-y-6">
       {/* Location & Date Header */}
       <div className="flex items-start justify-between">
-        <button onClick={detectLocation} className="flex items-start gap-2 text-left active:scale-95 transition-smooth">
-          <MapPin className="w-5 h-5 text-primary mt-0.5" />
-          <div>
-            <p className="text-sm font-bold text-foreground">{cityName}</p>
-            <p className="text-[11px] text-primary underline">Tap to detect location</p>
-          </div>
-        </button>
+        <div className="flex items-center gap-2">
+          <MapPin className="w-5 h-5 text-primary" />
+          <p className="text-sm font-bold text-foreground">{cityName}</p>
+          <button onClick={detectLocation} className="active:scale-90 transition-smooth" aria-label="Detect location">
+            <LocateFixed className="w-4 h-4 text-primary" />
+          </button>
+        </div>
         <div className="text-right">
           <p className="text-sm font-bold text-foreground">{islamicDate}</p>
           <p className="text-[11px] text-muted-foreground">{gregorianDate}</p>
