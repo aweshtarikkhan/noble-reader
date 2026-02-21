@@ -6,113 +6,113 @@
 
 @layer base {
   :root {
-    --background: 222 50% 7%;
-    --foreground: 210 40% 96%;
+    --background: 140 30% 6%;
+    --foreground: 140 20% 95%;
 
-    --card: 222 35% 16%;
-    --card-foreground: 210 40% 96%;
+    --card: 140 20% 14%;
+    --card-foreground: 140 20% 95%;
 
-    --popover: 222 35% 16%;
-    --popover-foreground: 210 40% 96%;
+    --popover: 140 20% 14%;
+    --popover-foreground: 140 20% 95%;
 
-    --primary: 43 65% 52%;
-    --primary-foreground: 222 50% 7%;
+    --primary: 152 70% 32%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 160 59% 40%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 45 93% 58%;
+    --secondary-foreground: 140 30% 6%;
 
-    --muted: 222 30% 20%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 140 15% 18%;
+    --muted-foreground: 140 10% 60%;
 
-    --accent: 222 30% 14%;
-    --accent-foreground: 210 40% 96%;
+    --accent: 140 15% 12%;
+    --accent-foreground: 140 20% 95%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 43 65% 52% / 0.15;
-    --input: 222 30% 20%;
-    --ring: 43 65% 52%;
+    --border: 152 70% 32% / 0.15;
+    --input: 140 15% 18%;
+    --ring: 152 70% 32%;
 
     --radius: 1rem;
 
-    --sidebar-background: 222 50% 7%;
-    --sidebar-foreground: 210 40% 96%;
-    --sidebar-primary: 43 65% 52%;
-    --sidebar-primary-foreground: 222 50% 7%;
-    --sidebar-accent: 222 30% 14%;
-    --sidebar-accent-foreground: 210 40% 96%;
-    --sidebar-border: 43 65% 52% / 0.15;
-    --sidebar-ring: 43 65% 52%;
+    --sidebar-background: 140 30% 6%;
+    --sidebar-foreground: 140 20% 95%;
+    --sidebar-primary: 152 70% 32%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 140 15% 12%;
+    --sidebar-accent-foreground: 140 20% 95%;
+    --sidebar-border: 152 70% 32% / 0.15;
+    --sidebar-ring: 152 70% 32%;
 
     /* Custom tokens */
-    --surface: 222 35% 12%;
-    --gold: 43 65% 52%;
-    --gold-glow: 43 65% 52% / 0.3;
-    --emerald: 160 59% 40%;
-    --arabic-text: 46 90% 90%;
-    --urdu-text: 259 70% 82%;
-    --english-text: 213 70% 78%;
+    --surface: 140 20% 10%;
+    --gold: 152 70% 32%;
+    --gold-glow: 152 70% 32% / 0.3;
+    --emerald: 45 93% 58%;
+    --arabic-text: 140 30% 88%;
+    --urdu-text: 140 20% 80%;
+    --english-text: 140 15% 75%;
     --nav-height: 64px;
     --header-height: 60px;
   }
 
   .dark {
-    --background: 222 50% 7%;
-    --foreground: 210 40% 96%;
-    --card: 222 35% 16%;
-    --card-foreground: 210 40% 96%;
-    --popover: 222 35% 16%;
-    --popover-foreground: 210 40% 96%;
-    --primary: 43 65% 52%;
-    --primary-foreground: 222 50% 7%;
-    --secondary: 160 59% 40%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 222 30% 20%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 222 30% 14%;
-    --accent-foreground: 210 40% 96%;
+    --background: 140 30% 6%;
+    --foreground: 140 20% 95%;
+    --card: 140 20% 14%;
+    --card-foreground: 140 20% 95%;
+    --popover: 140 20% 14%;
+    --popover-foreground: 140 20% 95%;
+    --primary: 152 70% 32%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 45 93% 58%;
+    --secondary-foreground: 140 30% 6%;
+    --muted: 140 15% 18%;
+    --muted-foreground: 140 10% 60%;
+    --accent: 140 15% 12%;
+    --accent-foreground: 140 20% 95%;
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 43 65% 52% / 0.15;
-    --input: 222 30% 20%;
-    --ring: 43 65% 52%;
-    --surface: 222 35% 12%;
-    --gold: 43 65% 52%;
-    --gold-glow: 43 65% 52% / 0.3;
-    --emerald: 160 59% 40%;
-    --arabic-text: 46 90% 90%;
-    --urdu-text: 259 70% 82%;
-    --english-text: 213 70% 78%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 152 70% 32% / 0.15;
+    --input: 140 15% 18%;
+    --ring: 152 70% 32%;
+    --surface: 140 20% 10%;
+    --gold: 152 70% 32%;
+    --gold-glow: 152 70% 32% / 0.3;
+    --emerald: 45 93% 58%;
+    --arabic-text: 140 30% 88%;
+    --urdu-text: 140 20% 80%;
+    --english-text: 140 15% 75%;
   }
 
   .light {
-    --background: 40 30% 96%;
-    --foreground: 222 50% 10%;
+    --background: 140 20% 96%;
+    --foreground: 140 30% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 222 50% 10%;
+    --card-foreground: 140 30% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 50% 10%;
-    --primary: 43 65% 45%;
+    --popover-foreground: 140 30% 10%;
+    --primary: 152 60% 28%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 160 50% 35%;
+    --secondary: 45 80% 50%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 40 20% 90%;
-    --muted-foreground: 222 20% 40%;
-    --accent: 40 20% 92%;
-    --accent-foreground: 222 50% 10%;
+    --muted: 140 15% 90%;
+    --muted-foreground: 140 15% 40%;
+    --accent: 140 15% 92%;
+    --accent-foreground: 140 30% 10%;
     --destructive: 0 84% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 43 40% 40% / 0.2;
-    --input: 40 20% 88%;
-    --ring: 43 65% 45%;
-    --surface: 40 20% 93%;
-    --gold: 43 65% 45%;
-    --gold-glow: 43 65% 45% / 0.2;
-    --emerald: 160 50% 35%;
-    --arabic-text: 43 60% 30%;
-    --urdu-text: 259 50% 40%;
-    --english-text: 213 50% 30%;
+    --border: 152 40% 30% / 0.15;
+    --input: 140 15% 88%;
+    --ring: 152 60% 28%;
+    --surface: 140 15% 93%;
+    --gold: 152 60% 28%;
+    --gold-glow: 152 60% 28% / 0.2;
+    --emerald: 45 80% 50%;
+    --arabic-text: 152 40% 25%;
+    --urdu-text: 140 30% 30%;
+    --english-text: 140 20% 30%;
   }
 }
 
@@ -134,8 +134,8 @@
     position: fixed;
     inset: 0;
     background: 
-      radial-gradient(ellipse at 20% 50%, hsl(43 65% 52% / 0.04) 0%, transparent 60%),
-      radial-gradient(ellipse at 80% 20%, hsl(160 59% 40% / 0.03) 0%, transparent 60%);
+      radial-gradient(ellipse at 20% 50%, hsl(152 70% 32% / 0.04) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, hsl(45 93% 58% / 0.03) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
   }
@@ -195,7 +195,7 @@
   }
 
   .gradient-gold {
-    background: linear-gradient(135deg, hsl(var(--gold)), hsl(43 70% 60%));
+    background: linear-gradient(135deg, hsl(var(--gold)), hsl(152 60% 40%));
   }
 
   .transition-smooth {
@@ -223,8 +223,8 @@
 }
 
 @keyframes pulse-gold {
-  0%, 100% { box-shadow: 0 0 0 0 hsl(43 65% 52% / 0.3); }
-  50% { box-shadow: 0 0 0 8px hsl(43 65% 52% / 0); }
+  0%, 100% { box-shadow: 0 0 0 0 hsl(152 70% 32% / 0.3); }
+  50% { box-shadow: 0 0 0 8px hsl(152 70% 32% / 0); }
 }
 
 @keyframes shimmer {
