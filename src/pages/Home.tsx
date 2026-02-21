@@ -10,13 +10,12 @@ interface MenuItem {
 }
 
 const MENU_ITEMS: MenuItem[] = [
-  { icon: "📖", iconBg: "bg-primary/20", title: "16 Line Quran (Indian)", description: "Indo-Pak style with Ruku markers • 16-line Taj Company Mushaf", path: "/indian-mushaf" },
-  { icon: "🌐", iconBg: "bg-secondary/20", title: "Line by Line Translation", description: "Arabic with English & Urdu translations (Tarjuma)", path: "/translation" },
-  { icon: "📗", iconBg: "bg-emerald/20", title: "Tafseer Reader", description: "Translation + Tafseer in Roman Urdu (Surah / Ayat mode)", path: "/tafseer-reader" },
-  { icon: "📋", iconBg: "bg-primary/20", title: "Read by Surah", description: "Browse all 114 Surahs of the Holy Quran", path: "/surah" },
-  { icon: "📕", iconBg: "bg-destructive/20", title: "Read Complete Quran", description: "Complete Quran Shareef - all 604 Mushaf pages", path: "/read-quran" },
-  { icon: "📚", iconBg: "bg-primary/20", title: "Read by Para / Juz", description: "Browse all 30 Paras of the Holy Quran", path: "/para" },
-  { icon: "🕌", iconBg: "bg-secondary/20", title: "Sehri / Iftar & Calendar", description: "Prayer times, Islamic calendar & Ramadan timings", path: "/prayer-times" },
+  { icon: "📖", iconBg: "bg-primary/20", title: "16 Line Quran", description: "Indo-Pak Mushaf", path: "/indian-mushaf" },
+  { icon: "🌐", iconBg: "bg-secondary/20", title: "Translation", description: "English & Urdu", path: "/translation" },
+  { icon: "📋", iconBg: "bg-primary/20", title: "Read by Surah", description: "114 Surahs", path: "/surah" },
+  { icon: "📕", iconBg: "bg-destructive/20", title: "Complete Quran", description: "604 Pages", path: "/read-quran" },
+  { icon: "📚", iconBg: "bg-primary/20", title: "Para / Juz", description: "30 Paras", path: "/para" },
+  { icon: "🕌", iconBg: "bg-secondary/20", title: "Namaz Times", description: "Sehri & Iftar", path: "/prayer-times" },
 ];
 
 const Home: React.FC = () => {
@@ -31,22 +30,19 @@ const Home: React.FC = () => {
       </div>
 
       {/* Menu Cards */}
-      <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-2 gap-3">
         {MENU_ITEMS.map((item, i) => (
           <button
             key={item.path}
             onClick={() => navigate(item.path)}
-            className="flex items-center gap-4 p-4 rounded-2xl bg-card border border-gold/10 hover:border-gold/30 transition-smooth shadow-gold hover:shadow-gold-lg text-left animate-fade-in group"
+            className="flex flex-col items-center justify-center aspect-square p-4 rounded-2xl bg-card border border-gold/10 hover:border-gold/30 transition-smooth shadow-gold hover:shadow-gold-lg text-center animate-fade-in group"
             style={{ animationDelay: `${i * 0.07}s` }}
           >
-            <div className={`w-12 h-12 rounded-xl ${item.iconBg} flex items-center justify-center text-2xl shrink-0`}>
+            <div className={`w-14 h-14 rounded-xl ${item.iconBg} flex items-center justify-center text-3xl mb-3`}>
               {item.icon}
             </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-foreground text-sm">{item.title}</h3>
-              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{item.description}</p>
-            </div>
-            <span className="text-muted-foreground group-hover:text-gold transition-smooth">›</span>
+            <h3 className="font-semibold text-foreground text-sm leading-tight">{item.title}</h3>
+            <p className="text-[10px] text-muted-foreground mt-1">{item.description}</p>
           </button>
         ))}
       </div>
