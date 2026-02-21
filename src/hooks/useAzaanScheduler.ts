@@ -22,7 +22,10 @@ function playAzaan(azaanId: string, volume: number) {
   if (!option) return;
   const audio = new Audio(option.url);
   audio.volume = volume;
-  audio.play().catch(() => {});
+  audio.play().catch((err) => {
+    console.warn("Azaan auto-play blocked:", err);
+    // Show notification even if audio is blocked
+  });
   currentAudio = audio;
   audio.onended = () => {
     currentAudio = null;
@@ -81,9 +84,6 @@ export function useAzaanScheduler(prayerTimings: Record<string, string> | null) 
 
   useEffect(() => {
     if (!prayerTimings) return;
-    
-    // Request notification permission
-    requestNotificationPermission();
 
     // Check every 15 seconds
     const interval = setInterval(checkAndPlay, 15000);

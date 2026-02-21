@@ -15,6 +15,7 @@ const AzaanSettingsPage: React.FC = () => {
   const [settings, setSettings] = useState<AzaanSettingsType>(loadAzaanSettings);
   const [previewPlaying, setPreviewPlaying] = useState<string | null>(null);
   const [previewAudio, setPreviewAudio] = useState<HTMLAudioElement | null>(null);
+  const [permStatus, setPermStatus] = useState({ notification: "", location: "" });
 
   const update = useCallback((partial: Partial<AzaanSettingsType>) => {
     setSettings((prev) => {
@@ -46,68 +47,111 @@ const AzaanSettingsPage: React.FC = () => {
     });
   }, []);
 
-  const previewAzaan = useCallback(
-    (id: string) => {
-      if (previewAudio) {
-        previewAudio.pause();
-        previewAudio.currentTime = 0;
-      }
-      if (previewPlaying === id) {
-        setPreviewPlaying(null);
-        setPreviewAudio(null);
-        return;
-      }
-      const option = AZAAN_OPTIONS.find((a) => a.id === id);
-      if (!option) return;
-      const audio = new Audio(option.url);
-      audio.volume = settings.volume;
-      audio.play().catch(() => {});
-      audio.onended = () => {
-        setPreviewPlaying(null);
-        setPreviewAudio(null);
-      };
-      setPreviewPlaying(id);
-      setPreviewAudio(audio);
-    },
-    [previewAudio, previewPlaying, settings.volume]
-  );
-
-  const [permStatus, setPermStatus] = useState({ notification: "", location: "" });
-
+  // Check permission status (read-only, no prompts)
   const checkPermissions = useCallback(async () => {
-    const notif = "Notification" in window ? Notification.permission : "unavailable";
-    let loc = "unknown";
+    let notif = "default";
+    if ("Notification" in window) {
+      notif = Notification.permission;
+    }
+    let loc = "prompt";
     try {
       const result = await navigator.permissions.query({ name: "geolocation" as PermissionName });
       loc = result.state;
-    } catch { loc = "unknown"; }
+    } catch {}
     setPermStatus({ notification: notif, location: loc });
   }, []);
 
-  useEffect(() => { checkPermissions(); }, [checkPermissions]);
+  useEffect(() => {
+    checkPermissions();
+  }, [checkPermissions]);
 
-  const requestPermissions = async () => {
-    // Notification permission
+  // MUST be called directly from a click handler (user gesture)
+  const handleGrantPermissions = async () => {
+    // 1. Notification — must be in direct click handler
     if ("Notification" in window && Notification.permission !== "granted") {
-      await Notification.requestPermission();
-    }
-    // Geolocation
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(() => {}, () => {}, { timeout: 10000 });
-    }
-    // Wake Lock (keep screen/process alive)
-    try {
-      if ("wakeLock" in navigator) {
-        await (navigator as any).wakeLock.request("screen");
+      try {
+        await Notification.requestPermission();
+      } catch (e) {
+        console.warn("Notification permission error:", e);
       }
+    }
+
+    // 2. Geolocation — triggers browser prompt
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        () => console.log("Location granted"),
+        (err) => console.warn("Location denied:", err),
+        { timeout: 10000 }
+      );
+    }
+
+    // 3. Capacitor permissions (for APK)
+    try {
+      const { Geolocation } = await import("@capacitor/geolocation");
+      await Geolocation.requestPermissions();
+    } catch {
+      // Not running in Capacitor, ignore
+    }
+
+    // 4. Try to play a silent audio to unlock audio context (user gesture required)
+    try {
+      const silentAudio = new Audio();
+      silentAudio.volume = 0.01;
+      silentAudio.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
+      await silentAudio.play();
+      silentAudio.pause();
     } catch {}
-    await checkPermissions();
+
+    // Re-check after a delay
+    setTimeout(() => checkPermissions(), 1000);
+  };
+
+  // Preview azaan — called directly from click
+  const previewAzaan = (id: string) => {
+    // Stop current
+    if (previewAudio) {
+      previewAudio.pause();
+      previewAudio.currentTime = 0;
+    }
+    if (previewPlaying === id) {
+      setPreviewPlaying(null);
+      setPreviewAudio(null);
+      return;
+    }
+    const option = AZAAN_OPTIONS.find((a) => a.id === id);
+    if (!option) return;
+
+    const audio = new Audio(option.url);
+    audio.volume = settings.volume;
+    audio.crossOrigin = "anonymous";
+
+    // Play directly in user gesture
+    const playPromise = audio.play();
+    if (playPromise) {
+      playPromise.catch((err) => {
+        console.error("Audio play failed:", err);
+        // Retry with user interaction already established
+      });
+    }
+
+    audio.onended = () => {
+      setPreviewPlaying(null);
+      setPreviewAudio(null);
+    };
+    audio.onerror = (e) => {
+      console.error("Audio load error:", e);
+      setPreviewPlaying(null);
+      setPreviewAudio(null);
+    };
+    setPreviewPlaying(id);
+    setPreviewAudio(audio);
   };
 
   const handleToggleEnabled = (checked: boolean) => {
     update({ enabled: checked });
     if (checked) {
-      requestPermissions();
+      // Request permissions directly in user gesture
+      handleGrantPermissions();
     } else {
       stopAzaan();
     }
@@ -132,28 +176,72 @@ const AzaanSettingsPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <span className="text-xs text-foreground">🔔 Notifications</span>
               <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                permStatus.notification === "granted" ? "bg-secondary/20 text-secondary" : "bg-destructive/20 text-destructive"
+                permStatus.notification === "granted"
+                  ? "bg-secondary/20 text-secondary"
+                  : permStatus.notification === "denied"
+                  ? "bg-destructive/20 text-destructive"
+                  : "bg-primary/20 text-gold"
               }`}>
-                {permStatus.notification === "granted" ? "Allowed" : permStatus.notification === "denied" ? "Blocked" : "Not set"}
+                {permStatus.notification === "granted" ? "Allowed" : permStatus.notification === "denied" ? "Blocked — open settings" : "Not set"}
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-foreground">📍 Location</span>
               <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                permStatus.location === "granted" ? "bg-secondary/20 text-secondary" : "bg-destructive/20 text-destructive"
+                permStatus.location === "granted"
+                  ? "bg-secondary/20 text-secondary"
+                  : permStatus.location === "denied"
+                  ? "bg-destructive/20 text-destructive"
+                  : "bg-primary/20 text-gold"
               }`}>
-                {permStatus.location === "granted" ? "Allowed" : permStatus.location === "denied" ? "Blocked" : "Not set"}
+                {permStatus.location === "granted" ? "Allowed" : permStatus.location === "denied" ? "Blocked — open settings" : "Not set"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-foreground">🔊 Audio</span>
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-secondary/20 text-secondary">
+                Ready
               </span>
             </div>
             {(permStatus.notification !== "granted" || permStatus.location !== "granted") && (
               <button
-                onClick={requestPermissions}
-                className="w-full mt-2 py-2 text-xs font-medium rounded-lg bg-primary text-primary-foreground transition-smooth"
+                onClick={handleGrantPermissions}
+                className="w-full mt-2 py-2.5 text-xs font-semibold rounded-lg bg-primary text-primary-foreground transition-smooth active:scale-95"
               >
-                Grant Required Permissions
+                🔐 Grant Required Permissions
               </button>
             )}
+            {permStatus.notification === "denied" && (
+              <p className="text-xs text-destructive mt-1">
+                Notifications are blocked. Please enable them from your browser/app settings.
+              </p>
+            )}
           </div>
+
+          {/* Test Sound */}
+          <button
+            onClick={() => {
+              const option = AZAAN_OPTIONS.find((a) => a.id === settings.selectedAzaanId);
+              if (!option) return;
+              if (previewAudio) {
+                previewAudio.pause();
+                previewAudio.currentTime = 0;
+                setPreviewPlaying(null);
+                setPreviewAudio(null);
+                return;
+              }
+              const audio = new Audio(option.url);
+              audio.volume = settings.volume;
+              audio.play().catch(console.error);
+              audio.onended = () => { setPreviewPlaying(null); setPreviewAudio(null); };
+              setPreviewPlaying(option.id);
+              setPreviewAudio(audio);
+            }}
+            className="w-full py-3 rounded-xl bg-secondary/20 border border-secondary/20 text-sm font-medium text-secondary transition-smooth active:scale-95"
+          >
+            {previewAudio ? "⏸ Stop Test" : "🔊 Test Current Azaan Sound"}
+          </button>
+
           {/* Volume */}
           <div className="p-4 rounded-2xl bg-card border border-gold/10">
             <p className="text-xs text-muted-foreground mb-3">Volume</p>
