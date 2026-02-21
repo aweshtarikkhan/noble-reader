@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Languages, List, BookCopy, MapPin, Share2, PlayCircle, ListOrdered, Building, Clock, LocateFixed } from "lucide-react";
+import { BookOpen, Languages, List, BookCopy, MapPin, Share2, ListOrdered, Building, Clock, LocateFixed } from "lucide-react";
 import { QuranAPI } from "@/lib/quranApi";
 
 const QUICK_TOOLS = [
@@ -233,10 +233,6 @@ const Home: React.FC = () => {
             <button className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-smooth">
               <Share2 className="w-4 h-4" />
               SHARE
-            </button>
-            <button className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-smooth">
-              <PlayCircle className="w-4 h-4" />
-              LISTEN
             </button>
           </div>
         </div>
