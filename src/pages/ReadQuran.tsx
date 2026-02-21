@@ -3,6 +3,38 @@ import { QuranAPI } from "@/lib/quranApi";
 import { TOTAL_PAGES } from "@/data/surahs";
 import { TOTAL_PAGES_INDIAN, getIndianPageImage, getIndianPageImageFallback } from "@/data/indianMushaf";
 
+// Hook for pinch-to-zoom on touch devices
+function usePinchZoom(initialZoom = 1, minZoom = 1, maxZoom = 4) {
+  const [zoom, setZoom] = useState(initialZoom);
+  const lastDistance = useRef<number | null>(null);
+
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      lastDistance.current = Math.hypot(dx, dy);
+    }
+  }, []);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2 && lastDistance.current !== null) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.hypot(dx, dy);
+      const scale = dist / lastDistance.current;
+      setZoom((z) => Math.min(maxZoom, Math.max(minZoom, z * scale)));
+      lastDistance.current = dist;
+    }
+  }, [minZoom, maxZoom]);
+
+  const onTouchEnd = useCallback(() => {
+    lastDistance.current = null;
+  }, []);
+
+  return { zoom, setZoom, onTouchStart, onTouchMove, onTouchEnd };
+}
+
 type QuranStyle = "indopak" | "saudi";
 
 const ReadQuran: React.FC = () => {
@@ -132,6 +164,7 @@ const ReadQuran: React.FC = () => {
 const ReadQuranPage: React.FC<{ page: number; style: QuranStyle; getImgSrc: (p: number) => string }> = ({ page, style, getImgSrc }) => {
   const [useFallback, setUseFallback] = useState(false);
   const [error, setError] = useState(false);
+  const { zoom, setZoom, onTouchStart, onTouchMove, onTouchEnd } = usePinchZoom();
 
   const handleError = () => {
     if (style === "indopak" && !useFallback) {
@@ -145,11 +178,33 @@ const ReadQuranPage: React.FC<{ page: number; style: QuranStyle; getImgSrc: (p: 
 
   return (
     <div className="rounded-2xl overflow-hidden border border-primary/10 shadow-gold bg-card">
-      <div className="text-center py-1.5 bg-surface text-xs text-muted-foreground">Page {page}</div>
+      <div className="flex items-center justify-between px-3 py-1.5 bg-surface">
+        <span className="text-xs text-muted-foreground">Page {page}</span>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setZoom((z) => Math.max(1, z - 0.5))} disabled={zoom <= 1} className="text-xs text-muted-foreground disabled:opacity-30 px-1">−</button>
+          <span className="text-[10px] text-muted-foreground">{Math.round(zoom * 100)}%</span>
+          <button onClick={() => setZoom((z) => Math.min(4, z + 0.5))} disabled={zoom >= 4} className="text-xs text-muted-foreground disabled:opacity-30 px-1">+</button>
+        </div>
+      </div>
       {error ? (
         <div className="text-center py-8 text-muted-foreground text-xs">Failed to load</div>
       ) : (
-        <img src={src} alt={`Page ${page}`} className="w-full" loading="lazy" onError={handleError} />
+        <div
+          className="overflow-auto"
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          style={{ touchAction: zoom > 1 ? "pan-x pan-y" : "auto" }}
+        >
+          <img
+            src={src}
+            alt={`Page ${page}`}
+            className="transition-transform duration-100"
+            style={{ width: `${zoom * 100}%`, maxWidth: "none", transformOrigin: "top center" }}
+            loading="lazy"
+            onError={handleError}
+          />
+        </div>
       )}
     </div>
   );
