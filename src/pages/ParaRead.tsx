@@ -411,7 +411,7 @@ const IndianPage: React.FC<{ page: number; paraDownloaded: boolean }> = ({ page,
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
-          style={{ touchAction: zoom > 1 ? "none" : "auto" }}
+          style={{ touchAction: zoom > 1 ? "pan-x pan-y" : "auto" }}
         >
           <img
             src={src!}
