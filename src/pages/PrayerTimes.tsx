@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { QuranAPI } from "@/lib/quranApi";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useAzaanScheduler } from "@/hooks/useAzaanScheduler";
+import { loadAzaanSettings } from "@/data/azaanOptions";
 
 const HIJRI_MONTHS = [
   "مُحَرَّم", "صَفَر", "رَبِيع الأَوَّل", "رَبِيع الثَّانِي",
@@ -9,11 +12,17 @@ const HIJRI_MONTHS = [
 ];
 
 const PrayerTimes: React.FC = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState("");
   const [school, setSchool] = useState(() => parseInt(localStorage.getItem("prayer-school") || "1"));
   const [countdown, setCountdown] = useState("");
+  const [cityName, setCityName] = useState("");
+  const azaanSettings = loadAzaanSettings();
+
+  // Azaan scheduler
+  useAzaanScheduler(data?.timings || null);
 
   useEffect(() => {
     localStorage.setItem("prayer-school", String(school));
@@ -30,8 +39,12 @@ const PrayerTimes: React.FC = () => {
       async (pos) => {
         try {
           const method = school === 1 ? 1 : 3;
-          const result = await QuranAPI.getPrayerTimes(pos.coords.latitude, pos.coords.longitude, method, school);
+          const [result, city] = await Promise.all([
+            QuranAPI.getPrayerTimes(pos.coords.latitude, pos.coords.longitude, method, school),
+            QuranAPI.reverseGeocode(pos.coords.latitude, pos.coords.longitude),
+          ]);
           setData(result);
+          setCityName(city);
         } catch {
           setError("Failed to load prayer times");
         }
@@ -170,10 +183,27 @@ const PrayerTimes: React.FC = () => {
             ))}
           </div>
 
+          {/* Azaan Settings Link */}
+          <button
+            onClick={() => navigate("/azaan-settings")}
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-card border border-gold/10 hover:border-gold/30 transition-smooth"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-lg">🔔</span>
+              <div className="text-left">
+                <p className="text-sm font-medium text-foreground">Azaan Settings</p>
+                <p className="text-xs text-muted-foreground">
+                  {azaanSettings.enabled ? "ON — Tap to configure" : "OFF — Tap to enable"}
+                </p>
+              </div>
+            </div>
+            <span className="text-muted-foreground">›</span>
+          </button>
+
           {/* Location */}
-          {data.meta?.timezone && (
+          {(cityName || data.meta?.timezone) && (
             <p className="text-center text-xs text-muted-foreground">
-              📍 {data.meta.timezone}
+              📍 {cityName}{cityName && data.meta?.timezone ? ` • ${data.meta.timezone}` : data.meta?.timezone || ""}
             </p>
           )}
         </div>

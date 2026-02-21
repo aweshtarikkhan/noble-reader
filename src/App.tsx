@@ -16,6 +16,7 @@ import TafseerRead from "@/pages/TafseerRead";
 import ReadQuran from "@/pages/ReadQuran";
 import IndianMushaf from "@/pages/IndianMushaf";
 import PrayerTimes from "@/pages/PrayerTimes";
+import AzaanSettings from "@/pages/AzaanSettings";
 import Donate from "@/pages/Donate";
 import NotFound from "@/pages/NotFound";
 import { useLocationPermission } from "@/hooks/useLocationPermission";
@@ -43,6 +44,7 @@ const AppContent = () => {
         <Route path="/indian-mushaf" element={<IndianMushaf />} />
         <Route path="/indian-mushaf/:page" element={<IndianMushaf />} />
         <Route path="/prayer-times" element={<PrayerTimes />} />
+        <Route path="/azaan-settings" element={<AzaanSettings />} />
         <Route path="/donate" element={<Donate />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
