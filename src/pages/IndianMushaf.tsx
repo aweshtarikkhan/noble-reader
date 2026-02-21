@@ -15,6 +15,7 @@ const IndianMushaf: React.FC = () => {
   });
   const [imgError, setImgError] = useState(false);
   const [useFallback, setUseFallback] = useState(false);
+  const [zoom, setZoom] = useState(1);
 
   useEffect(() => {
     localStorage.setItem("indian-mushaf-page", String(page));
@@ -38,21 +39,26 @@ const IndianMushaf: React.FC = () => {
       setPage(p);
       setImgError(false);
       setUseFallback(false);
+      setZoom(1);
     }
   };
 
-  // Touch swipe
+  // Touch swipe (only when not zoomed)
   const [touchStart, setTouchStart] = useState(0);
-  const handleTouchStart = useCallback((e: React.TouchEvent) => setTouchStart(e.touches[0].clientX), []);
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (zoom > 1) return;
+    setTouchStart(e.touches[0].clientX);
+  }, [zoom]);
   const handleTouchEnd = useCallback(
     (e: React.TouchEvent) => {
+      if (zoom > 1) return;
       const diff = touchStart - e.changedTouches[0].clientX;
       if (Math.abs(diff) > 60) {
         if (diff > 0) goPage(page + 1);
         else goPage(page - 1);
       }
     },
-    [touchStart, page]
+    [touchStart, page, zoom]
   );
 
   const handleImgError = () => {
@@ -64,6 +70,9 @@ const IndianMushaf: React.FC = () => {
   };
 
   const imgSrc = useFallback ? getIndianPageImageFallback(page) : getIndianPageImage(page);
+
+  const zoomIn = () => setZoom((z) => Math.min(z + 0.5, 4));
+  const zoomOut = () => setZoom((z) => Math.max(z - 0.5, 1));
 
   return (
     <div className="px-4 py-4" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
@@ -85,8 +94,25 @@ const IndianMushaf: React.FC = () => {
         </button>
       </div>
 
-      {/* Page Label */}
-      <div className="text-center mb-3">
+      {/* Page Label + Zoom Controls */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-1">
+          <button
+            onClick={zoomOut}
+            disabled={zoom <= 1}
+            className="w-8 h-8 rounded-lg bg-card border border-gold/10 text-foreground text-sm flex items-center justify-center transition-smooth disabled:opacity-30"
+          >
+            −
+          </button>
+          <span className="text-xs text-muted-foreground px-1">{Math.round(zoom * 100)}%</span>
+          <button
+            onClick={zoomIn}
+            disabled={zoom >= 4}
+            className="w-8 h-8 rounded-lg bg-card border border-gold/10 text-foreground text-sm flex items-center justify-center transition-smooth disabled:opacity-30"
+          >
+            +
+          </button>
+        </div>
         <span className="text-xs text-muted-foreground">Page {page} of {TOTAL_PAGES_INDIAN}</span>
       </div>
 
@@ -107,8 +133,8 @@ const IndianMushaf: React.FC = () => {
         ))}
       </div>
 
-      {/* Image Content */}
-      <div className="rounded-2xl overflow-hidden border border-gold/10 shadow-gold bg-card min-h-[400px] flex items-center justify-center">
+      {/* Image Content with Zoom */}
+      <div className="rounded-2xl overflow-auto border border-gold/10 shadow-gold bg-card min-h-[400px] flex items-center justify-center">
         {imgError ? (
           <div className="text-center py-12 px-4">
             <p className="text-muted-foreground text-sm mb-2">Failed to load page image</p>
@@ -121,7 +147,12 @@ const IndianMushaf: React.FC = () => {
           <img
             src={imgSrc}
             alt={`Indian Quran Page ${page}`}
-            className="w-full"
+            className="transition-transform duration-200"
+            style={{ 
+              width: `${zoom * 100}%`, 
+              maxWidth: "none",
+              transformOrigin: "top center" 
+            }}
             onError={handleImgError}
             loading="lazy"
           />

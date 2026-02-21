@@ -291,9 +291,13 @@ const AzaanSettingsPage: React.FC = () => {
                     e.stopPropagation();
                     previewAzaan(option.id);
                   }}
-                  className="px-2 py-1 rounded-lg bg-muted text-xs text-muted-foreground hover:text-foreground transition-smooth"
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-smooth ${
+                    previewPlaying === option.id
+                      ? "bg-destructive/20 text-destructive"
+                      : "bg-muted text-muted-foreground hover:text-foreground"
+                  }`}
                 >
-                  {previewPlaying === option.id ? "⏸ Stop" : "▶ Play"}
+                  {previewPlaying === option.id ? "⏹ Stop" : "▶ Play"}
                 </button>
               </button>
             ))}
