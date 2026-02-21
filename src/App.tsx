@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter, Routes, Route } from "react-router-dom";
 import Layout from "@/components/Layout";
+import ScrollToTop from "@/components/ScrollToTop";
 import Home from "@/pages/Home";
 import SurahList from "@/pages/SurahList";
 import SurahRead from "@/pages/SurahRead";
@@ -29,6 +30,7 @@ const AppContent = () => {
 
   return (
     <Layout>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/surah" element={<SurahList />} />

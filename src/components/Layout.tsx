@@ -17,7 +17,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const isHome = location.pathname === "/";
-  const { showExitDialog, confirmExit, cancelExit } = useBackHandler();
+  const { showExitDialog, confirmExit, cancelExit, handleBack } = useBackHandler();
 
   const getTitle = () => {
     const p = location.pathname;
@@ -50,7 +50,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         >
           {!isHome ? (
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => handleBack()}
               className="mr-3 w-9 h-9 flex items-center justify-center rounded-xl bg-card transition-smooth hover:bg-muted active:scale-95"
             >
               <span className="text-foreground text-lg">←</span>
