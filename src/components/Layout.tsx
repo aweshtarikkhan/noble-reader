@@ -26,10 +26,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (p.startsWith("/para-read")) return "Para Reading";
     if (p.startsWith("/para")) return "Para / Juz";
     if (p.startsWith("/prayer-times")) return "Prayer Times";
+    if (p.startsWith("/azaan-settings")) return "Azaan Settings";
     if (p.startsWith("/translation")) return "Translation";
     if (p.startsWith("/tafseer-read")) return "Tafseer";
     if (p.startsWith("/tafseer-reader")) return "Tafseer Reader";
     if (p.startsWith("/read-quran")) return "Complete Quran";
+    if (p.startsWith("/donate")) return "Support Us";
     return "";
   };
 
