@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getCachedPage, setCachedPage } from "@/lib/quranCache";
+import { getCachedPage, cacheImageFromElement } from "@/lib/quranCache";
 import { getIndianPageImageFallback } from "@/data/indianMushaf";
 import { usePinchZoom } from "@/hooks/usePinchZoom";
 
@@ -37,20 +37,8 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({ page, style, getImgUrl })
   const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     if (cachedSrc) return;
     const key = getCacheKey(style, page);
-    const img = e.currentTarget;
-    try {
-      const canvas = document.createElement("canvas");
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.drawImage(img, 0, 0);
-        const dataUrl = canvas.toDataURL("image/webp", 0.8);
-        setCachedPage(key, dataUrl);
-      }
-    } catch {
-      // CORS may block canvas
-    }
+    // Try to cache from the loaded image element (may fail due to CORS taint)
+    cacheImageFromElement(e.currentTarget, key);
   };
 
   const networkSrc = style === "indopak" && useFallback ? getIndianPageImageFallback(page) : getImgUrl(page);
@@ -85,7 +73,6 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({ page, style, getImgUrl })
             className="transition-transform duration-100"
             style={{ width: `${zoom * 100}%`, maxWidth: "none", transformOrigin: "top center" }}
             loading="lazy"
-            crossOrigin="anonymous"
             onError={handleError}
             onLoad={handleLoad}
           />

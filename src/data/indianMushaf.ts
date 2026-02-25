@@ -3,15 +3,24 @@
 
 export const TOTAL_PAGES_INDIAN = 559;
 
-// Archive.org Single Page JP2 source - Taj Company 16-line Quran (single pages)
+// Primary: Archive.org Taj Company 16-line Quran
 export function getIndianPageImage(pageNum: number): string {
   const padded = String(pageNum).padStart(4, '0');
   return `https://ia801202.us.archive.org/BookReader/BookReaderImages.php?zip=/1/items/AlQuranAlKareem16LinesTajCompany/AlQuranAlKareem16Lines-TajCompany_jp2.zip&file=AlQuranAlKareem16Lines-TajCompany_jp2/AlQuranAlKareem16Lines-TajCompany_${padded}.jp2&id=AlQuranAlKareem16LinesTajCompany&scale=2&rotate=0`;
 }
 
+// Fallback: Alternative archive.org source
 export function getIndianPageImageFallback(pageNum: number): string {
   const padded = String(pageNum + 1).padStart(4, '0');
   return `https://ia801203.us.archive.org/BookReader/BookReaderImages.php?zip=/29/items/Quran16Lines_201601/Quran%2016%20lines_jp2.zip&file=Quran%2016%20lines_jp2/Quran%2016%20lines_${padded}.jp2&id=Quran16Lines_201601&scale=2&rotate=0`;
+}
+
+// All IndoPak image sources for download (tried in order)
+export function getIndianPageImageSources(pageNum: number): string[] {
+  return [
+    getIndianPageImage(pageNum),
+    getIndianPageImageFallback(pageNum),
+  ];
 }
 
 // Ruku data: each ruku with surah number, ayah number, and ruku number within that surah
