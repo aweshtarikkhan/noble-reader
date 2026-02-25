@@ -22,12 +22,15 @@ import Donate from "@/pages/Donate";
 import QiblaDirection from "@/pages/QiblaDirection";
 import NotFound from "@/pages/NotFound";
 import { useLocationPermission } from "@/hooks/useLocationPermission";
+import { useAutoDownload } from "@/hooks/useAutoDownload";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   // Request location permission on first launch
   useLocationPermission();
+  // Auto-download Quran pages on native platform startup
+  useAutoDownload();
 
   return (
     <Layout>
