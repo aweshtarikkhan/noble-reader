@@ -223,7 +223,7 @@ const ReadQuran: React.FC = () => {
                   <div className="flex-1 h-px bg-primary/20" />
                   <div className="text-center">
                     <p className="font-arabic text-lg text-primary">{juz.name}</p>
-                    <p className="text-[10px] text-muted-foreground">Para {juz.number}</p>
+                    <p className="text-[10px] text-muted-foreground">Para {juz.number} - {juz.nameTransliteration}</p>
                   </div>
                   <div className="flex-1 h-px bg-primary/20" />
                 </div>

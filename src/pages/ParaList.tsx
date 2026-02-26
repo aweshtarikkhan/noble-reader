@@ -32,7 +32,7 @@ const ParaList: React.FC = () => {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <span className="font-medium text-sm text-foreground">Para {juz.number}</span>
+                <span className="font-medium text-sm text-foreground">Para {juz.number} - {juz.nameTransliteration}</span>
                 <span className="font-arabic text-gold text-sm">{juz.name}</span>
               </div>
               <p className="text-[11px] text-muted-foreground mt-0.5">

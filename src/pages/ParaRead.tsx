@@ -42,7 +42,7 @@ const ParaRead: React.FC = () => {
     <div className="px-4 py-4">
       <div className="text-center mb-4 animate-fade-in">
         <h2 className="font-arabic text-xl text-gold">{juz.name}</h2>
-        <p className="text-sm text-muted-foreground">Para {juz.number}</p>
+        <p className="text-sm text-muted-foreground">Para {juz.number} - {juz.nameTransliteration}</p>
       </div>
 
       {/* Style toggle */}
