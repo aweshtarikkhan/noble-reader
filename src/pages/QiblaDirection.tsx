@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { LocateFixed, AlertCircle } from "lucide-react";
+import { getCachedLocation } from "@/hooks/useSharedLocation";
 
 const KAABA_LAT = 21.4225;
 const KAABA_LNG = 39.8262;
@@ -29,7 +30,6 @@ const QiblaDirection: React.FC = () => {
   const headingRef = useRef(0);
   const rafRef = useRef<number>();
 
-  // Smooth compass updates via rAF
   const handleOrientation = useCallback((e: DeviceOrientationEvent) => {
     if (e.alpha !== null) {
       const heading = (e as any).webkitCompassHeading ?? (360 - e.alpha);
@@ -45,19 +45,14 @@ const QiblaDirection: React.FC = () => {
     }
   }, []);
 
-  // Get location
+  // Use shared location
   useEffect(() => {
-    try {
-      const cached = localStorage.getItem("cached_location_data");
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (parsed.lat && parsed.lng) {
-          setQiblaAngle(calculateQibla(parsed.lat, parsed.lng));
-          setCity(parsed.city || "Unknown");
-          return;
-        }
-      }
-    } catch {}
+    const cached = getCachedLocation();
+    if (cached && cached.lat && cached.lng) {
+      setQiblaAngle(calculateQibla(cached.lat, cached.lng));
+      setCity(cached.city || "Unknown");
+      return;
+    }
 
     if (!navigator.geolocation) {
       setLocationError("Geolocation not supported");
@@ -84,7 +79,6 @@ const QiblaDirection: React.FC = () => {
 
   // Start compass
   useEffect(() => {
-    // iOS 13+ requires user-gesture permission
     if (typeof (DeviceOrientationEvent as any).requestPermission === "function") {
       setNeedsIOSPermission(true);
       return;
@@ -125,8 +119,6 @@ const QiblaDirection: React.FC = () => {
     }
   };
 
-  // The entire compass disc rotates so that North always points to geographic north
-  // The qibla needle is positioned at the absolute qibla bearing on the disc
   const discRotation = -compassHeading;
 
   return (
@@ -149,7 +141,6 @@ const QiblaDirection: React.FC = () => {
         </div>
       ) : (
         <>
-          {/* iOS permission button */}
           {needsIOSPermission && (
             <button
               onClick={requestIOSPermission}
@@ -159,29 +150,20 @@ const QiblaDirection: React.FC = () => {
             </button>
           )}
 
-          {/* Compass */}
           <div className="relative w-72 h-72 mb-6 animate-fade-in">
-            {/* Static outer ring */}
             <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
-
-            {/* Static top indicator (shows where phone points) */}
             <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-primary rotate-45 rounded-sm z-10" />
 
-            {/* Rotating compass disc - everything inside rotates together */}
             <div
               className="absolute inset-2 rounded-full transition-transform duration-150 ease-out"
               style={{ transform: `rotate(${discRotation}deg)` }}
             >
-              {/* Background circle */}
               <div className="absolute inset-0 rounded-full bg-card border border-primary/10" />
-
-              {/* Cardinal direction labels - rotate with disc */}
-              <div className="absolute top-2 left-1/2 -translate-x-1/2 text-xs font-bold text-red-500 z-10">N</div>
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 text-xs font-bold text-destructive z-10">N</div>
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs font-bold text-muted-foreground z-10">S</div>
               <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground z-10">E</div>
               <div className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground z-10">W</div>
 
-              {/* Tick marks */}
               {Array.from({ length: 72 }).map((_, i) => (
                 <div
                   key={i}
@@ -193,16 +175,15 @@ const QiblaDirection: React.FC = () => {
                 >
                   <div
                     className={`w-px mx-auto ${
-                      i === 0 ? "h-3 bg-red-500" :
-                      i % 18 === 0 ? "h-3 bg-primary" : 
-                      i % 6 === 0 ? "h-2 bg-primary/50" : 
+                      i === 0 ? "h-3 bg-destructive" :
+                      i % 18 === 0 ? "h-3 bg-primary" :
+                      i % 6 === 0 ? "h-2 bg-primary/50" :
                       "h-1 bg-muted-foreground/30"
                     }`}
                   />
                 </div>
               ))}
 
-              {/* Qibla needle - fixed at qiblaAngle on the disc */}
               <div
                 className="absolute inset-4 rounded-full"
                 style={{ transform: `rotate(${qiblaAngle}deg)` }}
@@ -213,21 +194,18 @@ const QiblaDirection: React.FC = () => {
                 </div>
               </div>
 
-              {/* North arrow on disc */}
               <div className="absolute inset-4 rounded-full">
                 <div className="absolute top-1 left-1/2 -translate-x-1/2">
-                  <div className="w-0 h-0 border-l-[5px] border-r-[5px] border-b-[8px] border-l-transparent border-r-transparent border-b-red-500" />
+                  <div className="w-0 h-0 border-l-[5px] border-r-[5px] border-b-[8px] border-l-transparent border-r-transparent border-b-destructive" />
                 </div>
               </div>
             </div>
 
-            {/* Center dot (static) */}
             <div className="absolute inset-0 flex items-center justify-center z-10">
               <div className="w-3 h-3 rounded-full bg-primary shadow-lg" />
             </div>
           </div>
 
-          {/* Info */}
           <div className="text-center space-y-2 animate-fade-in">
             <p className="text-2xl font-bold text-foreground">{Math.round(qiblaAngle)}°</p>
             <p className="text-xs text-muted-foreground">Qibla bearing from North</p>

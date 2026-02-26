@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Languages, List, BookCopy, MapPin, Share2, ListOrdered, Building, Clock, LocateFixed, Compass } from "lucide-react";
-import { QuranAPI } from "@/lib/quranApi";
+import { useSharedLocation } from "@/hooks/useSharedLocation";
 
 const QUICK_TOOLS = [
   { icon: BookOpen, title: "Read Quran", path: "/read-quran" },
@@ -24,8 +24,6 @@ const PRAYER_ORDER = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
 const getIslamicDate = () => {
   try {
-    // Indian Barelvi calendar runs ~1 day behind islamic-civil
-    // Subtract 1 day from current date before formatting
     const now = new Date();
     const adjusted = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
     const formatter = new Intl.DateTimeFormat('en-u-ca-islamic-civil', {
@@ -37,28 +35,10 @@ const getIslamicDate = () => {
   }
 };
 
-const LOCATION_CACHE_KEY = "cached_location_data";
-
-function loadCachedLocation(): { city: string; timings: Record<string, string>; date: string } | null {
-  try {
-    const raw = localStorage.getItem(LOCATION_CACHE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    const today = new Date().toDateString();
-    if (parsed.date === today) return parsed;
-    return null; // expired (different day)
-  } catch { return null; }
-}
-
-function saveCachedLocation(city: string, timings: Record<string, string>) {
-  localStorage.setItem(LOCATION_CACHE_KEY, JSON.stringify({ city, timings, date: new Date().toDateString() }));
-}
-
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [cityName, setCityName] = useState("Loading...");
-  const [prayerTimings, setPrayerTimings] = useState<Record<string, string> | null>(null);
+  const { location, detect } = useSharedLocation();
   const [dailyAyah] = useState(() => {
     const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
     return DAILY_AYAHS[dayOfYear % DAILY_AYAHS.length];
@@ -69,47 +49,12 @@ const Home: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const detectLocation = (force = false) => {
-    if (!force) {
-      const cached = loadCachedLocation();
-      if (cached) {
-        setCityName(cached.city);
-        setPrayerTimings(cached.timings);
-        return;
-      }
-    }
-    setCityName("Detecting...");
-    if (!navigator.geolocation) {
-      setCityName("Not supported");
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const [result, city] = await Promise.all([
-            QuranAPI.getPrayerTimes(pos.coords.latitude, pos.coords.longitude, 1, 1),
-            QuranAPI.reverseGeocode(pos.coords.latitude, pos.coords.longitude),
-          ]);
-          setPrayerTimings(result.timings);
-          setCityName(city);
-          saveCachedLocation(city, result.timings);
-        } catch {
-          setCityName("Unknown");
-        }
-      },
-      () => setCityName("Location denied")
-    );
-  };
-
-  // Load from cache or detect on mount
-  useEffect(() => {
-    detectLocation(false);
-  }, []);
+  const cityName = location?.city || "Detecting...";
+  const prayerTimings = location?.timings || null;
 
   const islamicDate = getIslamicDate();
   const gregorianDate = currentTime.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
 
-  // Calculate upcoming prayer dynamically
   const getUpcomingPrayer = () => {
     if (!prayerTimings) return { name: "Loading...", time: "--:--", countdown: "00:00:00" };
     const now = currentTime;
@@ -127,7 +72,6 @@ const Home: React.FC = () => {
         return { name, time: timeStr.split(" ")[0], countdown: `${hh}:${mm}:${ss}` };
       }
     }
-    // All prayers passed, next is Fajr tomorrow
     const fajrStr = prayerTimings.Fajr;
     if (fajrStr) {
       const [h, m] = fajrStr.split(":").map(Number);
@@ -156,7 +100,7 @@ const Home: React.FC = () => {
         <div className="flex items-center gap-2">
           <MapPin className="w-5 h-5 text-primary" />
           <p className="text-sm font-bold text-foreground">{cityName}</p>
-          <button onClick={() => detectLocation(true)} className="active:scale-90 transition-smooth" aria-label="Detect location">
+          <button onClick={() => detect(true)} className="active:scale-90 transition-smooth" aria-label="Detect location">
             <LocateFixed className="w-4 h-4 text-primary" />
           </button>
         </div>

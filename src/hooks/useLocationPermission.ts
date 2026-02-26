@@ -11,14 +11,13 @@ export function useLocationPermission() {
       return;
     }
 
-    const requestPermission = async () => {
+    const requestPermissions = async () => {
+      // Request location permission
       try {
-        // Try Capacitor Geolocation first
         const { Geolocation } = await import("@capacitor/geolocation");
         const result = await Geolocation.requestPermissions();
         setGranted(result.location === "granted");
       } catch {
-        // Fallback to browser API
         try {
           if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -30,13 +29,22 @@ export function useLocationPermission() {
         } catch {
           setGranted(false);
         }
-      } finally {
-        setAsked(true);
-        localStorage.setItem("location-permission-asked", "true");
       }
+
+      // Request file storage permission (Android)
+      try {
+        const { Filesystem } = await import("@capacitor/filesystem");
+        // Requesting permissions triggers the native dialog on Android
+        await (Filesystem as any).requestPermissions?.();
+      } catch {
+        // Not on native or already granted - ignore
+      }
+
+      setAsked(true);
+      localStorage.setItem("location-permission-asked", "true");
     };
 
-    const timer = setTimeout(requestPermission, 1500);
+    const timer = setTimeout(requestPermissions, 1500);
     return () => clearTimeout(timer);
   }, []);
 
