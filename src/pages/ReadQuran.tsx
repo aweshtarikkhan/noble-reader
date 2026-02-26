@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { QuranAPI } from "@/lib/quranApi";
-import { TOTAL_PAGES } from "@/data/surahs";
-import { TOTAL_PAGES_INDIAN, getIndianPageImage } from "@/data/indianMushaf";
+import { TOTAL_PAGES, JUZ_DATA } from "@/data/surahs";
+import { TOTAL_PAGES_INDIAN, getIndianPageImage, INDIAN_JUZ_DATA } from "@/data/indianMushaf";
 import { getCachedCount, getCachedPage, setCachedPage, downloadImageAsDataUrl } from "@/lib/quranCache";
 import { getIndianPageImageFallback } from "@/data/indianMushaf";
 import QuranPageView, { type QuranStyle, getCacheKey } from "@/components/QuranPageView";
@@ -213,9 +213,25 @@ const ReadQuran: React.FC = () => {
 
       {/* Pages */}
       <div className="space-y-4">
-        {pages.map((p) => (
-          <QuranPageView key={`${style}_${p}`} page={p} style={style} getImgUrl={getImgUrl} />
-        ))}
+        {pages.map((p) => {
+          const juzData = style === "indopak" ? INDIAN_JUZ_DATA : JUZ_DATA;
+          const juz = juzData.find((j) => j.startPage === p);
+          return (
+            <React.Fragment key={`${style}_${p}`}>
+              {juz && (
+                <div className="flex items-center gap-3 py-3">
+                  <div className="flex-1 h-px bg-primary/20" />
+                  <div className="text-center">
+                    <p className="font-arabic text-lg text-primary">{juz.name}</p>
+                    <p className="text-[10px] text-muted-foreground">Para {juz.number}</p>
+                  </div>
+                  <div className="flex-1 h-px bg-primary/20" />
+                </div>
+              )}
+              <QuranPageView page={p} style={style} getImgUrl={getImgUrl} />
+            </React.Fragment>
+          );
+        })}
       </div>
 
       {pages.length > 0 && pages[pages.length - 1] < totalPages && (
