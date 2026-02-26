@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Languages, List, BookCopy, MapPin, Share2, ListOrdered, Building, Clock, LocateFixed, Compass, Search } from "lucide-react";
+import { BookOpen, Languages, List, BookCopy, MapPin, Share2, Clock, LocateFixed, Compass, Search, Building, BellOff, Bell } from "lucide-react";
 import { useSharedLocation } from "@/hooks/useSharedLocation";
 import CitySearchDialog from "@/components/CitySearchDialog";
+import { useToast } from "@/hooks/use-toast";
 
 const QUICK_TOOLS = [
   { icon: BookOpen, title: "Read Quran", path: "/read-quran" },
@@ -38,9 +39,11 @@ const getIslamicDate = () => {
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [currentTime, setCurrentTime] = useState(new Date());
   const { location, detect, setManualLocation } = useSharedLocation();
   const [citySearchOpen, setCitySearchOpen] = useState(false);
+  const [silentMode, setSilentMode] = useState(() => localStorage.getItem("silent_mode") === "true");
   const [dailyAyah] = useState(() => {
     const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
     return DAILY_AYAHS[dayOfYear % DAILY_AYAHS.length];
@@ -50,6 +53,33 @@ const Home: React.FC = () => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  const toggleSilent = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newVal = !silentMode;
+    setSilentMode(newVal);
+    localStorage.setItem("silent_mode", String(newVal));
+    toast({
+      title: newVal ? "🔕 Silent Mode On" : "🔔 Sound Mode On",
+      description: newVal ? "Azan notifications will be silent" : "Azan notifications will play sound",
+    });
+  };
+
+  const handleShare = async () => {
+    const text = `${dailyAyah.arabic}\n\n${dailyAyah.translation}\n\n— ${dailyAyah.surah}\n\nNoble Quran Reader`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "Daily Ayah", text });
+      } catch {}
+    } else {
+      try {
+        await navigator.clipboard.writeText(text);
+        toast({ title: "Copied!", description: "Ayah copied to clipboard" });
+      } catch {
+        toast({ title: "Share not supported", description: "Could not share on this device", variant: "destructive" });
+      }
+    }
+  };
 
   const cityName = location?.city || "Detecting...";
   const prayerTimings = location?.timings || null;
@@ -145,10 +175,14 @@ const Home: React.FC = () => {
 
           <div className="flex items-center gap-2 mb-4">
             <span className="text-[11px] text-white/60 flex items-center gap-1">
-              🔕 Silent Mode
+              {silentMode ? <BellOff className="w-3 h-3" /> : <Bell className="w-3 h-3" />}
+              {silentMode ? "Silent Mode" : "Sound On"}
             </span>
-            <div className="w-9 h-5 bg-white/20 rounded-full relative">
-              <div className="w-4 h-4 bg-white/50 rounded-full absolute top-0.5 left-0.5" />
+            <div
+              onClick={toggleSilent}
+              className={`w-9 h-5 rounded-full relative cursor-pointer transition-colors duration-200 ${silentMode ? "bg-primary" : "bg-white/20"}`}
+            >
+              <div className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-all duration-200 ${silentMode ? "left-[18px]" : "left-0.5"}`} />
             </div>
           </div>
 
@@ -212,13 +246,8 @@ const Home: React.FC = () => {
           </p>
           <div className="flex items-center justify-center gap-6 pt-2">
             <button
-              onClick={() => {
-                const text = `${dailyAyah.arabic}\n\n${dailyAyah.translation}\n\n— ${dailyAyah.surah}\n\nNoble Quran Reader`;
-                if (navigator.share) {
-                  navigator.share({ title: "Daily Ayah", text }).catch(() => {});
-                }
-              }}
-              className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-smooth"
+              onClick={handleShare}
+              className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 active:scale-95 transition-smooth px-4 py-2 rounded-xl bg-primary/10"
             >
               <Share2 className="w-4 h-4" />
               SHARE
@@ -227,13 +256,19 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Support Link */}
+      {/* Support Link - Highlighted */}
       <button
         onClick={() => navigate("/donate")}
-        className="w-full py-3 rounded-2xl bg-card border border-primary/10 hover:border-primary/30 transition-smooth text-center active:scale-95"
+        className="w-full py-4 rounded-2xl border-2 border-primary/30 hover:border-primary/50 transition-smooth text-center active:scale-95 relative overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary) / 0.15))",
+        }}
       >
-        <p className="text-xs text-muted-foreground">
-          💝 Support future updates with a small contribution
+        <p className="text-sm font-semibold text-primary">
+          💝 Support Future Updates
+        </p>
+        <p className="text-[11px] text-muted-foreground mt-0.5">
+          Your small contribution keeps this app free for everyone
         </p>
       </button>
     </div>
