@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { QuranAPI } from "@/lib/quranApi";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useAzaanScheduler } from "@/hooks/useAzaanScheduler";
 import { loadAzaanSettings } from "@/data/azaanOptions";
+import { useSharedLocation } from "@/hooks/useSharedLocation";
 
 const HIJRI_MONTHS = [
   "مُحَرَّم", "صَفَر", "رَبِيع الأَوَّل", "رَبِيع الثَّانِي",
@@ -11,74 +11,17 @@ const HIJRI_MONTHS = [
   "رَمَضَان", "شَوَّال", "ذُو القَعْدَة", "ذُو الحِجَّة"
 ];
 
-const PRAYER_CACHE_KEY = "cached_prayer_page_data";
-
-function loadCachedPrayerData(): { data: any; city: string; date: string } | null {
-  try {
-    const raw = localStorage.getItem(PRAYER_CACHE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (parsed.date === new Date().toDateString()) return parsed;
-    return null;
-  } catch { return null; }
-}
-
-function saveCachedPrayerData(data: any, city: string) {
-  localStorage.setItem(PRAYER_CACHE_KEY, JSON.stringify({ data, city, date: new Date().toDateString() }));
-}
-
 const PrayerTimes: React.FC = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<any>(null);
-  const [error, setError] = useState("");
+  const { location, loading, error } = useSharedLocation();
   const [countdown, setCountdown] = useState("");
-  const [cityName, setCityName] = useState("");
   const azaanSettings = loadAzaanSettings();
+
+  const data = location?.prayerData || null;
+  const cityName = location?.city || "";
 
   // Azaan scheduler
   useAzaanScheduler(data?.timings || null);
-
-  useEffect(() => {
-    // Try cache first
-    const cached = loadCachedPrayerData();
-    if (cached) {
-      setData(cached.data);
-      setCityName(cached.city);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-
-    if (!navigator.geolocation) {
-      setError("Geolocation not supported");
-      setLoading(false);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const [result, city] = await Promise.all([
-            QuranAPI.getPrayerTimes(pos.coords.latitude, pos.coords.longitude, 1, 1),
-            QuranAPI.reverseGeocode(pos.coords.latitude, pos.coords.longitude),
-          ]);
-          setData(result);
-          setCityName(city);
-          saveCachedPrayerData(result, city);
-        } catch {
-          setError("Failed to load prayer times");
-        }
-        setLoading(false);
-      },
-      () => {
-        setError("Location access denied. Please enable location.");
-        setLoading(false);
-      }
-    );
-  }, []);
 
   // Countdown timer
   useEffect(() => {
@@ -121,7 +64,6 @@ const PrayerTimes: React.FC = () => {
     const maghrib = new Date();
     maghrib.setHours(mH, mM, 0, 0);
     if (now < maghrib) {
-      // Before Maghrib: show previous Hijri day
       const h = { ...data.date.hijri };
       const day = parseInt(h.day) - 1;
       if (day >= 1) {
@@ -134,16 +76,15 @@ const PrayerTimes: React.FC = () => {
 
   return (
     <div className="px-4 py-4">
-
-      {loading && <LoadingSpinner message="Detecting location..." />}
-      {error && (
+      {loading && !data && <LoadingSpinner message="Detecting location..." />}
+      {error && !data && (
         <div className="text-center py-12 animate-fade-in">
           <p className="text-destructive mb-3">{error}</p>
           <button onClick={() => window.location.reload()} className="text-gold text-sm underline">Retry</button>
         </div>
       )}
 
-      {data && !loading && (
+      {data && (
         <div className="space-y-4 animate-fade-in">
           {/* Hijri Date */}
           {hijri && (
