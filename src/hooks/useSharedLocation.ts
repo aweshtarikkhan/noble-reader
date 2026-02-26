@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useContext, createContext } from "react";
 import { QuranAPI } from "@/lib/quranApi";
 
 const CACHE_KEY = "shared_location_data";
@@ -8,8 +8,8 @@ export interface LocationData {
   lng: number;
   city: string;
   timings: Record<string, string>;
-  prayerData: any; // full aladhan response (includes hijri date etc.)
-  date: string; // toDateString() for daily expiry
+  prayerData: any;
+  date: string;
 }
 
 export function getCachedLocation(): LocationData | null {
@@ -18,7 +18,6 @@ export function getCachedLocation(): LocationData | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as LocationData;
     if (parsed.date === new Date().toDateString()) return parsed;
-    // Date expired but keep lat/lng/city for instant display
     return { ...parsed, date: "" };
   } catch {
     return null;
@@ -27,13 +26,9 @@ export function getCachedLocation(): LocationData | null {
 
 function saveLocation(data: LocationData) {
   localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-  // Also update legacy key for backward compat
   localStorage.setItem("cached_location_data", JSON.stringify({
-    lat: data.lat,
-    lng: data.lng,
-    city: data.city,
-    timings: data.timings,
-    date: data.date,
+    lat: data.lat, lng: data.lng, city: data.city,
+    timings: data.timings, date: data.date,
   }));
 }
 
@@ -43,9 +38,7 @@ async function fetchLocationData(lat: number, lng: number): Promise<LocationData
     QuranAPI.reverseGeocode(lat, lng),
   ]);
   const data: LocationData = {
-    lat,
-    lng,
-    city,
+    lat, lng, city,
     timings: prayerResult.timings,
     prayerData: prayerResult,
     date: new Date().toDateString(),
@@ -54,7 +47,18 @@ async function fetchLocationData(lat: number, lng: number): Promise<LocationData
   return data;
 }
 
-export function useSharedLocation() {
+interface LocationContextValue {
+  location: LocationData | null;
+  loading: boolean;
+  error: string | null;
+  detect: (force?: boolean) => void;
+}
+
+const LocationContext = createContext<LocationContextValue>({
+  location: null, loading: true, error: null, detect: () => {},
+});
+
+export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [location, setLocation] = useState<LocationData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,9 +71,8 @@ export function useSharedLocation() {
         setLoading(false);
         return;
       }
-      // Have stale lat/lng - refresh prayer times silently
       if (cached && cached.lat && cached.lng) {
-        setLocation(cached); // show stale data immediately
+        setLocation(cached);
         setLoading(false);
         try {
           const fresh = await fetchLocationData(cached.lat, cached.lng);
@@ -88,7 +91,6 @@ export function useSharedLocation() {
       return;
     }
 
-    // Try Capacitor first
     try {
       const { Geolocation } = await import("@capacitor/geolocation");
       const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: false, timeout: 15000 });
@@ -96,9 +98,7 @@ export function useSharedLocation() {
       setLocation(data);
       setLoading(false);
       return;
-    } catch {
-      // fallback to browser
-    }
+    } catch { }
 
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -122,5 +122,9 @@ export function useSharedLocation() {
     detect(false);
   }, [detect]);
 
-  return { location, loading, error, detect };
+  return React.createElement(LocationContext.Provider, { value: { location, loading, error, detect } }, children);
+};
+
+export function useSharedLocation() {
+  return useContext(LocationContext);
 }

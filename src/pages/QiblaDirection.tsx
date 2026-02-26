@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { LocateFixed, AlertCircle } from "lucide-react";
-import { getCachedLocation } from "@/hooks/useSharedLocation";
+import { useSharedLocation } from "@/hooks/useSharedLocation";
 
 const KAABA_LAT = 21.4225;
 const KAABA_LNG = 39.8262;
@@ -20,13 +20,12 @@ function calculateQibla(lat: number, lng: number): number {
 }
 
 const QiblaDirection: React.FC = () => {
+  const { location, error: locError } = useSharedLocation();
   const [qiblaAngle, setQiblaAngle] = useState<number | null>(null);
   const [compassHeading, setCompassHeading] = useState<number>(0);
   const [hasCompass, setHasCompass] = useState(false);
-  const [locationError, setLocationError] = useState<string | null>(null);
   const [compassError, setCompassError] = useState<string | null>(null);
   const [needsIOSPermission, setNeedsIOSPermission] = useState(false);
-  const [city, setCity] = useState("Detecting...");
   const headingRef = useRef(0);
   const rafRef = useRef<number>();
 
@@ -45,37 +44,12 @@ const QiblaDirection: React.FC = () => {
     }
   }, []);
 
-  // Use shared location
+  // Derive qibla from shared location
   useEffect(() => {
-    const cached = getCachedLocation();
-    if (cached && cached.lat && cached.lng) {
-      setQiblaAngle(calculateQibla(cached.lat, cached.lng));
-      setCity(cached.city || "Unknown");
-      return;
+    if (location && location.lat && location.lng) {
+      setQiblaAngle(calculateQibla(location.lat, location.lng));
     }
-
-    if (!navigator.geolocation) {
-      setLocationError("Geolocation not supported");
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude } = pos.coords;
-        setQiblaAngle(calculateQibla(latitude, longitude));
-        try {
-          const url = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=10`;
-          const res = await fetch(url, { headers: { "Accept-Language": "en" } });
-          const data = await res.json();
-          const addr = data.address;
-          setCity(addr?.city || addr?.town || addr?.village || "Unknown");
-        } catch {
-          setCity("Unknown");
-        }
-      },
-      () => setLocationError("Location permission denied. Please allow location access.")
-    );
-  }, []);
+  }, [location]);
 
   // Start compass
   useEffect(() => {
@@ -126,14 +100,14 @@ const QiblaDirection: React.FC = () => {
       <div className="text-center mb-6 animate-fade-in">
         <h2 className="text-lg font-bold text-foreground mb-1">Qibla Direction</h2>
         <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-          <LocateFixed className="w-4 h-4 text-primary" /> {city}
+          <LocateFixed className="w-4 h-4 text-primary" /> {location?.city || "Detecting..."}
         </p>
       </div>
 
-      {locationError ? (
+      {locError ? (
         <div className="flex flex-col items-center gap-3 py-12 text-center animate-fade-in">
           <AlertCircle className="w-12 h-12 text-destructive" />
-          <p className="text-sm text-muted-foreground max-w-xs">{locationError}</p>
+          <p className="text-sm text-muted-foreground max-w-xs">{locError}</p>
         </div>
       ) : qiblaAngle === null ? (
         <div className="flex items-center justify-center py-16">

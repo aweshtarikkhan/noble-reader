@@ -23,6 +23,7 @@ import QiblaDirection from "@/pages/QiblaDirection";
 import NotFound from "@/pages/NotFound";
 import { useLocationPermission } from "@/hooks/useLocationPermission";
 import { useAutoDownload } from "@/hooks/useAutoDownload";
+import { LocationProvider } from "@/hooks/useSharedLocation";
 
 const queryClient = new QueryClient();
 
@@ -62,11 +63,13 @@ const AppContent = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <HashRouter>
-        <AppContent />
-      </HashRouter>
+      <LocationProvider>
+        <Toaster />
+        <Sonner />
+        <HashRouter>
+          <AppContent />
+        </HashRouter>
+      </LocationProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
