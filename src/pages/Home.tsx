@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Languages, List, BookCopy, MapPin, Share2, ListOrdered, Building, Clock, LocateFixed, Compass } from "lucide-react";
+import { BookOpen, Languages, List, BookCopy, MapPin, Share2, ListOrdered, Building, Clock, LocateFixed, Compass, Search } from "lucide-react";
 import { useSharedLocation } from "@/hooks/useSharedLocation";
+import CitySearchDialog from "@/components/CitySearchDialog";
 
 const QUICK_TOOLS = [
   { icon: BookOpen, title: "Read Quran", path: "/read-quran" },
@@ -38,7 +39,8 @@ const getIslamicDate = () => {
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(new Date());
-  const { location, detect } = useSharedLocation();
+  const { location, detect, setManualLocation } = useSharedLocation();
+  const [citySearchOpen, setCitySearchOpen] = useState(false);
   const [dailyAyah] = useState(() => {
     const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
     return DAILY_AYAHS[dayOfYear % DAILY_AYAHS.length];
@@ -99,7 +101,10 @@ const Home: React.FC = () => {
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
           <MapPin className="w-5 h-5 text-primary" />
-          <p className="text-sm font-bold text-foreground">{cityName}</p>
+          <button onClick={() => setCitySearchOpen(true)} className="text-sm font-bold text-foreground flex items-center gap-1">
+            {cityName}
+            <Search className="w-3.5 h-3.5 text-muted-foreground" />
+          </button>
           <button onClick={() => detect(true)} className="active:scale-90 transition-smooth" aria-label="Detect location">
             <LocateFixed className="w-4 h-4 text-primary" />
           </button>
@@ -109,6 +114,12 @@ const Home: React.FC = () => {
           <p className="text-[11px] text-muted-foreground">{gregorianDate}</p>
         </div>
       </div>
+
+      <CitySearchDialog
+        open={citySearchOpen}
+        onOpenChange={setCitySearchOpen}
+        onSelect={(lat, lng, city) => setManualLocation(lat, lng, city)}
+      />
 
       {/* Prayer Banner Card */}
       <button

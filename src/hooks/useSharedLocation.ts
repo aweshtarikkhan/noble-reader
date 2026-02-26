@@ -52,10 +52,11 @@ interface LocationContextValue {
   loading: boolean;
   error: string | null;
   detect: (force?: boolean) => void;
+  setManualLocation: (lat: number, lng: number, city: string) => void;
 }
 
 const LocationContext = createContext<LocationContextValue>({
-  location: null, loading: true, error: null, detect: () => {},
+  location: null, loading: true, error: null, detect: () => {}, setManualLocation: () => {},
 });
 
 export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -118,11 +119,25 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
   }, []);
 
+  const setManualLocation = useCallback(async (lat: number, lng: number, city: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchLocationData(lat, lng);
+      const updated = { ...data, city };
+      saveLocation(updated);
+      setLocation(updated);
+    } catch {
+      setError("Failed to load prayer times");
+    }
+    setLoading(false);
+  }, []);
+
   useEffect(() => {
     detect(false);
   }, [detect]);
 
-  return React.createElement(LocationContext.Provider, { value: { location, loading, error, detect } }, children);
+  return React.createElement(LocationContext.Provider, { value: { location, loading, error, detect, setManualLocation } }, children);
 };
 
 export function useSharedLocation() {
