@@ -39,7 +39,7 @@ const PrayerTimes: React.FC = () => {
         const secs = Math.floor((diff % 60000) / 1000);
         setCountdown(`${hrs}h ${mins}m ${secs}s`);
       } else {
-        setCountdown("Iftar time passed");
+        setCountdown("");
       }
     }, 1000);
     return () => clearInterval(timer);
@@ -90,7 +90,7 @@ const PrayerTimes: React.FC = () => {
           {hijri && (
             <div className="p-4 rounded-2xl bg-card border border-gold/10 shadow-gold text-center">
               <p className="font-arabic text-2xl text-gold">
-                {hijri.day} {HIJRI_MONTHS[parseInt(hijri.month.number) - 1] || hijri.month.ar} {hijri.year}
+                {hijri.day}, {HIJRI_MONTHS[parseInt(hijri.month.number) - 1] || hijri.month.ar}, {hijri.year}
               </p>
               {gregorian && (
                 <p className="text-xs text-muted-foreground mt-1">
