@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, BookOpen, Headphones, Clock, PlayCircle, Settings } from "lucide-react";
+import { Home, BookOpen, Languages, Clock, PlayCircle, Settings } from "lucide-react";
 import ExitDialog from "./ExitDialog";
 import { useBackHandler } from "@/hooks/useBackHandler";
 import { getBookmarks } from "@/lib/bookmarks";
@@ -17,7 +17,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { path: "/", icon: Home, label: t("nav.home") },
     { path: "/read-quran", icon: BookOpen, label: t("nav.quran") },
     { path: "__continue__", icon: PlayCircle, label: t("nav.continue") },
-    { path: "/quran-audio", icon: Headphones, label: t("nav.audio") },
+    { path: "/translation", icon: Languages, label: t("nav.translation") },
     { path: "/prayer-times", icon: Clock, label: t("nav.namaz") },
   ];
 
@@ -32,6 +32,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (p.startsWith("/qibla")) return t("page.qibla");
     if (p.startsWith("/duas")) return t("page.duas");
     if (p.startsWith("/quran-audio")) return t("page.quranAudio");
+    if (p.startsWith("/islamic-calendar")) return t("page.islamicCalendar");
     if (p.startsWith("/para-read")) return t("page.paraReading");
     if (p.startsWith("/para")) return t("page.para");
     if (p.startsWith("/prayer-times")) return t("page.prayerTimes");

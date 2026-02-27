@@ -16,6 +16,7 @@ import TafseerReader from "@/pages/TafseerReader";
 import TafseerRead from "@/pages/TafseerRead";
 import ReadQuran from "@/pages/ReadQuran";
 import QuranAudio from "@/pages/QuranAudio";
+import IslamicCalendar from "@/pages/IslamicCalendar";
 import Bookmarks from "@/pages/Bookmarks";
 import Duas from "@/pages/Duas";
 import IndianMushaf from "@/pages/IndianMushaf";
@@ -53,6 +54,7 @@ const AppContent = () => {
         <Route path="/tafseer-read/:num" element={<TafseerRead />} />
         <Route path="/read-quran" element={<ReadQuran />} />
         <Route path="/quran-audio" element={<QuranAudio />} />
+        <Route path="/islamic-calendar" element={<IslamicCalendar />} />
         <Route path="/bookmarks" element={<Bookmarks />} />
         <Route path="/duas" element={<Duas />} />
         <Route path="/indian-mushaf" element={<IndianMushaf />} />

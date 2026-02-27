@@ -9,7 +9,7 @@ const T: Translations = {
   "nav.home": { en: "Home", ur: "ہوم", hi: "होम" },
   "nav.quran": { en: "Quran", ur: "قرآن", hi: "क़ुरआन" },
   "nav.continue": { en: "Continue", ur: "جاری", hi: "जारी" },
-  "nav.audio": { en: "Audio", ur: "آڈیو", hi: "ऑडियो" },
+  "nav.translation": { en: "Tarjuma", ur: "ترجمہ", hi: "तर्जुमा" },
   "nav.namaz": { en: "Namaz", ur: "نماز", hi: "नमाज़" },
 
   // Header
@@ -18,7 +18,7 @@ const T: Translations = {
   // Quick Tools
   "tool.readQuran": { en: "Read Quran", ur: "قرآن پڑھیں", hi: "क़ुरआन पढ़ें" },
   "tool.translation": { en: "Translation", ur: "ترجمہ", hi: "अनुवाद" },
-  "tool.audioQuran": { en: "Audio Quran", ur: "آڈیو قرآن", hi: "ऑडियो क़ुरआन" },
+  "tool.islamicCalendar": { en: "Islamic Calendar", ur: "اسلامی کیلنڈر", hi: "इस्लामी कैलेंडर" },
   "tool.bookmarks": { en: "Bookmarks", ur: "بک مارکس", hi: "बुकमार्क" },
   "tool.namaz": { en: "Namaz", ur: "نماز", hi: "नमाज़" },
   "tool.qibla": { en: "Qibla", ur: "قبلہ", hi: "क़िबला" },
@@ -63,6 +63,7 @@ const T: Translations = {
   "page.qibla": { en: "Qibla Direction", ur: "قبلہ کی سمت", hi: "क़िबला दिशा" },
   "page.duas": { en: "Duas", ur: "دعائیں", hi: "दुआएं" },
   "page.quranAudio": { en: "Quran Audio", ur: "قرآن آڈیو", hi: "क़ुरआन ऑडियो" },
+  "page.islamicCalendar": { en: "Islamic Calendar", ur: "اسلامی کیلنڈر", hi: "इस्लामी कैलेंडर" },
   "page.paraReading": { en: "Para Reading", ur: "پارہ پڑھنا", hi: "पारा पढ़ना" },
   "page.para": { en: "Para / Juz", ur: "پارہ / جز", hi: "पारा / जुज़" },
   "page.prayerTimes": { en: "Prayer Times", ur: "نماز کے اوقات", hi: "नमाज़ के समय" },
@@ -229,6 +230,13 @@ const T: Translations = {
   "indianMushaf.withRuku": { en: "With Ruku markers", ur: "رکوع کے نشانات کے ساتھ", hi: "रुकू मार्कर के साथ" },
   "indianMushaf.failedLoad": { en: "Failed to load page image", ur: "صفحے کی تصویر لوڈ نہیں ہو سکی", hi: "पृष्ठ चित्र लोड नहीं हो सका" },
   "indianMushaf.serverUnavailable": { en: "The image server may be temporarily unavailable", ur: "تصویر سرور عارضی طور پر دستیاب نہیں ہو سکتا", hi: "चित्र सर्वर अस्थायी रूप से अनुपलब्ध हो सकता है" },
+
+  // Islamic Calendar
+  "calendar.indian": { en: "Indian", ur: "ہندوستانی", hi: "भारतीय" },
+  "calendar.saudi": { en: "Saudi", ur: "سعودی", hi: "सऊदी" },
+  "calendar.today": { en: "Today", ur: "آج", hi: "आज" },
+  "calendar.ah": { en: "AH", ur: "ہجری", hi: "हिजरी" },
+  "calendar.importantDates": { en: "Important Dates This Month", ur: "اس ماہ کی اہم تاریخیں", hi: "इस माह की महत्वपूर्ण तिथियां" },
 
   // Common
   "common.retry": { en: "Retry", ur: "دوبارہ کوشش کریں", hi: "पुनः प्रयास करें" },
