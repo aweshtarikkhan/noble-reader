@@ -1,8 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { Bell, BellOff, Volume2, VolumeX } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useAzaanScheduler } from "@/hooks/useAzaanScheduler";
-import { loadAzaanSettings } from "@/data/azaanOptions";
+import {
+  loadAzaanSettings,
+  saveAzaanSettings,
+  PRAYER_NAMES,
+  type PrayerName,
+} from "@/data/azaanOptions";
 import { useSharedLocation } from "@/hooks/useSharedLocation";
 
 const HIJRI_MONTHS = [
@@ -11,19 +18,53 @@ const HIJRI_MONTHS = [
   "رَمَضَان", "شَوَّال", "ذُو القَعْدَة", "ذُو الحِجَّة"
 ];
 
+const PRAYER_ICONS: Record<string, string> = {
+  Fajr: "🌙", Sunrise: "🌅", Dhuhr: "☀️", Asr: "🌤", Maghrib: "🌇", Isha: "🌃",
+};
+
 const PrayerTimes: React.FC = () => {
   const navigate = useNavigate();
   const { location, loading, error } = useSharedLocation();
   const [countdown, setCountdown] = useState("");
-  const azaanSettings = loadAzaanSettings();
+  const [settings, setSettings] = useState(loadAzaanSettings);
 
   const data = location?.prayerData || null;
   const cityName = location?.city || "";
 
-  // Azaan scheduler
   useAzaanScheduler(data?.timings || null);
 
-  // Countdown timer
+  const updateSettings = useCallback((prayer: PrayerName, field: "enabledPrayers" | "enabledNotifications", value: boolean) => {
+    setSettings((prev) => {
+      const next = {
+        ...prev,
+        [field]: { ...prev[field], [prayer]: value },
+      };
+      saveAzaanSettings(next);
+      return next;
+    });
+  }, []);
+
+  const requestPermissionsIfNeeded = async () => {
+    try {
+      const { LocalNotifications } = await import("@capacitor/local-notifications");
+      const perm = await LocalNotifications.checkPermissions();
+      if (perm.display !== "granted") {
+        await LocalNotifications.requestPermissions();
+      }
+    } catch {
+      if ("Notification" in window && Notification.permission !== "granted") {
+        try { await Notification.requestPermission(); } catch {}
+      }
+    }
+  };
+
+  const handleNotificationToggle = async (prayer: PrayerName, checked: boolean) => {
+    if (checked) {
+      await requestPermissionsIfNeeded();
+    }
+    updateSettings(prayer, "enabledNotifications", checked);
+  };
+
   useEffect(() => {
     if (!data?.timings) return;
     const timer = setInterval(() => {
@@ -47,16 +88,18 @@ const PrayerTimes: React.FC = () => {
 
   const prayers = data?.timings
     ? [
-        { name: "Fajr", time: data.timings.Fajr, icon: "🌙" },
-        { name: "Sunrise", time: data.timings.Sunrise, icon: "🌅" },
-        { name: "Dhuhr", time: data.timings.Dhuhr, icon: "☀️" },
-        { name: "Asr", time: data.timings.Asr, icon: "🌤" },
-        { name: "Maghrib", time: data.timings.Maghrib, icon: "🌇" },
-        { name: "Isha", time: data.timings.Isha, icon: "🌃" },
+        { name: "Fajr" as PrayerName, time: data.timings.Fajr, icon: "🌙" },
+        { name: "Dhuhr" as PrayerName, time: data.timings.Dhuhr, icon: "☀️" },
+        { name: "Asr" as PrayerName, time: data.timings.Asr, icon: "🌤" },
+        { name: "Maghrib" as PrayerName, time: data.timings.Maghrib, icon: "🌇" },
+        { name: "Isha" as PrayerName, time: data.timings.Isha, icon: "🌃" },
       ]
     : [];
 
-  // Adjust Hijri date: API returns next Islamic day, but it only starts at Maghrib
+  const extraTimings = data?.timings
+    ? [{ name: "Sunrise", time: data.timings.Sunrise, icon: "🌅" }]
+    : [];
+
   const hijri = React.useMemo(() => {
     if (!data?.date?.hijri || !data?.timings?.Maghrib) return data?.date?.hijri;
     const now = new Date();
@@ -66,9 +109,7 @@ const PrayerTimes: React.FC = () => {
     if (now < maghrib) {
       const h = { ...data.date.hijri };
       const day = parseInt(h.day) - 1;
-      if (day >= 1) {
-        return { ...h, day: String(day) };
-      }
+      if (day >= 1) return { ...h, day: String(day) };
     }
     return data.date.hijri;
   }, [data]);
@@ -119,15 +160,63 @@ const PrayerTimes: React.FC = () => {
             </div>
           )}
 
-          {/* Prayer grid */}
+          {/* Sunrise */}
+          {extraTimings.map((p) => (
+            <div key={p.name} className="flex items-center justify-between p-3 rounded-xl bg-card border border-gold/5">
+              <div className="flex items-center gap-3">
+                <span className="text-lg">{p.icon}</span>
+                <span className="text-sm font-medium text-foreground">{p.name}</span>
+              </div>
+              <span className="text-sm text-gold font-semibold">{p.time?.split(" ")[0]}</span>
+            </div>
+          ))}
+
+          {/* Prayer times with sound & notification toggles */}
           <div className="space-y-2">
+            <p className="text-xs text-muted-foreground px-1 font-semibold">Prayer Times</p>
             {prayers.map((p) => (
-              <div key={p.name} className="flex items-center justify-between p-3 rounded-xl bg-card border border-gold/5">
-                <div className="flex items-center gap-3">
-                  <span className="text-lg">{p.icon}</span>
-                  <span className="text-sm font-medium text-foreground">{p.name}</span>
+              <div key={p.name} className="p-3 rounded-xl bg-card border border-gold/5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg">{p.icon}</span>
+                    <span className="text-sm font-medium text-foreground">{p.name}</span>
+                  </div>
+                  <span className="text-sm text-gold font-semibold">{p.time?.split(" ")[0]}</span>
                 </div>
-                <span className="text-sm text-gold font-semibold">{p.time?.split(" ")[0]}</span>
+
+                {settings.enabled && (
+                  <div className="flex items-center gap-4 pl-9">
+                    {/* Sound toggle */}
+                    <div className="flex items-center gap-1.5">
+                      {settings.enabledPrayers[p.name] ? (
+                        <Volume2 className="w-3.5 h-3.5 text-primary" />
+                      ) : (
+                        <VolumeX className="w-3.5 h-3.5 text-muted-foreground" />
+                      )}
+                      <span className="text-[11px] text-muted-foreground">Sound</span>
+                      <Switch
+                        checked={settings.enabledPrayers[p.name]}
+                        onCheckedChange={(v) => updateSettings(p.name, "enabledPrayers", v)}
+                        className="scale-75"
+                      />
+                    </div>
+
+                    {/* Notification toggle */}
+                    <div className="flex items-center gap-1.5">
+                      {settings.enabledNotifications?.[p.name] !== false ? (
+                        <Bell className="w-3.5 h-3.5 text-primary" />
+                      ) : (
+                        <BellOff className="w-3.5 h-3.5 text-muted-foreground" />
+                      )}
+                      <span className="text-[11px] text-muted-foreground">Notify</span>
+                      <Switch
+                        checked={settings.enabledNotifications?.[p.name] !== false}
+                        onCheckedChange={(v) => handleNotificationToggle(p.name, v)}
+                        className="scale-75"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -142,7 +231,7 @@ const PrayerTimes: React.FC = () => {
               <div className="text-left">
                 <p className="text-sm font-medium text-foreground">Azaan Settings</p>
                 <p className="text-xs text-muted-foreground">
-                  {azaanSettings.enabled ? "ON — Tap to configure" : "OFF — Tap to enable"}
+                  {settings.enabled ? "ON — Tap to configure style & volume" : "OFF — Tap to enable"}
                 </p>
               </div>
             </div>

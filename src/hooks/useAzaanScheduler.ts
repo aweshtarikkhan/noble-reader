@@ -91,7 +91,7 @@ async function scheduleNativeNotifications(prayerTimings: Record<string, string>
     const now = new Date();
 
     PRAYER_NAMES.forEach((prayer, index) => {
-      if (!settings.enabledPrayers[prayer]) return;
+      if (!settings.enabledNotifications?.[prayer] && !settings.enabledPrayers[prayer]) return;
 
       const timeStr = settings.manualTimings[prayer] || prayerTimings[prayer];
       if (!timeStr) return;

@@ -12,7 +12,17 @@ export function useLocationPermission() {
     }
 
     const requestPermissions = async () => {
-      // Request location permission
+      // 1. Notification permission
+      try {
+        const { LocalNotifications } = await import("@capacitor/local-notifications");
+        await LocalNotifications.requestPermissions();
+      } catch {
+        if ("Notification" in window && Notification.permission === "default") {
+          try { await Notification.requestPermission(); } catch {}
+        }
+      }
+
+      // 2. Location permission
       try {
         const { Geolocation } = await import("@capacitor/geolocation");
         const result = await Geolocation.requestPermissions();
@@ -31,14 +41,11 @@ export function useLocationPermission() {
         }
       }
 
-      // Request file storage permission (Android)
+      // 3. File storage permission (Android)
       try {
         const { Filesystem } = await import("@capacitor/filesystem");
-        // Requesting permissions triggers the native dialog on Android
         await (Filesystem as any).requestPermissions?.();
-      } catch {
-        // Not on native or already granted - ignore
-      }
+      } catch {}
 
       setAsked(true);
       localStorage.setItem("location-permission-asked", "true");
