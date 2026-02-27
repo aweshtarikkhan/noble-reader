@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { SURAHS, getSurahPageRange } from "@/data/surahs";
 import { QuranAPI } from "@/lib/quranApi";
 import { getIndianPageImage } from "@/data/indianMushaf";
@@ -10,13 +10,38 @@ import QuranPageView, { type QuranStyle, getCacheKey } from "@/components/QuranP
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 const PAGES_PER_BATCH = 4;
+const BISMILLAH = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
+
+interface Ayah {
+  text: string;
+  numberInSurah: number;
+}
 
 const SurahRead: React.FC = () => {
   const { num } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const surahNum = parseInt(num || "1");
   const surah = SURAHS.find((s) => s.number === surahNum);
+
+  const isTextMode = searchParams.get("style") === "text";
   const [style, setStyle] = useState<QuranStyle>(() => (localStorage.getItem("read-quran-style") as QuranStyle) || "indopak");
+
+  // Text mode state
+  const [ayahs, setAyahs] = useState<Ayah[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (isTextMode) {
+      setLoading(true);
+      setError("");
+      QuranAPI.getSurah(surahNum)
+        .then((data) => setAyahs(data.ayahs))
+        .catch(() => setError("Failed to load surah"))
+        .finally(() => setLoading(false));
+    }
+  }, [surahNum, isTextMode]);
 
   if (!surah) return <div className="p-4 text-center text-muted-foreground">Surah not found</div>;
 
@@ -33,6 +58,8 @@ const SurahRead: React.FC = () => {
     return QuranAPI.getMushafPageImage(p);
   };
 
+  const navSuffix = isTextMode ? "?style=text" : "";
+
   return (
     <div className="px-4 py-4">
       {/* Header */}
@@ -40,35 +67,75 @@ const SurahRead: React.FC = () => {
         <h2 className="font-arabic text-2xl text-primary">{surah.name}</h2>
         <p className="text-foreground font-medium mt-1">{surah.englishName}</p>
         <p className="text-xs text-muted-foreground">{surah.translation} • {surah.ayahs} Ayahs • {surah.type}</p>
+        {isTextMode && (
+          <span className="inline-block mt-2 text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary">📝 Line by Line Text</span>
+        )}
       </div>
 
-      {/* Style toggle */}
-      <div className="flex bg-card rounded-xl p-1 border border-primary/10 mb-4 animate-fade-in">
-        <button
-          onClick={() => handleStyleChange("indopak")}
-          className={`flex-1 py-2 text-xs font-medium rounded-lg transition-smooth ${style === "indopak" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-        >
-          🇮🇳 Indo-Pak (16 Line)
-        </button>
-        <button
-          onClick={() => handleStyleChange("saudi")}
-          className={`flex-1 py-2 text-xs font-medium rounded-lg transition-smooth ${style === "saudi" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-        >
-          🇸🇦 Uthmani Script
-        </button>
-      </div>
+      {/* Style toggle (only for image mode) */}
+      {!isTextMode && (
+        <div className="flex bg-card rounded-xl p-1 border border-primary/10 mb-4 animate-fade-in">
+          <button
+            onClick={() => handleStyleChange("indopak")}
+            className={`flex-1 py-2 text-xs font-medium rounded-lg transition-smooth ${style === "indopak" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+          >
+            🇮🇳 Indo-Pak (16 Line)
+          </button>
+          <button
+            onClick={() => handleStyleChange("saudi")}
+            className={`flex-1 py-2 text-xs font-medium rounded-lg transition-smooth ${style === "saudi" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+          >
+            🇸🇦 Uthmani Script
+          </button>
+        </div>
+      )}
 
-      <SurahPagesLoader pages={pages} style={style} getImgUrl={getImgUrl} surahNum={surahNum} />
+      {/* Text mode */}
+      {isTextMode && (
+        <>
+          {loading && <LoadingSpinner />}
+          {error && (
+            <div className="text-center py-8">
+              <p className="text-destructive mb-2">{error}</p>
+              <button onClick={() => window.location.reload()} className="text-primary text-sm underline">Retry</button>
+            </div>
+          )}
+          {!loading && !error && (
+            <div className="animate-fade-in">
+              {surahNum !== 9 && (
+                <p className="font-arabic text-xl text-primary text-center mb-6 leading-relaxed">{BISMILLAH}</p>
+              )}
+              <div className="space-y-3">
+                {ayahs.map((ayah) => (
+                  <div key={ayah.numberInSurah} className="p-4 rounded-xl bg-card/50 border border-primary/5">
+                    <div className="flex items-start gap-3" dir="rtl">
+                      <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-xs text-primary font-bold mt-1">
+                        {ayah.numberInSurah}
+                      </span>
+                      <p className="font-arabic text-lg leading-[2.2] flex-1 text-foreground">{ayah.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Image mode */}
+      {!isTextMode && (
+        <SurahPagesLoader pages={pages} style={style} getImgUrl={getImgUrl} surahNum={surahNum} />
+      )}
 
       {/* Navigation */}
       <div className="flex items-center justify-between mt-6 gap-3">
         {surahNum > 1 && (
-          <button onClick={() => navigate(`/surah-read/${surahNum - 1}`)} className="flex-1 py-3 rounded-xl bg-card border border-primary/10 text-foreground text-sm transition-smooth hover:border-primary/30">
+          <button onClick={() => navigate(`/surah-read/${surahNum - 1}${navSuffix}`)} className="flex-1 py-3 rounded-xl bg-card border border-primary/10 text-foreground text-sm transition-smooth hover:border-primary/30">
             ← {SURAHS[surahNum - 2]?.englishName}
           </button>
         )}
         {surahNum < 114 && (
-          <button onClick={() => navigate(`/surah-read/${surahNum + 1}`)} className="flex-1 py-3 rounded-xl bg-card border border-primary/10 text-foreground text-sm transition-smooth hover:border-primary/30">
+          <button onClick={() => navigate(`/surah-read/${surahNum + 1}${navSuffix}`)} className="flex-1 py-3 rounded-xl bg-card border border-primary/10 text-foreground text-sm transition-smooth hover:border-primary/30">
             {SURAHS[surahNum]?.englishName} →
           </button>
         )}
@@ -147,7 +214,6 @@ const SurahPagesLoader: React.FC<{ pages: number[]; style: QuranStyle; getImgUrl
 
   return (
     <>
-      {/* Download button */}
       <div className="flex items-center justify-between mb-3">
         <span className="text-[11px] text-muted-foreground">
           {pages.length} page{pages.length > 1 ? "s" : ""}

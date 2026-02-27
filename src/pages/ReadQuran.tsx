@@ -60,13 +60,10 @@ const ReadQuran: React.FC = () => {
     setStyle(s);
     localStorage.setItem("read-quran-style", s === "text" ? "saudi" : s);
 
+    // Text mode always goes to reading step (shows surah list for selection)
     if (s === "text") {
-      // For text mode, go to selection
-      if (mode === "complete") {
-        // Text mode complete = just start reading surah 1
-        navigate("/surah-read/1?style=text");
-        return;
-      }
+      setStep("reading");
+      return;
     }
 
     if (mode === "para") {
@@ -368,43 +365,56 @@ const ReadQuran: React.FC = () => {
         </>
       )}
 
-      {/* Complete + Text mode */}
-      {mode === "complete" && style === "text" && (
+      {/* Text mode - shows surah list for all reading modes */}
+      {style === "text" && (
         <div className="animate-fade-in">
-          <p className="text-sm text-muted-foreground mb-4 text-center">Select a surah to start reading in text format</p>
+          <p className="text-sm text-muted-foreground mb-4 text-center">📝 Select a surah to read line by line</p>
           <input
             type="text"
-            placeholder="Search surah..."
+            placeholder="Search surah by name or number..."
             value={surahSearch}
             onChange={(e) => setSurahSearch(e.target.value)}
             className="w-full px-4 py-3 rounded-xl bg-card border border-primary/10 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-smooth mb-4 text-sm"
           />
           <div className="flex flex-col gap-2">
-            {filteredSurahs.map((s, i) => (
-              <button
-                key={s.number}
-                onClick={() => navigate(`/surah-read/${s.number}?style=text`)}
-                className="flex items-center gap-3 p-3 rounded-xl bg-card border border-primary/10 hover:border-primary/30 transition-smooth text-left"
-                style={{ animationDelay: `${Math.min(i * 0.02, 0.5)}s` }}
-              >
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                  <span className="text-primary text-sm font-bold">{s.number}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-sm text-foreground">{s.englishName}</span>
-                    <span className="font-arabic text-primary text-base">{s.name}</span>
+            {filteredSurahs.map((s, i) => {
+              const surahBookmark = getBookmark("surah", "text");
+              const isBookmarked = surahBookmark === s.number;
+              return (
+                <button
+                  key={s.number}
+                  onClick={() => {
+                    setBookmark("surah", "text", s.number);
+                    navigate(`/surah-read/${s.number}?style=text`);
+                  }}
+                  className={`flex items-center gap-3 p-3 rounded-xl bg-card border ${isBookmarked ? "border-primary/40 ring-1 ring-primary/20" : "border-primary/10"} hover:border-primary/30 transition-smooth text-left`}
+                  style={{ animationDelay: `${Math.min(i * 0.02, 0.5)}s` }}
+                >
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                    <span className="text-primary text-sm font-bold">{s.number}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">{s.translation} • {s.ayahs} ayahs</span>
-                </div>
-              </button>
-            ))}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-sm text-foreground">{s.englishName}</span>
+                      <span className="font-arabic text-primary text-base">{s.name}</span>
+                    </div>
+                    <div className="flex items-center justify-between mt-0.5">
+                      <span className="text-xs text-muted-foreground">{s.translation}</span>
+                      <div className="flex items-center gap-2">
+                        {isBookmarked && <Bookmark className="w-3 h-3 text-primary fill-primary" />}
+                        <span className="text-[10px] text-muted-foreground">{s.ayahs} ayahs</span>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
 
       {/* === BY PARA MODE === */}
-      {mode === "para" && (
+      {mode === "para" && style !== "text" && (
         <div className="flex flex-col gap-2 animate-fade-in">
           {juzData.map((juz, i) => {
             const paraBookmark = getBookmark("para", style);
@@ -442,7 +452,7 @@ const ReadQuran: React.FC = () => {
       )}
 
       {/* === BY SURAH MODE === */}
-      {mode === "surah" && (
+      {mode === "surah" && style !== "text" && (
         <div className="animate-fade-in">
           <input
             type="text"
@@ -460,11 +470,7 @@ const ReadQuran: React.FC = () => {
                   key={s.number}
                   onClick={() => {
                     setBookmark("surah", style, s.number);
-                    if (style === "text") {
-                      navigate(`/surah-read/${s.number}?style=text`);
-                    } else {
-                      navigate(`/surah-read/${s.number}`);
-                    }
+                    navigate(`/surah-read/${s.number}`);
                   }}
                   className={`flex items-center gap-3 p-3 rounded-xl bg-card border ${isBookmarked ? "border-primary/40 ring-1 ring-primary/20" : "border-primary/10"} hover:border-primary/30 transition-smooth text-left`}
                   style={{ animationDelay: `${Math.min(i * 0.02, 0.5)}s` }}
