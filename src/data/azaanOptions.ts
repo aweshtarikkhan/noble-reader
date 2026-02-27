@@ -51,6 +51,7 @@ export interface AzaanSettings {
   enabled: boolean;
   selectedAzaanId: string;
   enabledPrayers: Record<PrayerName, boolean>;
+  enabledNotifications: Record<PrayerName, boolean>;
   manualTimings: Record<PrayerName, string>; // empty = auto
   volume: number;
 }
@@ -59,6 +60,13 @@ export const DEFAULT_AZAAN_SETTINGS: AzaanSettings = {
   enabled: false,
   selectedAzaanId: "makkah-1",
   enabledPrayers: {
+    Fajr: true,
+    Dhuhr: true,
+    Asr: true,
+    Maghrib: true,
+    Isha: true,
+  },
+  enabledNotifications: {
     Fajr: true,
     Dhuhr: true,
     Asr: true,
