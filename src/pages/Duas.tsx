@@ -4,6 +4,8 @@ import { DUA_CATEGORIES, DuaTranslation, DuaCategory } from "@/data/duas";
 import { RABBANA_DUAS } from "@/data/rabbanaDuas";
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
+import { useToast } from "@/hooks/use-toast";
+import { shareAsImage } from "@/lib/shareAsImage";
 
 type Lang = "english" | "urdu" | "romanUrdu";
 const LANG_OPTIONS: { key: Lang; label: string }[] = [
@@ -35,6 +37,7 @@ const isRamadanMonth = (): boolean => {
 const Duas: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useI18n();
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [lang, setLang] = useState<Lang>(() => (localStorage.getItem("dua_lang") as Lang) || "english");
   const [showSettings, setShowSettings] = useState(false);
@@ -81,8 +84,18 @@ const Duas: React.FC = () => {
   const togglePin = (catId: string) => { const next = pinnedIds.includes(catId) ? pinnedIds.filter(p => p !== catId) : [...pinnedIds, catId]; setPinnedIds(next); localStorage.setItem("dua_pins", JSON.stringify(next)); };
 
   const shareDua = async (dua: DuaTranslation) => {
-    const text = `${dua.arabic}\n\n${dua[lang]}\n\n${dua.reference ? `📖 ${dua.reference}` : ""}`;
-    if (navigator.share) { try { await navigator.share({ text }); } catch {} } else { await navigator.clipboard.writeText(text); }
+    await shareAsImage(
+      [
+        { text: dua.arabic, font: "bold 28px serif", color: "#ffffff" },
+        { text: "", font: "10px sans-serif", color: "transparent" },
+        { text: dua[lang], font: `18px ${lang === "urdu" ? "serif" : "sans-serif"}`, color: "#d1fae5" },
+        { text: "", font: "8px sans-serif", color: "transparent" },
+        { text: dua.reference ? `📖 ${dua.reference}` : "", font: "13px sans-serif", color: "rgba(255,255,255,0.65)" },
+      ],
+      "#064e3b",
+      800,
+      toast
+    );
   };
 
   const duaKey = (dua: DuaTranslation) => dua.arabic.slice(0, 30);
