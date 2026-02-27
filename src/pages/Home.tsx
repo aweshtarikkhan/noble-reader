@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Languages, List, BookCopy, MapPin, Share2, Clock, LocateFixed, Compass, Search, Building, BellOff, Bell, Headphones, Bookmark, HandHeart } from "lucide-react";
 import { useSharedLocation } from "@/hooks/useSharedLocation";
 import CitySearchDialog from "@/components/CitySearchDialog";
 import { useToast } from "@/hooks/use-toast";
+import { DAILY_HADITHS } from "@/data/hadith";
 
 const QUICK_TOOLS = [
   { icon: BookOpen, title: "Read Quran", path: "/read-quran" },
@@ -55,6 +56,15 @@ const Home: React.FC = () => {
     const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
     return DAILY_AYAHS[dayOfYear % DAILY_AYAHS.length];
   });
+
+  const [hadithLang, setHadithLang] = useState<"english" | "urdu" | "romanUrdu">(() => 
+    (localStorage.getItem("hadith_lang") as any) || "english"
+  );
+
+  const dailyHadith = useMemo(() => {
+    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+    return DAILY_HADITHS[dayOfYear % DAILY_HADITHS.length];
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -254,6 +264,57 @@ const Home: React.FC = () => {
           <div className="flex items-center justify-center gap-6 pt-2">
             <button
               onClick={handleShare}
+              className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 active:scale-95 transition-smooth px-4 py-2 rounded-xl bg-primary/10"
+            >
+              <Share2 className="w-4 h-4" />
+              SHARE
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Daily Hadith */}
+      <div className="rounded-2xl overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 bg-primary/15">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">Daily Hadith</span>
+          <div className="flex gap-1">
+            {(["english", "urdu", "romanUrdu"] as const).map((l) => (
+              <button
+                key={l}
+                onClick={() => { setHadithLang(l); localStorage.setItem("hadith_lang", l); }}
+                className={`text-[9px] px-2 py-0.5 rounded-full font-medium transition-smooth ${
+                  hadithLang === l ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {l === "english" ? "EN" : l === "urdu" ? "UR" : "RU"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="px-5 py-6 bg-card space-y-4">
+          <p className="font-arabic text-xl leading-[2.2] text-foreground text-center" dir="rtl">
+            {dailyHadith.arabic}
+          </p>
+          <p className={`text-sm leading-relaxed text-muted-foreground ${hadithLang === "urdu" ? "text-right font-urdu" : ""}`} dir={hadithLang === "urdu" ? "rtl" : "ltr"}>
+            {dailyHadith[hadithLang]}
+          </p>
+          <div className="flex items-center justify-between pt-1">
+            <p className="text-[10px] text-primary/70 font-medium">📖 {dailyHadith.reference}</p>
+            <p className="text-[10px] text-muted-foreground italic">— {dailyHadith.narrator}</p>
+          </div>
+          <div className="flex items-center justify-center pt-1">
+            <button
+              onClick={async () => {
+                const text = `${dailyHadith.arabic}\n\n${dailyHadith[hadithLang]}\n\n— ${dailyHadith.narrator}\n📖 ${dailyHadith.reference}`;
+                if (navigator.share) {
+                  try { await navigator.share({ title: "Daily Hadith", text }); } catch {}
+                } else {
+                  try {
+                    await navigator.clipboard.writeText(text);
+                    toast({ title: "Copied!", description: "Hadith copied to clipboard" });
+                  } catch {}
+                }
+              }}
               className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 active:scale-95 transition-smooth px-4 py-2 rounded-xl bg-primary/10"
             >
               <Share2 className="w-4 h-4" />
