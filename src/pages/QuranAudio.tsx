@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { SURAHS } from "@/data/surahs";
-import { Play, Pause, SkipBack, SkipForward, Volume2 } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Volume2, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 type AudioMode = "quran" | "translation";
 
@@ -24,7 +25,7 @@ const RECITERS: Reciter[] = [
   { id: "minshawi", name: "Mohamed Siddiq Al-Minshawi", subfolder: "Minshawy_Murattal_128kbps" },
   { id: "husary", name: "Mahmoud Khalil Al-Husary", subfolder: "Husary_128kbps" },
   { id: "abdulbasit", name: "Abdul Basit Abdul Samad", subfolder: "Abdul_Basit_Murattal_192kbps" },
-  { id: "mahermuaiqly", name: "Maher Al Muaiqly", subfolder: "MauroMuaiqly_128kbps" },
+  { id: "mahermuaiqly", name: "Maher Al Muaiqly", subfolder: "MaherAlMuworthy_128kbps" },
   { id: "ajmy", name: "Ahmed Al Ajmy", subfolder: "ahmed_ibn_ali_al_ajamy_128kbps" },
 ];
 
@@ -36,20 +37,20 @@ const URDU_TRANSLATORS: TranslationAuthor[] = [
 const getAudioUrl = (subfolder: string, surahNum: number) =>
   `https://server8.mp3quran.net/${subfolder}/${String(surahNum).padStart(3, "0")}.mp3`;
 
-const getEveryAyahUrl = (subfolder: string, surahNum: number) =>
-  `https://everyayah.com/data/${subfolder}/${String(surahNum).padStart(3, "0")}001.mp3`;
-
 const QuranAudio: React.FC = () => {
+  const { toast } = useToast();
   const [audioMode, setAudioMode] = useState<AudioMode>("quran");
   const [selectedSurah, setSelectedSurah] = useState(1);
   const [selectedReciter, setSelectedReciter] = useState(RECITERS[0].id);
   const [selectedTranslator, setSelectedTranslator] = useState(URDU_TRANSLATORS[0].id);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [search, setSearch] = useState("");
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const pendingPlayRef = useRef(false);
 
   const reciter = RECITERS.find((r) => r.id === selectedReciter)!;
   const translator = URDU_TRANSLATORS.find((t) => t.id === selectedTranslator)!;
@@ -59,56 +60,142 @@ const QuranAudio: React.FC = () => {
     ? getAudioUrl(reciter.subfolder, selectedSurah)
     : getAudioUrl(translator.subfolder, selectedSurah);
 
+  // Create audio element once
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.load();
-      setIsPlaying(false);
-      setProgress(0);
-      setCurrentTime(0);
-      setDuration(0);
-    }
-  }, [audioSrc]);
+    const audio = new Audio();
+    audio.preload = "auto";
+    audio.crossOrigin = "anonymous";
+    audioRef.current = audio;
 
-  const togglePlay = () => {
-    if (!audioRef.current) return;
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
-    }
-    setIsPlaying(!isPlaying);
-  };
+    return () => {
+      audio.pause();
+      audio.src = "";
+      audio.load();
+    };
+  }, []);
 
-  const handleTimeUpdate = () => {
-    if (!audioRef.current) return;
-    setCurrentTime(audioRef.current.currentTime);
-    setDuration(audioRef.current.duration || 0);
-    setProgress(audioRef.current.duration ? (audioRef.current.currentTime / audioRef.current.duration) * 100 : 0);
-  };
+  // Handle source changes
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
 
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!audioRef.current || !duration) return;
-    const time = (parseFloat(e.target.value) / 100) * duration;
-    audioRef.current.currentTime = time;
-    setProgress(parseFloat(e.target.value));
-  };
-
-  const handlePrev = () => {
-    if (selectedSurah > 1) { setSelectedSurah(selectedSurah - 1); }
-  };
-
-  const handleNext = () => {
-    if (selectedSurah < 114) { setSelectedSurah(selectedSurah + 1); }
-  };
-
-  const handleEnded = () => {
+    // Reset state
     setIsPlaying(false);
-    if (selectedSurah < 114) {
-      setSelectedSurah(selectedSurah + 1);
-      setTimeout(() => { audioRef.current?.play(); setIsPlaying(true); }, 500);
+    setIsLoading(true);
+    setProgress(0);
+    setCurrentTime(0);
+    setDuration(0);
+
+    audio.pause();
+    audio.src = audioSrc;
+    audio.load();
+
+    const onCanPlay = () => {
+      setIsLoading(false);
+      setDuration(audio.duration || 0);
+      if (pendingPlayRef.current) {
+        pendingPlayRef.current = false;
+        audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+      }
+    };
+
+    const onTimeUpdate = () => {
+      setCurrentTime(audio.currentTime);
+      setDuration(audio.duration || 0);
+      setProgress(audio.duration ? (audio.currentTime / audio.duration) * 100 : 0);
+    };
+
+    const onEnded = () => {
+      setIsPlaying(false);
+      if (selectedSurah < 114) {
+        pendingPlayRef.current = true;
+        setSelectedSurah(prev => prev + 1);
+      }
+    };
+
+    const onError = (e: Event) => {
+      setIsLoading(false);
+      setIsPlaying(false);
+      console.error("Audio error:", audio.error?.message, audio.src);
+      toast({
+        title: "Audio Error",
+        description: "Could not load audio. Try another reciter or check your connection.",
+        variant: "destructive",
+      });
+    };
+
+    const onWaiting = () => setIsLoading(true);
+    const onPlaying = () => { setIsLoading(false); setIsPlaying(true); };
+    const onPause = () => setIsPlaying(false);
+    const onLoadedMetadata = () => setDuration(audio.duration || 0);
+
+    audio.addEventListener("canplay", onCanPlay);
+    audio.addEventListener("timeupdate", onTimeUpdate);
+    audio.addEventListener("ended", onEnded);
+    audio.addEventListener("error", onError);
+    audio.addEventListener("waiting", onWaiting);
+    audio.addEventListener("playing", onPlaying);
+    audio.addEventListener("pause", onPause);
+    audio.addEventListener("loadedmetadata", onLoadedMetadata);
+
+    return () => {
+      audio.removeEventListener("canplay", onCanPlay);
+      audio.removeEventListener("timeupdate", onTimeUpdate);
+      audio.removeEventListener("ended", onEnded);
+      audio.removeEventListener("error", onError);
+      audio.removeEventListener("waiting", onWaiting);
+      audio.removeEventListener("playing", onPlaying);
+      audio.removeEventListener("pause", onPause);
+      audio.removeEventListener("loadedmetadata", onLoadedMetadata);
+    };
+  }, [audioSrc, selectedSurah, toast]);
+
+  const togglePlay = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (isPlaying) {
+      audio.pause();
+    } else {
+      setIsLoading(true);
+      audio.play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => {
+          console.error("Play failed:", err);
+          setIsPlaying(false);
+          toast({ title: "Playback Failed", description: "Tap again to play", variant: "destructive" });
+        })
+        .finally(() => setIsLoading(false));
     }
-  };
+  }, [isPlaying, toast]);
+
+  const handleSeek = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const audio = audioRef.current;
+    if (!audio || !audio.duration) return;
+    const val = parseFloat(e.target.value);
+    const time = (val / 100) * audio.duration;
+    audio.currentTime = time;
+    setProgress(val);
+    setCurrentTime(time);
+  }, []);
+
+  const handlePrev = useCallback(() => {
+    if (selectedSurah > 1) {
+      pendingPlayRef.current = isPlaying;
+      setSelectedSurah(prev => prev - 1);
+    }
+  }, [selectedSurah, isPlaying]);
+
+  const handleNext = useCallback(() => {
+    if (selectedSurah < 114) {
+      pendingPlayRef.current = isPlaying;
+      setSelectedSurah(prev => prev + 1);
+    }
+  }, [selectedSurah, isPlaying]);
+
+  const selectSurah = useCallback((num: number) => {
+    pendingPlayRef.current = true;
+    setSelectedSurah(num);
+  }, []);
 
   const formatTime = (t: number) => {
     if (!t || isNaN(t)) return "0:00";
@@ -126,10 +213,8 @@ const QuranAudio: React.FC = () => {
 
   return (
     <div className="px-4 py-4">
-      <audio ref={audioRef} src={audioSrc} onTimeUpdate={handleTimeUpdate} onEnded={handleEnded} onLoadedMetadata={handleTimeUpdate} />
-
       {/* Audio mode toggle */}
-      <div className="flex bg-card rounded-xl p-1 border border-primary/10 mb-4 animate-fade-in">
+      <div className="flex bg-card rounded-xl p-1 border border-border mb-4 animate-fade-in">
         <button
           onClick={() => setAudioMode("quran")}
           className={`flex-1 py-2 text-xs font-medium rounded-lg transition-smooth ${audioMode === "quran" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
@@ -145,7 +230,7 @@ const QuranAudio: React.FC = () => {
       </div>
 
       {/* Now Playing Card */}
-      <div className="bg-card rounded-2xl border border-primary/10 p-4 mb-4 animate-fade-in">
+      <div className="bg-card rounded-2xl border border-border p-4 mb-4 animate-fade-in">
         <div className="text-center mb-3">
           <p className="font-arabic text-2xl text-primary mb-1">{surah.name}</p>
           <p className="text-sm font-medium text-foreground">{surah.englishName}</p>
@@ -158,6 +243,7 @@ const QuranAudio: React.FC = () => {
             type="range"
             min="0"
             max="100"
+            step="0.1"
             value={progress}
             onChange={handleSeek}
             className="w-full h-1.5 bg-muted rounded-full appearance-none cursor-pointer accent-primary"
@@ -173,8 +259,14 @@ const QuranAudio: React.FC = () => {
           <button onClick={handlePrev} disabled={selectedSurah <= 1} className="p-2 rounded-full hover:bg-muted transition-smooth disabled:opacity-30">
             <SkipBack className="w-5 h-5 text-foreground" />
           </button>
-          <button onClick={togglePlay} className="w-14 h-14 rounded-full bg-primary flex items-center justify-center transition-smooth active:scale-95">
-            {isPlaying ? <Pause className="w-6 h-6 text-primary-foreground" /> : <Play className="w-6 h-6 text-primary-foreground ml-0.5" />}
+          <button onClick={togglePlay} className="w-14 h-14 rounded-full bg-primary flex items-center justify-center transition-smooth active:scale-95" disabled={isLoading}>
+            {isLoading ? (
+              <Loader2 className="w-6 h-6 text-primary-foreground animate-spin" />
+            ) : isPlaying ? (
+              <Pause className="w-6 h-6 text-primary-foreground" />
+            ) : (
+              <Play className="w-6 h-6 text-primary-foreground ml-0.5" />
+            )}
           </button>
           <button onClick={handleNext} disabled={selectedSurah >= 114} className="p-2 rounded-full hover:bg-muted transition-smooth disabled:opacity-30">
             <SkipForward className="w-5 h-5 text-foreground" />
@@ -189,7 +281,7 @@ const QuranAudio: React.FC = () => {
       </div>
 
       {/* Reciter / Translator selection */}
-      <div className="bg-card rounded-xl border border-primary/10 p-3 mb-4 animate-fade-in">
+      <div className="bg-card rounded-xl border border-border p-3 mb-4 animate-fade-in">
         <p className="text-xs font-medium text-foreground mb-2">
           {audioMode === "quran" ? "🎙️ Select Reciter" : "📝 Select Translator"}
         </p>
@@ -227,18 +319,15 @@ const QuranAudio: React.FC = () => {
           placeholder="Search surah..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl bg-card border border-primary/10 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-smooth mb-3 text-sm"
+          className="w-full px-4 py-3 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-smooth mb-3 text-sm"
         />
         <div className="flex flex-col gap-1.5">
           {filteredSurahs.map((s) => (
             <button
               key={s.number}
-              onClick={() => {
-                setSelectedSurah(s.number);
-                setTimeout(() => { audioRef.current?.play(); setIsPlaying(true); }, 300);
-              }}
+              onClick={() => selectSurah(s.number)}
               className={`flex items-center gap-3 p-3 rounded-xl border transition-smooth text-left ${
-                selectedSurah === s.number ? "bg-primary/10 border-primary/30" : "bg-card border-primary/10 hover:border-primary/20"
+                selectedSurah === s.number ? "bg-primary/10 border-primary/30" : "bg-card border-border hover:border-primary/20"
               }`}
             >
               <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
