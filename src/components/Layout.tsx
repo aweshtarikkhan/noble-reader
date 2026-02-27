@@ -1,14 +1,15 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, BookOpen, Headphones, Clock, Bookmark } from "lucide-react";
+import { Home, BookOpen, Headphones, Clock, PlayCircle } from "lucide-react";
 import ExitDialog from "./ExitDialog";
 import ThemeToggle from "./ThemeToggle";
 import { useBackHandler } from "@/hooks/useBackHandler";
+import { getBookmarks } from "@/lib/bookmarks";
 
 const NAV_ITEMS = [
   { path: "/", icon: Home, label: "Home" },
   { path: "/read-quran", icon: BookOpen, label: "Quran" },
-  { path: "/bookmarks", icon: Bookmark, label: "Bookmarks" },
+  { path: "__continue__", icon: PlayCircle, label: "Continue" },
   { path: "/quran-audio", icon: Headphones, label: "Audio" },
   { path: "/prayer-times", icon: Clock, label: "Namaz" },
 ];
@@ -92,12 +93,38 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className="flex items-center justify-around h-[64px]">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path || 
-              (item.path !== "/" && location.pathname.startsWith(item.path));
+            const isContinue = item.path === "__continue__";
+            const isActive = isContinue
+              ? false
+              : location.pathname === item.path || 
+                (item.path !== "/" && location.pathname.startsWith(item.path));
+            
+            const handleClick = () => {
+              if (isContinue) {
+                const bookmarks = getBookmarks();
+                if (bookmarks.length > 0) {
+                  const last = bookmarks[0];
+                  if (last.mode === "complete") {
+                    navigate(`/mushaf?page=${last.page}&style=${last.style === "indopak" ? "indopak" : "saudi"}`);
+                  } else if (last.mode === "para" && last.paraNum) {
+                    navigate(`/para-read/${last.paraNum}?page=${last.page}&style=${last.style}`);
+                  } else if (last.mode === "surah" && last.surahNum) {
+                    navigate(`/surah-read/${last.surahNum}?page=${last.page}&style=${last.style}`);
+                  } else {
+                    navigate("/bookmarks");
+                  }
+                } else {
+                  navigate("/bookmarks");
+                }
+              } else {
+                navigate(item.path);
+              }
+            };
+
             return (
               <button
                 key={item.path}
-                onClick={() => navigate(item.path)}
+                onClick={handleClick}
                 className={`flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl transition-smooth active:scale-95 relative ${
                   isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 }`}

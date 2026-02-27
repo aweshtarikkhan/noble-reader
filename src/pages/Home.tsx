@@ -33,7 +33,11 @@ const getIslamicDate = () => {
     const formatter = new Intl.DateTimeFormat('en-u-ca-islamic-civil', {
       day: 'numeric', month: 'long', year: 'numeric'
     });
-    return formatter.format(adjusted);
+    const parts = formatter.formatToParts(adjusted);
+    const day = parts.find(p => p.type === 'day')?.value || '';
+    const month = parts.find(p => p.type === 'month')?.value || '';
+    const year = parts.find(p => p.type === 'year')?.value || '';
+    return `${day} ${month} ${year}`;
   } catch {
     return "";
   }
