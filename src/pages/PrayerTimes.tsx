@@ -130,8 +130,8 @@ const PrayerTimes: React.FC = () => {
           {/* Hijri Date */}
           {hijri && (
             <div className="p-4 rounded-2xl bg-card border border-gold/10 shadow-gold text-center">
-              <p className="font-arabic text-2xl text-gold">
-                {hijri.day} {HIJRI_MONTHS[parseInt(hijri.month.number) - 1] || hijri.month.ar} {hijri.year}
+              <p className="text-2xl font-bold text-gold">
+                {hijri.day} {hijri.month.en || HIJRI_MONTHS[parseInt(hijri.month.number) - 1]} {hijri.year}
               </p>
               {gregorian && (
                 <p className="text-xs text-muted-foreground mt-1">
