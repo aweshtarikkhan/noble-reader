@@ -1795,113 +1795,71 @@ export const DUA_CATEGORIES: DuaCategory[] = [
   },
   // ===== RAMADAN =====
   {
-    id: "ramadan-moon-sighting",
-    name: "For Ramadan Moon Sighting Dua",
+    id: "ramadan-duas",
+    name: "Ramadan Duas",
     duas: [
       {
         arabic: "اللَّهُمَّ أَهِلَّهُ عَلَيْنَا بِالْأَمْنِ وَالْإِيمَانِ وَالسَّلَامَةِ وَالْإِسْلَامِ رَبِّي وَرَبُّكَ اللَّهُ",
         english: "O Allah, let this moon appear on us with security, faith, safety, and Islam. My Lord and your Lord is Allah.",
         urdu: "اے اللہ! اس چاند کو ہم پر امن، ایمان، سلامتی اور اسلام کے ساتھ طلوع فرما۔ میرا اور تیرا رب اللہ ہے۔",
         romanUrdu: "Allahumma ahillahu 'alaina bil-amni wal-imani was-salamati wal-Islami Rabbi wa Rabbukallah.",
-        reference: "Tirmidhi"
-      }
-    ]
-  },
-  {
-    id: "fasting-sehri",
-    name: "For Fasting - Sehri Dua",
-    duas: [
+        reference: "Tirmidhi — Moon Sighting Dua"
+      },
       {
         arabic: "وَبِصَوْمِ غَدٍ نَوَيْتُ مِنْ شَهْرِ رَمَضَانَ",
         english: "I intend to keep the fast for tomorrow in the month of Ramadan.",
         urdu: "میں نے ماہ رمضان کے کل کے روزے کی نیت کی۔",
         romanUrdu: "Wa bisawmi ghadin nawaitu min shahri Ramadan.",
-        reference: "Abu Dawud"
-      }
-    ]
-  },
-  {
-    id: "breaking-fast-iftar",
-    name: "For Breaking Fast - Iftar Dua",
-    duas: [
+        reference: "Abu Dawud — Sehri Dua"
+      },
       {
         arabic: "اللَّهُمَّ إِنِّي لَكَ صُمْتُ وَبِكَ آمَنْتُ وَعَلَيْكَ تَوَكَّلْتُ وَعَلَى رِزْقِكَ أَفْطَرْتُ",
         english: "O Allah, I fasted for You, I believed in You, I put my trust in You, and I break my fast with Your sustenance.",
         urdu: "اے اللہ! میں نے تیرے لیے روزہ رکھا اور تجھ پر ایمان لایا اور تجھ پر بھروسہ کیا اور تیرے رزق سے افطار کیا۔",
         romanUrdu: "Allahumma inni laka sumtu wa bika amantu wa 'alaika tawakkaltu wa 'ala rizqika aftartu.",
-        reference: "Abu Dawud"
+        reference: "Abu Dawud — Iftar Dua"
       },
       {
         arabic: "ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ وَثَبَتَ الْأَجْرُ إِنْ شَاءَ اللَّهُ",
         english: "The thirst has gone, the veins have been moistened, and the reward is confirmed, if Allah wills.",
         urdu: "پیاس بجھ گئی اور رگیں تر ہو گئیں اور اجر ثابت ہو گیا ان شاء اللہ۔",
         romanUrdu: "Dhahaba adh-dhama'u wabtallatil 'urooqu wa thabatal ajru insha'Allah.",
-        reference: "Abu Dawud"
-      }
-    ]
-  },
-  {
-    id: "iftar-provider",
-    name: "For Someone Who Provides You with Iftar",
-    duas: [
+        reference: "Abu Dawud — Iftar Dua"
+      },
       {
         arabic: "أَفْطَرَ عِنْدَكُمُ الصَّائِمُونَ وَأَكَلَ طَعَامَكُمُ الْأَبْرَارُ وَصَلَّتْ عَلَيْكُمُ الْمَلَائِكَةُ",
         english: "May the fasting people break their fast in your home. May the pious eat your food and may the angels send blessings upon you.",
         urdu: "روزہ دار تمہارے ہاں افطار کریں، نیک لوگ تمہارا کھانا کھائیں اور فرشتے تم پر رحمت بھیجیں۔",
         romanUrdu: "Aftara 'indakumus-sa'imoona wa akala ta'amakumul abraru wa sallat 'alaikumul mala'ikah.",
-        reference: "Abu Dawud"
-      }
-    ]
-  },
-  {
-    id: "first-ashra",
-    name: "For the First 10 Days of Ramadan - 1st Ashra Dua",
-    duas: [
+        reference: "Abu Dawud — For Iftar Provider"
+      },
       {
         arabic: "رَبِّ اغْفِرْ وَارْحَمْ وَأَنْتَ خَيْرُ الرَّاحِمِينَ",
         english: "My Lord, forgive and have mercy, and You are the best of the merciful.",
         urdu: "اے میرے رب! بخش دے اور رحم فرما اور تو سب سے بہتر رحم کرنے والا ہے۔",
         romanUrdu: "Rabbighfir warham wa anta khairur-rahimeen.",
-        reference: "Quran 23:118"
-      }
-    ]
-  },
-  {
-    id: "second-ashra",
-    name: "For Second 10 Days - 2nd Ashra Dua",
-    duas: [
+        reference: "Quran 23:118 — 1st Ashra (Mercy)"
+      },
       {
         arabic: "أَسْتَغْفِرُ اللَّهَ رَبِّي مِنْ كُلِّ ذَنْبٍ وَأَتُوبُ إِلَيْهِ",
         english: "I seek forgiveness from Allah, my Lord, from every sin and I turn to Him in repentance.",
         urdu: "میں اللہ سے ہر گناہ کی بخشش مانگتا ہوں اور اس کی طرف توبہ کرتا ہوں۔",
         romanUrdu: "Astaghfirullaha Rabbi min kulli dhambin wa atubu ilaih.",
-        reference: "Hadith"
-      }
-    ]
-  },
-  {
-    id: "third-ashra",
-    name: "For the Last 10 Days of Ramadan - 3rd Ashra Dua",
-    duas: [
+        reference: "Hadith — 2nd Ashra (Forgiveness)"
+      },
       {
         arabic: "اللَّهُمَّ أَجِرْنِي مِنَ النَّارِ",
         english: "O Allah, save me from the Fire.",
         urdu: "اے اللہ! مجھے آگ سے بچا لے۔",
         romanUrdu: "Allahumma ajirni minan-nar.",
-        reference: "Hadith"
-      }
-    ]
-  },
-  {
-    id: "laylatul-qadr",
-    name: "For Laylatul Qadr (Night of Destiny)",
-    duas: [
+        reference: "Hadith — 3rd Ashra (Protection from Fire)"
+      },
       {
         arabic: "اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي",
         english: "O Allah, You are Forgiving and love forgiveness, so forgive me.",
         urdu: "اے اللہ! تو معاف کرنے والا ہے، معافی کو پسند کرتا ہے پس مجھے معاف فرما دے۔",
         romanUrdu: "Allahumma innaka 'afuwwun tuhibbul 'afwa fa'fu 'anni.",
-        reference: "Tirmidhi"
+        reference: "Tirmidhi — Laylatul Qadr"
       }
     ]
   },
