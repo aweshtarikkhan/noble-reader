@@ -176,7 +176,7 @@ const ParaPagesLoader: React.FC<{ pages: number[]; style: QuranStyle; getImgUrl:
 
       <div className="space-y-4">
         {visiblePages.map((p) => (
-          <QuranPageView key={`${style}_${p}`} page={p} style={style} getImgUrl={getImgUrl} />
+          <QuranPageView key={`${style}_${p}`} page={p} style={style} getImgUrl={getImgUrl} mode="para" context={`Para ${juzNum}`} paraNum={juzNum} />
         ))}
       </div>
 

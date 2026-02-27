@@ -353,7 +353,7 @@ const ReadQuran: React.FC = () => {
                       <div className="flex-1 h-px bg-primary/20" />
                     </div>
                   )}
-                  <QuranPageView page={p} style={style as QuranStyle} getImgUrl={getImgUrl} />
+                  <QuranPageView page={p} style={style as QuranStyle} getImgUrl={getImgUrl} mode="complete" context="Complete Quran" />
                 </React.Fragment>
               );
             })}
