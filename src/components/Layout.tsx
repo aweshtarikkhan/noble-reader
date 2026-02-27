@@ -29,6 +29,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (p.startsWith("/read-quran")) return "Read Quran";
     if (p.startsWith("/bookmarks")) return "Bookmarks";
     if (p.startsWith("/qibla")) return "Qibla Direction";
+    if (p.startsWith("/duas")) return "Duas";
     if (p.startsWith("/quran-audio")) return "Quran Audio";
     if (p.startsWith("/para-read")) return "Para Reading";
     if (p.startsWith("/para")) return "Para / Juz";
