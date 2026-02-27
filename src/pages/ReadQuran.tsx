@@ -7,6 +7,7 @@ import { getCachedCount, getCachedPage, setCachedPage, downloadImageAsDataUrl } 
 import { getIndianPageImageFallback } from "@/data/indianMushaf";
 import QuranPageView, { type QuranStyle, getCacheKey } from "@/components/QuranPageView";
 import { BookOpen, BookMarked, Bookmark, ChevronRight, ArrowLeft } from "lucide-react";
+import CompleteTextReader from "@/components/CompleteTextReader";
 
 type ReadMode = "complete" | "para" | "surah";
 type StyleOption = "indopak" | "saudi" | "text";
@@ -365,56 +366,13 @@ const ReadQuran: React.FC = () => {
         </>
       )}
 
-      {/* Text mode - shows surah list for all reading modes */}
-      {style === "text" && (
-        <div className="animate-fade-in">
-          <p className="text-sm text-muted-foreground mb-4 text-center">📝 Select a surah to read line by line</p>
-          <input
-            type="text"
-            placeholder="Search surah by name or number..."
-            value={surahSearch}
-            onChange={(e) => setSurahSearch(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-card border border-primary/10 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-smooth mb-4 text-sm"
-          />
-          <div className="flex flex-col gap-2">
-            {filteredSurahs.map((s, i) => {
-              const surahBookmark = getBookmark("surah", "text");
-              const isBookmarked = surahBookmark === s.number;
-              return (
-                <button
-                  key={s.number}
-                  onClick={() => {
-                    setBookmark("surah", "text", s.number);
-                    navigate(`/surah-read/${s.number}?style=text`);
-                  }}
-                  className={`flex items-center gap-3 p-3 rounded-xl bg-card border ${isBookmarked ? "border-primary/40 ring-1 ring-primary/20" : "border-primary/10"} hover:border-primary/30 transition-smooth text-left`}
-                  style={{ animationDelay: `${Math.min(i * 0.02, 0.5)}s` }}
-                >
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                    <span className="text-primary text-sm font-bold">{s.number}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm text-foreground">{s.englishName}</span>
-                      <span className="font-arabic text-primary text-base">{s.name}</span>
-                    </div>
-                    <div className="flex items-center justify-between mt-0.5">
-                      <span className="text-xs text-muted-foreground">{s.translation}</span>
-                      <div className="flex items-center gap-2">
-                        {isBookmarked && <Bookmark className="w-3 h-3 text-primary fill-primary" />}
-                        <span className="text-[10px] text-muted-foreground">{s.ayahs} ayahs</span>
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+      {/* === COMPLETE QURAN in TEXT MODE === */}
+      {mode === "complete" && style === "text" && (
+        <CompleteTextReader />
       )}
 
       {/* === BY PARA MODE === */}
-      {mode === "para" && style !== "text" && (
+      {mode === "para" && (
         <div className="flex flex-col gap-2 animate-fade-in">
           {juzData.map((juz, i) => {
             const paraBookmark = getBookmark("para", style);
@@ -424,7 +382,7 @@ const ReadQuran: React.FC = () => {
                 key={juz.number}
                 onClick={() => {
                   setBookmark("para", style, juz.number);
-                  navigate(`/para-read/${juz.number}`);
+                  navigate(`/para-read/${juz.number}${style === "text" ? "?style=text" : ""}`);
                 }}
                 className={`flex items-center gap-3 p-4 rounded-xl bg-card border ${isBookmarked ? "border-primary/40 ring-1 ring-primary/20" : "border-primary/10"} hover:border-primary/30 transition-smooth text-left`}
                 style={{ animationDelay: `${i * 0.03}s` }}
@@ -452,7 +410,7 @@ const ReadQuran: React.FC = () => {
       )}
 
       {/* === BY SURAH MODE === */}
-      {mode === "surah" && style !== "text" && (
+      {mode === "surah" && (
         <div className="animate-fade-in">
           <input
             type="text"
@@ -470,7 +428,7 @@ const ReadQuran: React.FC = () => {
                   key={s.number}
                   onClick={() => {
                     setBookmark("surah", style, s.number);
-                    navigate(`/surah-read/${s.number}`);
+                    navigate(`/surah-read/${s.number}${style === "text" ? "?style=text" : ""}`);
                   }}
                   className={`flex items-center gap-3 p-3 rounded-xl bg-card border ${isBookmarked ? "border-primary/40 ring-1 ring-primary/20" : "border-primary/10"} hover:border-primary/30 transition-smooth text-left`}
                   style={{ animationDelay: `${Math.min(i * 0.02, 0.5)}s` }}
