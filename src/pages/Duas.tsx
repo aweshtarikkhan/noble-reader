@@ -11,7 +11,10 @@ const LANG_OPTIONS: { key: Lang; label: string }[] = [
   { key: "romanUrdu", label: "Roman Urdu" },
 ];
 
-// Default pinned dua IDs
+// These are ALWAYS pinned at top and cannot be unpinned
+const PERMANENT_PINS = ["ramadan-duas", "40-rabbana-duas"];
+
+// Default pinned dua IDs (user can unpin these)
 const DEFAULT_PINS = [
   "waking-up", "before-sleeping", "before-starting-anything", "entering-home",
   "leaving-home", "beginning-meal", "after-meal", "entering-mosque",
@@ -81,10 +84,11 @@ const Duas: React.FC = () => {
   }, []);
 
   const sortedCategories = useMemo(() => {
-    // Pinned ones first, keeping original order otherwise
-    const pinned = allCategories.filter(c => pinnedIds.includes(c.id));
-    const unpinned = allCategories.filter(c => !pinnedIds.includes(c.id));
-    return [...pinned, ...unpinned];
+    // Permanent pins always at top (Ramadan, Rabbana)
+    const permanent = allCategories.filter(c => PERMANENT_PINS.includes(c.id));
+    const userPinned = allCategories.filter(c => pinnedIds.includes(c.id) && !PERMANENT_PINS.includes(c.id));
+    const unpinned = allCategories.filter(c => !pinnedIds.includes(c.id) && !PERMANENT_PINS.includes(c.id));
+    return [...permanent, ...userPinned, ...unpinned];
   }, [allCategories, pinnedIds]);
 
   const filtered = useMemo(() => {
