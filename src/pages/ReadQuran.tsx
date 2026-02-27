@@ -8,20 +8,20 @@ import { getIndianPageImageFallback } from "@/data/indianMushaf";
 import QuranPageView, { type QuranStyle, getCacheKey } from "@/components/QuranPageView";
 import { BookOpen, BookMarked, Bookmark, ChevronRight, ArrowLeft } from "lucide-react";
 import CompleteTextReader from "@/components/CompleteTextReader";
+import StyleSwitcher, { type ReadingStyle } from "@/components/StyleSwitcher";
 
 type ReadMode = "complete" | "para" | "surah";
-type StyleOption = "indopak" | "saudi" | "text";
-type WizardStep = "mode" | "style" | "reading";
+type WizardStep = "mode" | "reading";
 
 // Bookmark helpers
-const getBookmarkKey = (mode: ReadMode, style: StyleOption) => `bookmark_${mode}_${style}`;
+const getBookmarkKey = (mode: ReadMode, style: string) => `bookmark_${mode}_${style}`;
 
-const getBookmark = (mode: ReadMode, style: StyleOption): number => {
+const getBookmark = (mode: ReadMode, style: string): number => {
   const val = localStorage.getItem(getBookmarkKey(mode, style));
   return val ? parseInt(val) : 1;
 };
 
-const setBookmark = (mode: ReadMode, style: StyleOption, page: number) => {
+const setBookmark = (mode: ReadMode, style: string, page: number) => {
   localStorage.setItem(getBookmarkKey(mode, style), String(page));
 };
 
@@ -29,7 +29,11 @@ const ReadQuran: React.FC = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState<WizardStep>("mode");
   const [mode, setMode] = useState<ReadMode>("complete");
-  const [style, setStyle] = useState<StyleOption>("indopak");
+  const [readingStyle, setReadingStyle] = useState<ReadingStyle>(
+    () => (localStorage.getItem("read-quran-style-full") as ReadingStyle) || "indopak"
+  );
+
+  const imageStyle: QuranStyle = readingStyle === "text" ? "indopak" : readingStyle;
 
   // Complete reading state
   const [pages, setPages] = useState<number[]>([]);
@@ -46,45 +50,41 @@ const ReadQuran: React.FC = () => {
   // Surah/Para search
   const [surahSearch, setSurahSearch] = useState("");
 
-  const totalPages = style === "indopak" ? TOTAL_PAGES_INDIAN : TOTAL_PAGES;
-  const juzData = style === "indopak" ? INDIAN_JUZ_DATA : JUZ_DATA;
+  const totalPages = imageStyle === "indopak" ? TOTAL_PAGES_INDIAN : TOTAL_PAGES;
+  const juzData = imageStyle === "indopak" ? INDIAN_JUZ_DATA : JUZ_DATA;
 
-  // Bookmark for current page in complete mode
-  const currentBookmark = getBookmark(mode, style);
+  const currentBookmark = getBookmark(mode, readingStyle);
 
   const handleModeSelect = (m: ReadMode) => {
     setMode(m);
-    setStep("style");
+    if (m === "complete") {
+      setStep("reading");
+      const start = getBookmark("complete", readingStyle);
+      const tp = readingStyle === "text" ? TOTAL_PAGES_INDIAN : (readingStyle === "indopak" ? TOTAL_PAGES_INDIAN : TOTAL_PAGES);
+      const initial = Array.from({ length: 5 }, (_, i) => start + i).filter((p) => p <= tp);
+      setPages(initial);
+      window.scrollTo(0, 0);
+    } else {
+      setStep("reading");
+    }
   };
 
-  const handleStyleSelect = (s: StyleOption) => {
-    setStyle(s);
-    localStorage.setItem("read-quran-style", s === "text" ? "saudi" : s);
-
-    // Text mode always goes to reading step (shows surah list for selection)
-    if (s === "text") {
-      setStep("reading");
-      return;
-    }
-
-    if (mode === "para") {
-      setStep("reading");
-    } else if (mode === "surah") {
-      setStep("reading");
-    } else {
-      // Complete mode
-      setStep("reading");
+  const handleStyleChange = (s: ReadingStyle) => {
+    setReadingStyle(s);
+    localStorage.setItem("read-quran-style-full", s);
+    // Reset pages for complete mode when style changes
+    if (mode === "complete" && s !== "text") {
+      const tp = s === "indopak" ? TOTAL_PAGES_INDIAN : TOTAL_PAGES;
       const start = getBookmark("complete", s);
-      const initial = Array.from({ length: 5 }, (_, i) => start + i).filter((p) => p <= (s === "indopak" ? TOTAL_PAGES_INDIAN : TOTAL_PAGES));
+      const initial = Array.from({ length: 5 }, (_, i) => start + i).filter((p) => p <= tp);
       setPages(initial);
       window.scrollTo(0, 0);
     }
   };
 
   const handleBack = () => {
-    if (step === "style") setStep("mode");
-    else if (step === "reading") {
-      setStep("style");
+    if (step === "reading") {
+      setStep("mode");
       setPages([]);
       setDownloading(false);
       downloadAbort.current = true;
@@ -93,20 +93,20 @@ const ReadQuran: React.FC = () => {
 
   // Complete mode: save bookmark on scroll
   useEffect(() => {
-    if (step !== "reading" || mode !== "complete" || pages.length === 0) return;
-    setBookmark("complete", style, pages[0]);
-  }, [pages, step, mode, style]);
+    if (step !== "reading" || mode !== "complete" || readingStyle === "text" || pages.length === 0) return;
+    setBookmark("complete", readingStyle, pages[0]);
+  }, [pages, step, mode, readingStyle]);
 
   // Download cache count
   useEffect(() => {
-    if (step === "reading" && mode === "complete" && style !== "text") {
-      getCachedCount(`${style}_page_`, totalPages).then(setCachedPages);
+    if (step === "reading" && mode === "complete" && readingStyle !== "text") {
+      getCachedCount(`${imageStyle}_page_`, totalPages).then(setCachedPages);
     }
-  }, [style, totalPages, step, mode]);
+  }, [imageStyle, totalPages, step, mode, readingStyle]);
 
   // Infinite scroll
   useEffect(() => {
-    if (step !== "reading" || mode !== "complete") return;
+    if (step !== "reading" || mode !== "complete" || readingStyle === "text") return;
     const handleScroll = () => {
       if (loadingRef.current) return;
       if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 800) {
@@ -115,7 +115,7 @@ const ReadQuran: React.FC = () => {
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [pages, totalPages, step, mode]);
+  }, [pages, totalPages, step, mode, readingStyle]);
 
   const loadMore = () => {
     if (loadingRef.current) return;
@@ -133,14 +133,14 @@ const ReadQuran: React.FC = () => {
     if (p >= 1 && p <= totalPages) {
       const newPages = Array.from({ length: 5 }, (_, i) => p + i).filter((pg) => pg <= totalPages);
       setPages(newPages);
-      setBookmark("complete", style, p);
+      setBookmark("complete", readingStyle, p);
       window.scrollTo(0, 0);
       setJumpTo("");
     }
   };
 
   const getImgUrl = (p: number) => {
-    if (style === "indopak") return getIndianPageImage(p);
+    if (imageStyle === "indopak") return getIndianPageImage(p);
     return QuranAPI.getMushafPageImage(p);
   };
 
@@ -151,19 +151,19 @@ const ReadQuran: React.FC = () => {
     setDownloadProgress(0);
     for (let i = 1; i <= totalPages; i++) {
       if (downloadAbort.current) break;
-      const key = getCacheKey(style as QuranStyle, i);
+      const key = getCacheKey(imageStyle, i);
       const existing = await getCachedPage(key);
       if (existing) { setDownloadProgress(i); continue; }
-      const primaryUrl = style === "indopak" ? getIndianPageImage(i) : QuranAPI.getMushafPageImage(i);
+      const primaryUrl = imageStyle === "indopak" ? getIndianPageImage(i) : QuranAPI.getMushafPageImage(i);
       let dataUrl = await downloadImageAsDataUrl(primaryUrl);
-      if (!dataUrl && style === "indopak") dataUrl = await downloadImageAsDataUrl(getIndianPageImageFallback(i));
-      if (!dataUrl && style === "saudi") {
+      if (!dataUrl && imageStyle === "indopak") dataUrl = await downloadImageAsDataUrl(getIndianPageImageFallback(i));
+      if (!dataUrl && imageStyle === "saudi") {
         for (const fb of QuranAPI.getMushafPageImageFallbacks(i)) { dataUrl = await downloadImageAsDataUrl(fb); if (dataUrl) break; }
       }
       if (dataUrl) await setCachedPage(key, dataUrl);
       setDownloadProgress(i);
     }
-    const count = await getCachedCount(`${style}_page_`, totalPages);
+    const count = await getCachedCount(`${imageStyle}_page_`, totalPages);
     setCachedPages(count);
     setDownloading(false);
   };
@@ -221,68 +221,21 @@ const ReadQuran: React.FC = () => {
     );
   }
 
-  // ============= STEP 2: Choose Style =============
-  if (step === "style") {
-    const modeLabel = mode === "complete" ? "Complete Quran" : mode === "para" ? "By Para" : "By Surah";
-    return (
-      <div className="px-4 py-6">
-        <button onClick={handleBack} className="flex items-center gap-1.5 text-sm text-muted-foreground mb-6 hover:text-foreground transition-smooth">
-          <ArrowLeft className="w-4 h-4" /> Back
-        </button>
-
-        <div className="text-center mb-8 animate-fade-in">
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-            <BookMarked className="w-8 h-8 text-primary" />
-          </div>
-          <h1 className="text-xl font-bold text-foreground">Choose Script Style</h1>
-          <p className="text-sm text-muted-foreground mt-1">Reading: {modeLabel}</p>
-        </div>
-
-        <div className="flex flex-col gap-3">
-          {([
-            { key: "indopak" as StyleOption, icon: "🇮🇳", title: "Indo-Pak Script", desc: "16-line Taj Company style, commonly used in South Asia", detail: "Naskh script with ruku markers" },
-            { key: "saudi" as StyleOption, icon: "🇸🇦", title: "Uthmani Script", desc: "Standard Madani mushaf style used in Saudi Arabia", detail: "15-line Madinah Mushaf" },
-            { key: "text" as StyleOption, icon: "📝", title: "Line by Line (Text)", desc: "Digital text format with clear ayah numbering", detail: "Searchable Arabic text" },
-          ]).map((s, i) => (
-            <button
-              key={s.key}
-              onClick={() => handleStyleSelect(s.key)}
-              className="flex items-center gap-4 p-5 rounded-2xl bg-card border border-primary/10 hover:border-primary/30 transition-smooth text-left animate-fade-in active:scale-[0.98]"
-              style={{ animationDelay: `${i * 0.1}s` }}
-            >
-              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <span className="text-2xl">{s.icon}</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="font-semibold text-base text-foreground">{s.title}</span>
-                <p className="text-xs text-muted-foreground mt-0.5">{s.desc}</p>
-                <p className="text-[10px] text-primary mt-1">{s.detail}</p>
-              </div>
-              <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // ============= STEP 3: Reading =============
+  // ============= STEP 2: Reading =============
   return (
     <div ref={containerRef} className="px-4 py-4">
-      {/* Top bar with back + bookmark info */}
+      {/* Top bar with back */}
       <div className="flex items-center justify-between mb-4 animate-fade-in">
         <button onClick={handleBack} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-smooth">
-          <ArrowLeft className="w-4 h-4" /> Change Style
+          <ArrowLeft className="w-4 h-4" /> Back
         </button>
-        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-primary/10">
-          <span className="text-[10px] font-medium text-primary">
-            {style === "indopak" ? "🇮🇳 Indo-Pak" : style === "saudi" ? "🇸🇦 Uthmani" : "📝 Text"}
-          </span>
-        </div>
       </div>
 
-      {/* === COMPLETE QURAN MODE === */}
-      {mode === "complete" && style !== "text" && (
+      {/* Style switcher - always visible */}
+      <StyleSwitcher style={readingStyle} onChange={handleStyleChange} />
+
+      {/* === COMPLETE QURAN MODE (Image) === */}
+      {mode === "complete" && readingStyle !== "text" && (
         <>
           {/* Download + Bookmark */}
           <div className="bg-card rounded-xl border border-primary/10 p-3 mb-4 animate-fade-in">
@@ -340,7 +293,7 @@ const ReadQuran: React.FC = () => {
             {pages.map((p) => {
               const juz = juzData.find((j) => j.startPage === p);
               return (
-                <React.Fragment key={`${style}_${p}`}>
+                <React.Fragment key={`${imageStyle}_${p}`}>
                   {juz && (
                     <div className="flex items-center gap-3 py-3">
                       <div className="flex-1 h-px bg-primary/20" />
@@ -351,7 +304,7 @@ const ReadQuran: React.FC = () => {
                       <div className="flex-1 h-px bg-primary/20" />
                     </div>
                   )}
-                  <QuranPageView page={p} style={style as QuranStyle} getImgUrl={getImgUrl} mode="complete" context="Complete Quran" />
+                  <QuranPageView page={p} style={imageStyle} getImgUrl={getImgUrl} mode="complete" context="Complete Quran" />
                 </React.Fragment>
               );
             })}
@@ -367,7 +320,7 @@ const ReadQuran: React.FC = () => {
       )}
 
       {/* === COMPLETE QURAN in TEXT MODE === */}
-      {mode === "complete" && style === "text" && (
+      {mode === "complete" && readingStyle === "text" && (
         <CompleteTextReader />
       )}
 
@@ -375,14 +328,14 @@ const ReadQuran: React.FC = () => {
       {mode === "para" && (
         <div className="flex flex-col gap-2 animate-fade-in">
           {juzData.map((juz, i) => {
-            const paraBookmark = getBookmark("para", style);
+            const paraBookmark = getBookmark("para", readingStyle);
             const isBookmarked = paraBookmark === juz.number;
             return (
               <button
                 key={juz.number}
                 onClick={() => {
-                  setBookmark("para", style, juz.number);
-                  navigate(`/para-read/${juz.number}${style === "text" ? "?style=text" : ""}`);
+                  setBookmark("para", readingStyle, juz.number);
+                  navigate(`/para-read/${juz.number}`);
                 }}
                 className={`flex items-center gap-3 p-4 rounded-xl bg-card border ${isBookmarked ? "border-primary/40 ring-1 ring-primary/20" : "border-primary/10"} hover:border-primary/30 transition-smooth text-left`}
                 style={{ animationDelay: `${i * 0.03}s` }}
@@ -421,14 +374,14 @@ const ReadQuran: React.FC = () => {
           />
           <div className="flex flex-col gap-2">
             {filteredSurahs.map((s, i) => {
-              const surahBookmark = getBookmark("surah", style);
+              const surahBookmark = getBookmark("surah", readingStyle);
               const isBookmarked = surahBookmark === s.number;
               return (
                 <button
                   key={s.number}
                   onClick={() => {
-                    setBookmark("surah", style, s.number);
-                    navigate(`/surah-read/${s.number}${style === "text" ? "?style=text" : ""}`);
+                    setBookmark("surah", readingStyle, s.number);
+                    navigate(`/surah-read/${s.number}`);
                   }}
                   className={`flex items-center gap-3 p-3 rounded-xl bg-card border ${isBookmarked ? "border-primary/40 ring-1 ring-primary/20" : "border-primary/10"} hover:border-primary/30 transition-smooth text-left`}
                   style={{ animationDelay: `${Math.min(i * 0.02, 0.5)}s` }}

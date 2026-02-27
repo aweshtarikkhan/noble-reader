@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Languages, List, BookCopy, MapPin, Share2, Clock, LocateFixed, Compass, Search, Building, BellOff, Bell } from "lucide-react";
+import { BookOpen, Languages, List, BookCopy, MapPin, Share2, Clock, LocateFixed, Compass, Search, Building, BellOff, Bell, Headphones, Bookmark } from "lucide-react";
 import { useSharedLocation } from "@/hooks/useSharedLocation";
 import CitySearchDialog from "@/components/CitySearchDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +10,8 @@ const QUICK_TOOLS = [
   { icon: Languages, title: "Translation", path: "/translation" },
   { icon: List, title: "By Surah", path: "/surah" },
   { icon: BookCopy, title: "Para/Juz", path: "/para" },
+  { icon: Headphones, title: "Audio Quran", path: "/quran-audio" },
+  { icon: Bookmark, title: "Bookmarks", path: "/bookmarks" },
   { icon: Clock, title: "Namaz", path: "/prayer-times" },
   { icon: Compass, title: "Qibla", path: "/qibla" },
 ];
@@ -212,7 +214,7 @@ const Home: React.FC = () => {
       {/* Quick Tools */}
       <div>
         <h2 className="text-lg font-bold text-foreground mb-4">Quick Tools</h2>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           {QUICK_TOOLS.map((tool) => {
             const Icon = tool.icon;
             return (
