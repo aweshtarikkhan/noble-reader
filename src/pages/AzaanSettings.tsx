@@ -9,7 +9,7 @@ import {
   type AzaanSettings as AzaanSettingsType,
   type PrayerName,
 } from "@/data/azaanOptions";
-import { stopAzaan } from "@/hooks/useAzaanScheduler";
+import { stopAzaan, requestNotificationPermission } from "@/hooks/useAzaanScheduler";
 
 const AzaanSettingsPage: React.FC = () => {
   const [settings, setSettings] = useState<AzaanSettingsType>(loadAzaanSettings);
@@ -67,7 +67,13 @@ const AzaanSettingsPage: React.FC = () => {
 
   // MUST be called directly from a click handler (user gesture)
   const handleGrantPermissions = async () => {
-    // 1. Notification — must be in direct click handler
+    // 1. Capacitor LocalNotifications permission
+    try {
+      const { LocalNotifications } = await import("@capacitor/local-notifications");
+      await LocalNotifications.requestPermissions();
+    } catch {}
+
+    // 2. Web Notification API
     if ("Notification" in window && Notification.permission !== "granted") {
       try {
         await Notification.requestPermission();
@@ -76,7 +82,7 @@ const AzaanSettingsPage: React.FC = () => {
       }
     }
 
-    // 2. Geolocation — triggers browser prompt
+    // 3. Geolocation — triggers browser prompt
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         () => console.log("Location granted"),
@@ -85,15 +91,13 @@ const AzaanSettingsPage: React.FC = () => {
       );
     }
 
-    // 3. Capacitor permissions (for APK)
+    // 4. Capacitor permissions (for APK)
     try {
       const { Geolocation } = await import("@capacitor/geolocation");
       await Geolocation.requestPermissions();
-    } catch {
-      // Not running in Capacitor, ignore
-    }
+    } catch {}
 
-    // 4. Try to play a silent audio to unlock audio context (user gesture required)
+    // 5. Try to play a silent audio to unlock audio context
     try {
       const silentAudio = new Audio();
       silentAudio.volume = 0.01;
