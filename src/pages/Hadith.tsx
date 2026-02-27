@@ -44,13 +44,14 @@ const Hadith: React.FC = () => {
   const handleBack = () => { if (view.type === "hadiths") openBook(view.book); else if (view.type === "sections") { setView({ type: "books" }); setSearch(""); } else navigate(-1); };
 
   const handleShareHadith = (eng: HadithEntry, ara: HadithEntry, urd: HadithEntry, bookName: string) => {
-    const translationText = lang === "urdu" ? urd.text : eng.text;
     shareAsImage([
-      { text: ara.text, font: "bold 26px serif", color: "#ffffff" },
+      { text: ara.text, font: "bold 26px serif", color: "#d4a843", align: "right" },
+      { text: "", font: "14px sans-serif", color: "transparent" },
+      { text: urd.text, font: "20px serif", color: "#c8dfd0", align: "right" },
       { text: "", font: "10px sans-serif", color: "transparent" },
-      { text: translationText, font: `17px ${lang === "urdu" ? "serif" : "sans-serif"}`, color: "#d1fae5" },
-      { text: "", font: "8px sans-serif", color: "transparent" },
-      { text: `📖 ${bookName} — Hadith ${eng.hadithnumber}`, font: "13px sans-serif", color: "rgba(255,255,255,0.5)" },
+      { text: eng.text, font: "15px sans-serif", color: "#a8c8b0" },
+      { text: "", font: "14px sans-serif", color: "transparent" },
+      { text: `📖 ${bookName} — Hadith ${eng.hadithnumber}`, font: "13px sans-serif", color: "rgba(255,255,255,0.45)", align: "left" },
     ], "#064e3b", 800, toast);
   };
 

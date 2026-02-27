@@ -83,22 +83,30 @@ const Home: React.FC = () => {
 
   const handleShareAyah = () => {
     shareAsImage([
-      { text: dailyAyah.arabic, font: "bold 30px serif", color: "#ffffff" },
+      { text: dailyAyah.arabic, font: "bold 30px serif", color: "#d4a843", align: "right" },
+      { text: "", font: "14px sans-serif", color: "transparent" },
+      { text: dailyAyah.urdu, font: "22px serif", color: "#c8dfd0", align: "right" },
       { text: "", font: "10px sans-serif", color: "transparent" },
-      { text: dailyAyah[ayahLang], font: `18px ${ayahLang === "urdu" ? "serif" : "sans-serif"}`, color: "#d1fae5" },
-      { text: "", font: "8px sans-serif", color: "transparent" },
-      { text: `— ${dailyAyah.surah}`, font: "italic 14px sans-serif", color: "rgba(255,255,255,0.6)" },
+      { text: dailyAyah.english, font: "16px sans-serif", color: "#a8c8b0" },
+      { text: "", font: "10px sans-serif", color: "transparent" },
+      { text: dailyAyah.romanUrdu, font: "italic 14px sans-serif", color: "#8ab89a" },
+      { text: "", font: "14px sans-serif", color: "transparent" },
+      { text: `📖 ${dailyAyah.surah}`, font: "13px sans-serif", color: "rgba(255,255,255,0.45)", align: "left" },
     ], "#064e3b", 800, toast);
   };
 
   const handleShareHadith = () => {
     shareAsImage([
-      { text: dailyHadith.arabic, font: "bold 28px serif", color: "#ffffff" },
+      { text: dailyHadith.arabic, font: "bold 28px serif", color: "#d4a843", align: "right" },
+      { text: "", font: "14px sans-serif", color: "transparent" },
+      { text: dailyHadith.urdu, font: "22px serif", color: "#c8dfd0", align: "right" },
       { text: "", font: "10px sans-serif", color: "transparent" },
-      { text: dailyHadith[hadithLang], font: `18px ${hadithLang === "urdu" ? "serif" : "sans-serif"}`, color: "#d1fae5" },
-      { text: "", font: "8px sans-serif", color: "transparent" },
-      { text: `— ${dailyHadith.narrator}`, font: "italic 14px sans-serif", color: "rgba(255,255,255,0.6)" },
-      { text: `📖 ${dailyHadith.reference}`, font: "13px sans-serif", color: "rgba(255,255,255,0.5)" },
+      { text: dailyHadith.english, font: "16px sans-serif", color: "#a8c8b0" },
+      { text: "", font: "10px sans-serif", color: "transparent" },
+      { text: dailyHadith.romanUrdu, font: "italic 14px sans-serif", color: "#8ab89a" },
+      { text: "", font: "14px sans-serif", color: "transparent" },
+      { text: `📖 ${dailyHadith.reference}`, font: "13px sans-serif", color: "rgba(255,255,255,0.45)", align: "left" },
+      { text: `— ${dailyHadith.narrator}`, font: "italic 13px sans-serif", color: "rgba(255,255,255,0.45)", align: "right" },
     ], "#064e3b", 800, toast);
   };
 
