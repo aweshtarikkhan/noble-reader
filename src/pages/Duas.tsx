@@ -86,11 +86,15 @@ const Duas: React.FC = () => {
   const shareDua = async (dua: DuaTranslation) => {
     await shareAsImage(
       [
-        { text: dua.arabic, font: "bold 28px serif", color: "#ffffff" },
+        { text: dua.arabic, font: "bold 28px serif", color: "#d4a843", align: "right" },
+        { text: "", font: "14px sans-serif", color: "transparent" },
+        { text: dua.urdu, font: "20px serif", color: "#c8dfd0", align: "right" },
         { text: "", font: "10px sans-serif", color: "transparent" },
-        { text: dua[lang], font: `18px ${lang === "urdu" ? "serif" : "sans-serif"}`, color: "#d1fae5" },
-        { text: "", font: "8px sans-serif", color: "transparent" },
-        { text: dua.reference ? `📖 ${dua.reference}` : "", font: "13px sans-serif", color: "rgba(255,255,255,0.65)" },
+        { text: dua.english, font: "15px sans-serif", color: "#a8c8b0" },
+        { text: "", font: "10px sans-serif", color: "transparent" },
+        { text: dua.romanUrdu, font: "italic 14px sans-serif", color: "#8ab89a" },
+        { text: "", font: "14px sans-serif", color: "transparent" },
+        { text: dua.reference ? `📖 ${dua.reference}` : "", font: "13px sans-serif", color: "rgba(255,255,255,0.45)", align: "left" },
       ],
       "#064e3b",
       800,
