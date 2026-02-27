@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Languages, List, BookCopy, MapPin, Share2, Clock, LocateFixed, Compass, Search, Building, BellOff, Bell, Headphones, Bookmark, HandHeart, BookMarked } from "lucide-react";
+import { BookOpen, Languages, List, BookCopy, MapPin, Share2, Clock, LocateFixed, Compass, Search, Building, BellOff, Bell, Calendar, Bookmark, HandHeart, BookMarked } from "lucide-react";
 import { useSharedLocation } from "@/hooks/useSharedLocation";
 import CitySearchDialog from "@/components/CitySearchDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -65,7 +65,7 @@ const Home: React.FC = () => {
   const QUICK_TOOLS = [
     { icon: BookOpen, title: t("tool.readQuran"), path: "/read-quran" },
     { icon: Languages, title: t("tool.translation"), path: "/translation" },
-    { icon: Headphones, title: t("tool.audioQuran"), path: "/quran-audio" },
+    { icon: Calendar, title: t("tool.islamicCalendar"), path: "/islamic-calendar" },
     { icon: Bookmark, title: t("tool.bookmarks"), path: "/bookmarks" },
     { icon: Clock, title: t("tool.namaz"), path: "/prayer-times" },
     { icon: Compass, title: t("tool.qibla"), path: "/qibla" },
