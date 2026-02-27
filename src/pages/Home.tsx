@@ -6,17 +6,7 @@ import CitySearchDialog from "@/components/CitySearchDialog";
 import { useToast } from "@/hooks/use-toast";
 import { DAILY_HADITHS } from "@/data/hadith";
 import { shareAsImage } from "@/lib/shareAsImage";
-
-const QUICK_TOOLS = [
-  { icon: BookOpen, title: "Read Quran", path: "/read-quran" },
-  { icon: Languages, title: "Translation", path: "/translation" },
-  { icon: Headphones, title: "Audio Quran", path: "/quran-audio" },
-  { icon: Bookmark, title: "Bookmarks", path: "/bookmarks" },
-  { icon: Clock, title: "Namaz", path: "/prayer-times" },
-  { icon: Compass, title: "Qibla", path: "/qibla" },
-  { icon: HandHeart, title: "Duas", path: "/duas" },
-  { icon: BookMarked, title: "Hadith", path: "/hadith" },
-];
+import { useI18n } from "@/lib/i18n";
 
 const DAILY_AYAHS = [
   { surah: "Surah Ash-Sharh [94:5]", arabic: "فَإِنَّ مَعَ ٱلْعُسْرِ يُسْرًا", english: "For indeed, with hardship will be ease.", urdu: "بے شک مشکل کے ساتھ آسانی ہے۔", romanUrdu: "Be shak mushkil ke saath aasaani hai." },
@@ -32,22 +22,19 @@ const getIslamicDate = () => {
   try {
     const now = new Date();
     const adjusted = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-    const formatter = new Intl.DateTimeFormat('en-u-ca-islamic-civil', {
-      day: 'numeric', month: 'long', year: 'numeric'
-    });
+    const formatter = new Intl.DateTimeFormat('en-u-ca-islamic-civil', { day: 'numeric', month: 'long', year: 'numeric' });
     const parts = formatter.formatToParts(adjusted);
     const day = parts.find(p => p.type === 'day')?.value || '';
     const month = parts.find(p => p.type === 'month')?.value || '';
     const year = parts.find(p => p.type === 'year')?.value || '';
     return `${day} ${month} ${year}`;
-  } catch {
-    return "";
-  }
+  } catch { return ""; }
 };
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useI18n();
   const [currentTime, setCurrentTime] = useState(new Date());
   const { location, detect, setManualLocation } = useSharedLocation();
   const [citySearchOpen, setCitySearchOpen] = useState(false);
@@ -61,7 +48,7 @@ const Home: React.FC = () => {
     (localStorage.getItem("ayah_lang") as any) || "english"
   );
 
-  const [hadithLang, setHadithLang] = useState<"english" | "urdu" | "romanUrdu">(() => 
+  const [hadithLang, setHadithLang] = useState<"english" | "urdu" | "romanUrdu">(() =>
     (localStorage.getItem("hadith_lang") as any) || "english"
   );
 
@@ -75,15 +62,23 @@ const Home: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
+  const QUICK_TOOLS = [
+    { icon: BookOpen, title: t("tool.readQuran"), path: "/read-quran" },
+    { icon: Languages, title: t("tool.translation"), path: "/translation" },
+    { icon: Headphones, title: t("tool.audioQuran"), path: "/quran-audio" },
+    { icon: Bookmark, title: t("tool.bookmarks"), path: "/bookmarks" },
+    { icon: Clock, title: t("tool.namaz"), path: "/prayer-times" },
+    { icon: Compass, title: t("tool.qibla"), path: "/qibla" },
+    { icon: HandHeart, title: t("tool.duas"), path: "/duas" },
+    { icon: BookMarked, title: t("tool.hadith"), path: "/hadith" },
+  ];
+
   const toggleSilent = (e: React.MouseEvent) => {
     e.stopPropagation();
     const newVal = !silentMode;
     setSilentMode(newVal);
     localStorage.setItem("silent_mode", String(newVal));
-    toast({
-      title: newVal ? "🔕 Silent Mode On" : "🔔 Sound Mode On",
-      description: newVal ? "Azan notifications will be silent" : "Azan notifications will play sound",
-    });
+    toast({ title: newVal ? "🔕 Silent Mode On" : "🔔 Sound Mode On" });
   };
 
   const handleShareAyah = () => {
@@ -109,7 +104,6 @@ const Home: React.FC = () => {
 
   const cityName = location?.city || "Detecting...";
   const prayerTimings = location?.timings || null;
-
   const islamicDate = getIslamicDate();
   const gregorianDate = currentTime.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
 
@@ -171,63 +165,43 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      <CitySearchDialog
-        open={citySearchOpen}
-        onOpenChange={setCitySearchOpen}
-        onSelect={(lat, lng, city) => setManualLocation(lat, lng, city)}
-      />
+      <CitySearchDialog open={citySearchOpen} onOpenChange={setCitySearchOpen} onSelect={(lat, lng, city) => setManualLocation(lat, lng, city)} />
 
-      {/* Prayer Banner Card */}
+      {/* Prayer Banner */}
       <button
         onClick={() => navigate("/prayer-times")}
         className="w-full rounded-2xl p-5 text-left active:scale-[0.98] transition-smooth relative overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, #064e3b, #0f3d2e, #052e22)",
-        }}
+        style={{ background: "linear-gradient(135deg, #064e3b, #0f3d2e, #052e22)" }}
       >
         <div className="absolute right-4 top-4 opacity-20">
           <Building className="w-20 h-20 text-white" />
         </div>
-
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-sm text-white/80 font-medium">Upcoming Prayer</p>
-            <span className="text-[11px] bg-primary text-white px-3 py-1 rounded-full font-bold">
-              AZAN AT {upcoming.time}
-            </span>
+            <p className="text-sm text-white/80 font-medium">{t("home.upcomingPrayer")}</p>
+            <span className="text-[11px] bg-primary text-white px-3 py-1 rounded-full font-bold">{t("home.azanAt")} {upcoming.time}</span>
           </div>
-
           <p className="text-3xl font-bold text-white mb-1">{upcoming.name}</p>
-
           <div className="flex items-center gap-2 mb-4">
             <span className="text-[11px] text-white/60 flex items-center gap-1">
               {silentMode ? <BellOff className="w-3 h-3" /> : <Bell className="w-3 h-3" />}
-              {silentMode ? "Silent Mode" : "Sound On"}
+              {silentMode ? t("home.silentMode") : t("home.soundOn")}
             </span>
-            <div
-              onClick={toggleSilent}
-              className={`w-9 h-5 rounded-full relative cursor-pointer transition-colors duration-200 ${silentMode ? "bg-primary" : "bg-white/20"}`}
-            >
+            <div onClick={toggleSilent} className={`w-9 h-5 rounded-full relative cursor-pointer transition-colors duration-200 ${silentMode ? "bg-primary" : "bg-white/20"}`}>
               <div className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-all duration-200 ${silentMode ? "left-[18px]" : "left-0.5"}`} />
             </div>
           </div>
-
           <div className="flex items-baseline gap-2 mb-6">
             <p className="text-4xl font-bold text-primary font-mono tracking-wider">{upcoming.countdown}</p>
-            <p className="text-sm text-white/60">remaining</p>
+            <p className="text-sm text-white/60">{t("home.remaining")}</p>
           </div>
-
           <div className="flex justify-between border-t border-white/10 pt-3">
             {prayerList.map((p) => {
               const isActive = p.name === upcoming.name;
               return (
                 <div key={p.name} className="text-center">
-                  <p className={`text-[11px] mb-0.5 ${isActive ? "text-primary font-bold" : "text-white/50"}`}>
-                    {p.name}
-                  </p>
-                  <p className={`text-sm ${isActive ? "text-primary font-bold" : "text-white/80"}`}>
-                    {p.time}
-                  </p>
+                  <p className={`text-[11px] mb-0.5 ${isActive ? "text-primary font-bold" : "text-white/50"}`}>{p.name}</p>
+                  <p className={`text-sm ${isActive ? "text-primary font-bold" : "text-white/80"}`}>{p.time}</p>
                 </div>
               );
             })}
@@ -237,16 +211,12 @@ const Home: React.FC = () => {
 
       {/* Quick Tools */}
       <div>
-        <h2 className="text-lg font-bold text-foreground mb-4">Quick Tools</h2>
+        <h2 className="text-lg font-bold text-foreground mb-4">{t("home.quickTools")}</h2>
         <div className="grid grid-cols-2 gap-4">
           {QUICK_TOOLS.map((tool) => {
             const Icon = tool.icon;
             return (
-              <button
-                key={tool.path}
-                onClick={() => navigate(tool.path)}
-                className="flex flex-col items-center gap-2.5 py-4 px-2 rounded-2xl bg-card active:scale-90 transition-smooth"
-              >
+              <button key={tool.path} onClick={() => navigate(tool.path)} className="flex flex-col items-center gap-2.5 py-4 px-2 rounded-2xl bg-card active:scale-90 transition-smooth">
                 <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
                   <Icon className="w-6 h-6 text-primary" />
                 </div>
@@ -260,38 +230,23 @@ const Home: React.FC = () => {
       {/* Daily Ayah */}
       <div className="rounded-2xl overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3 bg-primary/15">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">Daily Ayah</span>
-          <div className="flex items-center gap-2">
-            <div className="flex gap-1">
-              {(["english", "urdu", "romanUrdu"] as const).map((l) => (
-                <button
-                  key={l}
-                  onClick={() => { setAyahLang(l); localStorage.setItem("ayah_lang", l); }}
-                  className={`text-[9px] px-2 py-0.5 rounded-full font-medium transition-smooth ${
-                    ayahLang === l ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  {l === "english" ? "EN" : l === "urdu" ? "UR" : "RU"}
-                </button>
-              ))}
-            </div>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">{t("home.dailyAyah")}</span>
+          <div className="flex gap-1">
+            {(["english", "urdu", "romanUrdu"] as const).map((l) => (
+              <button key={l} onClick={() => { setAyahLang(l); localStorage.setItem("ayah_lang", l); }}
+                className={`text-[9px] px-2 py-0.5 rounded-full font-medium transition-smooth ${ayahLang === l ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                {l === "english" ? "EN" : l === "urdu" ? "UR" : "RU"}
+              </button>
+            ))}
           </div>
         </div>
         <div className="px-5 py-6 bg-card space-y-4">
           <p className="text-[10px] text-primary font-semibold text-center">{dailyAyah.surah}</p>
-          <p className="font-arabic text-3xl leading-[2.2] text-foreground text-center" dir="rtl">
-            {dailyAyah.arabic}
-          </p>
-          <p className={`text-sm leading-relaxed text-muted-foreground ${ayahLang === "urdu" ? "text-right font-urdu" : ""}`} dir={ayahLang === "urdu" ? "rtl" : "ltr"}>
-            {dailyAyah[ayahLang]}
-          </p>
-          <div className="flex items-center justify-center gap-6 pt-2">
-            <button
-              onClick={handleShareAyah}
-              className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 active:scale-95 transition-smooth px-4 py-2 rounded-xl bg-primary/10"
-            >
-              <Share2 className="w-4 h-4" />
-              SHARE
+          <p className="font-arabic text-3xl leading-[2.2] text-foreground text-center" dir="rtl">{dailyAyah.arabic}</p>
+          <p className={`text-sm leading-relaxed text-muted-foreground ${ayahLang === "urdu" ? "text-right font-urdu" : ""}`} dir={ayahLang === "urdu" ? "rtl" : "ltr"}>{dailyAyah[ayahLang]}</p>
+          <div className="flex items-center justify-center pt-2">
+            <button onClick={handleShareAyah} className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 active:scale-95 transition-smooth px-4 py-2 rounded-xl bg-primary/10">
+              <Share2 className="w-4 h-4" /> {t("home.share")}
             </button>
           </div>
         </div>
@@ -300,58 +255,36 @@ const Home: React.FC = () => {
       {/* Daily Hadith */}
       <div className="rounded-2xl overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3 bg-primary/15">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">Daily Hadith</span>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">{t("home.dailyHadith")}</span>
           <div className="flex gap-1">
             {(["english", "urdu", "romanUrdu"] as const).map((l) => (
-              <button
-                key={l}
-                onClick={() => { setHadithLang(l); localStorage.setItem("hadith_lang", l); }}
-                className={`text-[9px] px-2 py-0.5 rounded-full font-medium transition-smooth ${
-                  hadithLang === l ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                }`}
-              >
+              <button key={l} onClick={() => { setHadithLang(l); localStorage.setItem("hadith_lang", l); }}
+                className={`text-[9px] px-2 py-0.5 rounded-full font-medium transition-smooth ${hadithLang === l ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
                 {l === "english" ? "EN" : l === "urdu" ? "UR" : "RU"}
               </button>
             ))}
           </div>
         </div>
         <div className="px-5 py-6 bg-card space-y-4">
-          <p className="font-arabic text-xl leading-[2.2] text-foreground text-center" dir="rtl">
-            {dailyHadith.arabic}
-          </p>
-          <p className={`text-sm leading-relaxed text-muted-foreground ${hadithLang === "urdu" ? "text-right font-urdu" : ""}`} dir={hadithLang === "urdu" ? "rtl" : "ltr"}>
-            {dailyHadith[hadithLang]}
-          </p>
+          <p className="font-arabic text-xl leading-[2.2] text-foreground text-center" dir="rtl">{dailyHadith.arabic}</p>
+          <p className={`text-sm leading-relaxed text-muted-foreground ${hadithLang === "urdu" ? "text-right font-urdu" : ""}`} dir={hadithLang === "urdu" ? "rtl" : "ltr"}>{dailyHadith[hadithLang]}</p>
           <div className="flex items-center justify-between pt-1">
             <p className="text-[10px] text-primary/70 font-medium">📖 {dailyHadith.reference}</p>
             <p className="text-[10px] text-muted-foreground italic">— {dailyHadith.narrator}</p>
           </div>
           <div className="flex items-center justify-center pt-1">
-            <button
-              onClick={handleShareHadith}
-              className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 active:scale-95 transition-smooth px-4 py-2 rounded-xl bg-primary/10"
-            >
-              <Share2 className="w-4 h-4" />
-              SHARE
+            <button onClick={handleShareHadith} className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 active:scale-95 transition-smooth px-4 py-2 rounded-xl bg-primary/10">
+              <Share2 className="w-4 h-4" /> {t("home.share")}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Support Link - Highlighted */}
-      <button
-        onClick={() => navigate("/donate")}
-        className="w-full py-4 rounded-2xl border-2 border-primary/30 hover:border-primary/50 transition-smooth text-center active:scale-95 relative overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary) / 0.15))",
-        }}
-      >
-        <p className="text-sm font-semibold text-primary">
-          💝 Support Future Updates
-        </p>
-        <p className="text-[11px] text-muted-foreground mt-0.5">
-          Your small contribution keeps this app free for everyone
-        </p>
+      {/* Support */}
+      <button onClick={() => navigate("/donate")} className="w-full py-4 rounded-2xl border-2 border-primary/30 hover:border-primary/50 transition-smooth text-center active:scale-95 relative overflow-hidden"
+        style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary) / 0.15))" }}>
+        <p className="text-sm font-semibold text-primary">{t("home.support")}</p>
+        <p className="text-[11px] text-muted-foreground mt-0.5">{t("home.supportDesc")}</p>
       </button>
     </div>
   );
