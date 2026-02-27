@@ -13,7 +13,6 @@ export const shareAsImage = async (
   let totalHeight = padding;
   const lineSpacing = 16;
 
-  // We need to measure wrapped lines
   const wrappedBlocks: { text: string; font: string; color: string; align: CanvasTextAlign; y: number }[][] = [];
 
   for (const line of lines) {
@@ -75,21 +74,48 @@ export const shareAsImage = async (
     const blob = await new Promise<Blob>((resolve, reject) => {
       canvas.toBlob(b => b ? resolve(b) : reject(new Error("Failed")), "image/png");
     });
-    const file = new File([blob], "share.png", { type: "image/png" });
+    const file = new File([blob], "hadith-share.png", { type: "image/png" });
 
-    if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file] });
-    } else {
-      // Fallback: download
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "share.png";
-      a.click();
-      URL.revokeObjectURL(url);
-      toast?.({ title: "Downloaded!", description: "Image saved" });
+    // Build plain text version for sharing alongside image
+    const plainText = lines
+      .map(l => l.text)
+      .filter(t => t.trim().length > 0)
+      .join("\n\n") + "\n\n— Noble Quran Reader";
+
+    // Try native share with file (works on Android/iOS with all social apps)
+    if (navigator.share) {
+      const shareData: ShareData = {
+        text: plainText,
+      };
+
+      // Check if file sharing is supported
+      if (navigator.canShare?.({ files: [file] })) {
+        shareData.files = [file];
+      }
+
+      try {
+        await navigator.share(shareData);
+        return; // Success
+      } catch (e: any) {
+        // User cancelled - that's fine
+        if (e?.name === "AbortError") return;
+        // Fall through to clipboard + download fallback
+      }
     }
+
+    // Fallback: Copy text to clipboard + download image
+    try {
+      await navigator.clipboard.writeText(plainText);
+    } catch { /* ignore */ }
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "share.png";
+    a.click();
+    URL.revokeObjectURL(url);
+    toast?.({ title: "Image Downloaded & Text Copied!", description: "Share the downloaded image via any app" });
   } catch (e) {
-    // Silent fail on user cancel
+    // Silent fail on errors
   }
 };
