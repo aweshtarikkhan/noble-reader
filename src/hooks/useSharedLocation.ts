@@ -34,7 +34,7 @@ function saveLocation(data: LocationData) {
 
 async function fetchLocationData(lat: number, lng: number): Promise<LocationData> {
   const [prayerResult, city] = await Promise.all([
-    QuranAPI.getPrayerTimes(lat, lng, 1, 1),
+    QuranAPI.getPrayerTimes(lat, lng, 1, 0),
     QuranAPI.reverseGeocode(lat, lng),
   ]);
   const data: LocationData = {
