@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { SURAHS, getSurahPageRange } from "@/data/surahs";
 import { QuranAPI } from "@/lib/quranApi";
 import { getIndianPageImage } from "@/data/indianMushaf";
@@ -8,6 +8,7 @@ import { getIndianPageImageFallback } from "@/data/indianMushaf";
 import { Loader2, CheckCircle2, HardDriveDownload } from "lucide-react";
 import QuranPageView, { type QuranStyle, getCacheKey } from "@/components/QuranPageView";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import StyleSwitcher, { type ReadingStyle } from "@/components/StyleSwitcher";
 
 const PAGES_PER_BATCH = 4;
 const BISMILLAH = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
@@ -19,13 +20,14 @@ interface Ayah {
 
 const SurahRead: React.FC = () => {
   const { num } = useParams();
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const surahNum = parseInt(num || "1");
   const surah = SURAHS.find((s) => s.number === surahNum);
 
-  const isTextMode = searchParams.get("style") === "text";
-  const [style, setStyle] = useState<QuranStyle>(() => (localStorage.getItem("read-quran-style") as QuranStyle) || "indopak");
+  const [readingStyle, setReadingStyle] = useState<ReadingStyle>(
+    () => (localStorage.getItem("read-quran-style-full") as ReadingStyle) || "indopak"
+  );
+  const imageStyle: QuranStyle = readingStyle === "text" ? "indopak" : readingStyle;
 
   // Text mode state
   const [ayahs, setAyahs] = useState<Ayah[]>([]);
@@ -33,7 +35,7 @@ const SurahRead: React.FC = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (isTextMode) {
+    if (readingStyle === "text") {
       setLoading(true);
       setError("");
       QuranAPI.getSurah(surahNum)
@@ -41,24 +43,22 @@ const SurahRead: React.FC = () => {
         .catch(() => setError("Failed to load surah"))
         .finally(() => setLoading(false));
     }
-  }, [surahNum, isTextMode]);
+  }, [surahNum, readingStyle]);
 
   if (!surah) return <div className="p-4 text-center text-muted-foreground">Surah not found</div>;
 
-  const handleStyleChange = (s: QuranStyle) => {
-    setStyle(s);
-    localStorage.setItem("read-quran-style", s);
+  const handleStyleChange = (s: ReadingStyle) => {
+    setReadingStyle(s);
+    localStorage.setItem("read-quran-style-full", s);
   };
 
-  const { startPage, endPage } = getSurahPageRange(surahNum, style === "indopak" ? "indopak" : "saudi");
+  const { startPage, endPage } = getSurahPageRange(surahNum, imageStyle === "indopak" ? "indopak" : "saudi");
   const pages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
   const getImgUrl = (p: number) => {
-    if (style === "indopak") return getIndianPageImage(p);
+    if (imageStyle === "indopak") return getIndianPageImage(p);
     return QuranAPI.getMushafPageImage(p);
   };
-
-  const navSuffix = isTextMode ? "?style=text" : "";
 
   return (
     <div className="px-4 py-4">
@@ -67,31 +67,13 @@ const SurahRead: React.FC = () => {
         <h2 className="font-arabic text-2xl text-primary">{surah.name}</h2>
         <p className="text-foreground font-medium mt-1">{surah.englishName}</p>
         <p className="text-xs text-muted-foreground">{surah.translation} • {surah.ayahs} Ayahs • {surah.type}</p>
-        {isTextMode && (
-          <span className="inline-block mt-2 text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary">📝 Line by Line Text</span>
-        )}
       </div>
 
-      {/* Style toggle (only for image mode) */}
-      {!isTextMode && (
-        <div className="flex bg-card rounded-xl p-1 border border-primary/10 mb-4 animate-fade-in">
-          <button
-            onClick={() => handleStyleChange("indopak")}
-            className={`flex-1 py-2 text-xs font-medium rounded-lg transition-smooth ${style === "indopak" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-          >
-            🇮🇳 Indo-Pak (16 Line)
-          </button>
-          <button
-            onClick={() => handleStyleChange("saudi")}
-            className={`flex-1 py-2 text-xs font-medium rounded-lg transition-smooth ${style === "saudi" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
-          >
-            🇸🇦 Uthmani Script
-          </button>
-        </div>
-      )}
+      {/* Style switcher */}
+      <StyleSwitcher style={readingStyle} onChange={handleStyleChange} />
 
       {/* Text mode */}
-      {isTextMode && (
+      {readingStyle === "text" && (
         <>
           {loading && <LoadingSpinner />}
           {error && (
@@ -123,19 +105,19 @@ const SurahRead: React.FC = () => {
       )}
 
       {/* Image mode */}
-      {!isTextMode && (
-        <SurahPagesLoader pages={pages} style={style} getImgUrl={getImgUrl} surahNum={surahNum} />
+      {readingStyle !== "text" && (
+        <SurahPagesLoader pages={pages} style={imageStyle} getImgUrl={getImgUrl} surahNum={surahNum} />
       )}
 
       {/* Navigation */}
       <div className="flex items-center justify-between mt-6 gap-3">
         {surahNum > 1 && (
-          <button onClick={() => navigate(`/surah-read/${surahNum - 1}${navSuffix}`)} className="flex-1 py-3 rounded-xl bg-card border border-primary/10 text-foreground text-sm transition-smooth hover:border-primary/30">
+          <button onClick={() => navigate(`/surah-read/${surahNum - 1}`)} className="flex-1 py-3 rounded-xl bg-card border border-primary/10 text-foreground text-sm transition-smooth hover:border-primary/30">
             ← {SURAHS[surahNum - 2]?.englishName}
           </button>
         )}
         {surahNum < 114 && (
-          <button onClick={() => navigate(`/surah-read/${surahNum + 1}${navSuffix}`)} className="flex-1 py-3 rounded-xl bg-card border border-primary/10 text-foreground text-sm transition-smooth hover:border-primary/30">
+          <button onClick={() => navigate(`/surah-read/${surahNum + 1}`)} className="flex-1 py-3 rounded-xl bg-card border border-primary/10 text-foreground text-sm transition-smooth hover:border-primary/30">
             {SURAHS[surahNum]?.englishName} →
           </button>
         )}
