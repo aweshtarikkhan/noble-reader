@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Languages, List, BookCopy, MapPin, Share2, Clock, LocateFixed, Compass, Search, Building, BellOff, Bell, Headphones, Bookmark } from "lucide-react";
+import { BookOpen, Languages, List, BookCopy, MapPin, Share2, Clock, LocateFixed, Compass, Search, Building, BellOff, Bell, Headphones, Bookmark, HandHeart } from "lucide-react";
 import { useSharedLocation } from "@/hooks/useSharedLocation";
 import CitySearchDialog from "@/components/CitySearchDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +12,7 @@ const QUICK_TOOLS = [
   { icon: BookCopy, title: "Para/Juz", path: "/para" },
   { icon: Headphones, title: "Audio Quran", path: "/quran-audio" },
   { icon: Bookmark, title: "Bookmarks", path: "/bookmarks" },
+  { icon: HandHeart, title: "Duas", path: "/duas" },
   { icon: Clock, title: "Namaz", path: "/prayer-times" },
   { icon: Compass, title: "Qibla", path: "/qibla" },
 ];
