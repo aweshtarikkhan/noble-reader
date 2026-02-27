@@ -16,13 +16,13 @@ const SurahRead: React.FC = () => {
   const navigate = useNavigate();
   const surahNum = parseInt(num || "1");
   const surah = SURAHS.find((s) => s.number === surahNum);
-  const [style, setStyle] = useState<QuranStyle>(() => (localStorage.getItem("surah-quran-style") as QuranStyle) || "indopak");
+  const [style, setStyle] = useState<QuranStyle>(() => (localStorage.getItem("read-quran-style") as QuranStyle) || "indopak");
 
   if (!surah) return <div className="p-4 text-center text-muted-foreground">Surah not found</div>;
 
   const handleStyleChange = (s: QuranStyle) => {
     setStyle(s);
-    localStorage.setItem("surah-quran-style", s);
+    localStorage.setItem("read-quran-style", s);
   };
 
   const { startPage, endPage } = getSurahPageRange(surahNum, style === "indopak" ? "indopak" : "saudi");

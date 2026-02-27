@@ -14,7 +14,7 @@ const ParaRead: React.FC = () => {
   const { num } = useParams();
   const navigate = useNavigate();
   const juzNum = parseInt(num || "1");
-  const [style, setStyle] = useState<QuranStyle>(() => (localStorage.getItem("para-quran-style") as QuranStyle) || "indopak");
+  const [style, setStyle] = useState<QuranStyle>(() => (localStorage.getItem("read-quran-style") as QuranStyle) || "indopak");
 
   const juz = JUZ_DATA.find((j) => j.number === juzNum);
   const indianJuz = INDIAN_JUZ_DATA.find((j) => j.number === juzNum);
@@ -23,7 +23,7 @@ const ParaRead: React.FC = () => {
 
   const handleStyleChange = (s: QuranStyle) => {
     setStyle(s);
-    localStorage.setItem("para-quran-style", s);
+    localStorage.setItem("read-quran-style", s);
   };
 
   const saudiPages = Array.from({ length: juz.endPage - juz.startPage + 1 }, (_, i) => juz.startPage + i);
