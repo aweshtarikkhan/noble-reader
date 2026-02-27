@@ -1,29 +1,29 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Languages, List, BookCopy, MapPin, Share2, Clock, LocateFixed, Compass, Search, Building, BellOff, Bell, Headphones, Bookmark, HandHeart } from "lucide-react";
+import { BookOpen, Languages, List, BookCopy, MapPin, Share2, Clock, LocateFixed, Compass, Search, Building, BellOff, Bell, Headphones, Bookmark, HandHeart, BookMarked } from "lucide-react";
 import { useSharedLocation } from "@/hooks/useSharedLocation";
 import CitySearchDialog from "@/components/CitySearchDialog";
 import { useToast } from "@/hooks/use-toast";
 import { DAILY_HADITHS } from "@/data/hadith";
+import { shareAsImage } from "@/lib/shareAsImage";
 
 const QUICK_TOOLS = [
   { icon: BookOpen, title: "Read Quran", path: "/read-quran" },
   { icon: Languages, title: "Translation", path: "/translation" },
-  { icon: List, title: "By Surah", path: "/surah" },
-  { icon: BookCopy, title: "Para/Juz", path: "/para" },
   { icon: Headphones, title: "Audio Quran", path: "/quran-audio" },
   { icon: Bookmark, title: "Bookmarks", path: "/bookmarks" },
-  { icon: HandHeart, title: "Duas", path: "/duas" },
   { icon: Clock, title: "Namaz", path: "/prayer-times" },
   { icon: Compass, title: "Qibla", path: "/qibla" },
+  { icon: HandHeart, title: "Duas", path: "/duas" },
+  { icon: BookMarked, title: "Hadith", path: "/hadith" },
 ];
 
 const DAILY_AYAHS = [
-  { surah: "Surah Ash-Sharh [94:5]", arabic: "فَإِنَّ مَعَ ٱلْعُسْرِ يُسْرًا", translation: '"For indeed, with hardship [will be] ease."' },
-  { surah: "Surah Al-Baqarah [2:286]", arabic: "لَا يُكَلِّفُ ٱللَّهُ نَفْسًا إِلَّا وُسْعَهَا", translation: '"Allah does not burden a soul beyond that it can bear."' },
-  { surah: "Surah Al-Imran [3:139]", arabic: "وَلَا تَهِنُوا۟ وَلَا تَحْزَنُوا۟ وَأَنتُمُ ٱلْأَعْلَوْنَ", translation: '"Do not weaken and do not grieve, for you are superior."' },
-  { surah: "Surah Ar-Ra'd [13:28]", arabic: "أَلَا بِذِكْرِ ٱللَّهِ تَطْمَئِنُّ ٱلْقُلُوبُ", translation: '"Verily, in the remembrance of Allah do hearts find rest."' },
-  { surah: "Surah Al-Ankabut [29:69]", arabic: "وَٱلَّذِينَ جَـٰهَدُوا۟ فِينَا لَنَهْدِيَنَّهُمْ سُبُلَنَا", translation: '"Those who strive for Us, We will guide them to Our ways."' },
+  { surah: "Surah Ash-Sharh [94:5]", arabic: "فَإِنَّ مَعَ ٱلْعُسْرِ يُسْرًا", english: "For indeed, with hardship will be ease.", urdu: "بے شک مشکل کے ساتھ آسانی ہے۔", romanUrdu: "Be shak mushkil ke saath aasaani hai." },
+  { surah: "Surah Al-Baqarah [2:286]", arabic: "لَا يُكَلِّفُ ٱللَّهُ نَفْسًا إِلَّا وُسْعَهَا", english: "Allah does not burden a soul beyond that it can bear.", urdu: "اللہ کسی جان کو اس کی طاقت سے زیادہ تکلیف نہیں دیتا۔", romanUrdu: "Allah kisi jaan ko us ki taaqat se zyada takleef nahi deta." },
+  { surah: "Surah Al-Imran [3:139]", arabic: "وَلَا تَهِنُوا۟ وَلَا تَحْزَنُوا۟ وَأَنتُمُ ٱلْأَعْلَوْنَ", english: "Do not weaken and do not grieve, for you are superior.", urdu: "کمزور نہ ہو اور غمگین نہ ہو، تم ہی غالب رہو گے۔", romanUrdu: "Kamzor na ho aur ghamgeen na ho, tum hi ghaalib raho ge." },
+  { surah: "Surah Ar-Ra'd [13:28]", arabic: "أَلَا بِذِكْرِ ٱللَّهِ تَطْمَئِنُّ ٱلْقُلُوبُ", english: "Verily, in the remembrance of Allah do hearts find rest.", urdu: "آگاہ رہو کہ اللہ کے ذکر سے دلوں کو سکون ملتا ہے۔", romanUrdu: "Aagaah raho ke Allah ke zikr se dilon ko sukoon milta hai." },
+  { surah: "Surah Al-Ankabut [29:69]", arabic: "وَٱلَّذِينَ جَـٰهَدُوا۟ فِينَا لَنَهْدِيَنَّهُمْ سُبُلَنَا", english: "Those who strive for Us, We will guide them to Our ways.", urdu: "اور جو لوگ ہماری راہ میں کوشش کرتے ہیں ہم انہیں اپنے راستے دکھا دیتے ہیں۔", romanUrdu: "Aur jo log hamari raah mein koshish karte hain hum unhein apne raaste dikha dete hain." },
 ];
 
 const PRAYER_ORDER = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
@@ -57,6 +57,10 @@ const Home: React.FC = () => {
     return DAILY_AYAHS[dayOfYear % DAILY_AYAHS.length];
   });
 
+  const [ayahLang, setAyahLang] = useState<"english" | "urdu" | "romanUrdu">(() =>
+    (localStorage.getItem("ayah_lang") as any) || "english"
+  );
+
   const [hadithLang, setHadithLang] = useState<"english" | "urdu" | "romanUrdu">(() => 
     (localStorage.getItem("hadith_lang") as any) || "english"
   );
@@ -82,20 +86,25 @@ const Home: React.FC = () => {
     });
   };
 
-  const handleShare = async () => {
-    const text = `${dailyAyah.arabic}\n\n${dailyAyah.translation}\n\n— ${dailyAyah.surah}\n\nNoble Quran Reader`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "Daily Ayah", text });
-      } catch {}
-    } else {
-      try {
-        await navigator.clipboard.writeText(text);
-        toast({ title: "Copied!", description: "Ayah copied to clipboard" });
-      } catch {
-        toast({ title: "Share not supported", description: "Could not share on this device", variant: "destructive" });
-      }
-    }
+  const handleShareAyah = () => {
+    shareAsImage([
+      { text: dailyAyah.arabic, font: "bold 30px serif", color: "#ffffff" },
+      { text: "", font: "10px sans-serif", color: "transparent" },
+      { text: dailyAyah[ayahLang], font: `18px ${ayahLang === "urdu" ? "serif" : "sans-serif"}`, color: "#d1fae5" },
+      { text: "", font: "8px sans-serif", color: "transparent" },
+      { text: `— ${dailyAyah.surah}`, font: "italic 14px sans-serif", color: "rgba(255,255,255,0.6)" },
+    ], "#064e3b", 800, toast);
+  };
+
+  const handleShareHadith = () => {
+    shareAsImage([
+      { text: dailyHadith.arabic, font: "bold 28px serif", color: "#ffffff" },
+      { text: "", font: "10px sans-serif", color: "transparent" },
+      { text: dailyHadith[hadithLang], font: `18px ${hadithLang === "urdu" ? "serif" : "sans-serif"}`, color: "#d1fae5" },
+      { text: "", font: "8px sans-serif", color: "transparent" },
+      { text: `— ${dailyHadith.narrator}`, font: "italic 14px sans-serif", color: "rgba(255,255,255,0.6)" },
+      { text: `📖 ${dailyHadith.reference}`, font: "13px sans-serif", color: "rgba(255,255,255,0.5)" },
+    ], "#064e3b", 800, toast);
   };
 
   const cityName = location?.city || "Detecting...";
@@ -252,18 +261,33 @@ const Home: React.FC = () => {
       <div className="rounded-2xl overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3 bg-primary/15">
           <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">Daily Ayah</span>
-          <span className="text-[11px] font-semibold text-primary">{dailyAyah.surah}</span>
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1">
+              {(["english", "urdu", "romanUrdu"] as const).map((l) => (
+                <button
+                  key={l}
+                  onClick={() => { setAyahLang(l); localStorage.setItem("ayah_lang", l); }}
+                  className={`text-[9px] px-2 py-0.5 rounded-full font-medium transition-smooth ${
+                    ayahLang === l ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {l === "english" ? "EN" : l === "urdu" ? "UR" : "RU"}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="px-5 py-8 bg-card text-center space-y-5">
-          <p className="font-arabic text-3xl leading-[2.2] text-foreground" dir="rtl">
+        <div className="px-5 py-6 bg-card space-y-4">
+          <p className="text-[10px] text-primary font-semibold text-center">{dailyAyah.surah}</p>
+          <p className="font-arabic text-3xl leading-[2.2] text-foreground text-center" dir="rtl">
             {dailyAyah.arabic}
           </p>
-          <p className="text-sm italic text-muted-foreground leading-relaxed">
-            {dailyAyah.translation}
+          <p className={`text-sm leading-relaxed text-muted-foreground ${ayahLang === "urdu" ? "text-right font-urdu" : ""}`} dir={ayahLang === "urdu" ? "rtl" : "ltr"}>
+            {dailyAyah[ayahLang]}
           </p>
           <div className="flex items-center justify-center gap-6 pt-2">
             <button
-              onClick={handleShare}
+              onClick={handleShareAyah}
               className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 active:scale-95 transition-smooth px-4 py-2 rounded-xl bg-primary/10"
             >
               <Share2 className="w-4 h-4" />
@@ -304,17 +328,7 @@ const Home: React.FC = () => {
           </div>
           <div className="flex items-center justify-center pt-1">
             <button
-              onClick={async () => {
-                const text = `${dailyHadith.arabic}\n\n${dailyHadith[hadithLang]}\n\n— ${dailyHadith.narrator}\n📖 ${dailyHadith.reference}`;
-                if (navigator.share) {
-                  try { await navigator.share({ title: "Daily Hadith", text }); } catch {}
-                } else {
-                  try {
-                    await navigator.clipboard.writeText(text);
-                    toast({ title: "Copied!", description: "Hadith copied to clipboard" });
-                  } catch {}
-                }
-              }}
+              onClick={handleShareHadith}
               className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 active:scale-95 transition-smooth px-4 py-2 rounded-xl bg-primary/10"
             >
               <Share2 className="w-4 h-4" />
