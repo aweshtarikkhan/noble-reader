@@ -9,6 +9,7 @@ import QuranPageView, { type QuranStyle, getCacheKey } from "@/components/QuranP
 import { BookOpen, BookMarked, Bookmark, ChevronRight, ArrowLeft } from "lucide-react";
 import CompleteTextReader from "@/components/CompleteTextReader";
 import StyleSwitcher, { type ReadingStyle } from "@/components/StyleSwitcher";
+import { useI18n } from "@/lib/i18n";
 
 type ReadMode = "complete" | "para" | "surah";
 type WizardStep = "mode" | "reading";
@@ -27,6 +28,7 @@ const setBookmark = (mode: ReadMode, style: string, page: number) => {
 
 const ReadQuran: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [step, setStep] = useState<WizardStep>("mode");
   const [mode, setMode] = useState<ReadMode>("complete");
   const [readingStyle, setReadingStyle] = useState<ReadingStyle>(
@@ -184,15 +186,15 @@ const ReadQuran: React.FC = () => {
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <BookOpen className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-xl font-bold text-foreground">Read Quran</h1>
-          <p className="text-sm text-muted-foreground mt-1">Choose how you'd like to read</p>
+          <h1 className="text-xl font-bold text-foreground">{t("read.readQuran")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("read.chooseHow")}</p>
         </div>
 
         <div className="flex flex-col gap-3">
           {([
-            { key: "complete" as ReadMode, icon: "📖", title: "Complete Quran", desc: "Read from cover to cover with continuous scrolling", bookmark: getBookmark("complete", "indopak") },
-            { key: "para" as ReadMode, icon: "📚", title: "Read by Para (Juz)", desc: "Choose a specific para to read", bookmark: null },
-            { key: "surah" as ReadMode, icon: "📜", title: "Read by Surah", desc: "Select any surah from the 114 chapters", bookmark: null },
+            { key: "complete" as ReadMode, icon: "📖", title: t("read.completeQuran"), desc: t("read.completeDesc"), bookmark: getBookmark("complete", "indopak") },
+            { key: "para" as ReadMode, icon: "📚", title: t("read.byPara"), desc: t("read.byParaDesc"), bookmark: null },
+            { key: "surah" as ReadMode, icon: "📜", title: t("read.bySurah"), desc: t("read.bySurahDesc"), bookmark: null },
           ]).map((m, i) => (
             <button
               key={m.key}
@@ -209,7 +211,7 @@ const ReadQuran: React.FC = () => {
                 {m.key === "complete" && (
                   <div className="flex items-center gap-1 mt-1.5">
                     <Bookmark className="w-3 h-3 text-primary" />
-                    <span className="text-[10px] text-primary font-medium">Bookmarked at page {m.bookmark}</span>
+                    <span className="text-[10px] text-primary font-medium">{t("read.bookmarkedAt")} {m.bookmark}</span>
                   </div>
                 )}
               </div>
@@ -227,7 +229,7 @@ const ReadQuran: React.FC = () => {
       {/* Top bar with back */}
       <div className="flex items-center justify-between mb-4 animate-fade-in">
         <button onClick={handleBack} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-smooth">
-          <ArrowLeft className="w-4 h-4" /> Back
+          <ArrowLeft className="w-4 h-4" /> {t("read.back")}
         </button>
       </div>
 
@@ -271,7 +273,7 @@ const ReadQuran: React.FC = () => {
           {/* Bookmark indicator */}
           <div className="flex items-center gap-2 mb-3 px-1 animate-fade-in">
             <Bookmark className="w-3.5 h-3.5 text-primary fill-primary" />
-            <span className="text-[11px] text-primary font-medium">Bookmarked at page {pages[0] || currentBookmark}</span>
+            <span className="text-[11px] text-primary font-medium">{t("read.bookmarkedAt")} {pages[0] || currentBookmark}</span>
           </div>
 
           {/* Jump to page */}
@@ -285,7 +287,7 @@ const ReadQuran: React.FC = () => {
               max={totalPages}
               className="flex-1 px-4 py-3 rounded-xl bg-card border border-primary/10 text-foreground text-sm focus:outline-none focus:border-primary/40"
             />
-            <button onClick={handleJump} className="px-4 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-medium transition-smooth">Go</button>
+            <button onClick={handleJump} className="px-4 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-medium transition-smooth">{t("read.go")}</button>
           </div>
 
           {/* Pages */}
@@ -345,11 +347,11 @@ const ReadQuran: React.FC = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-sm text-foreground">Para {juz.number} - {juz.nameTransliteration}</span>
+                    <span className="font-medium text-sm text-foreground">{t("read.para")} {juz.number} - {juz.nameTransliteration}</span>
                     <span className="font-arabic text-primary text-sm">{juz.name}</span>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
-                    Pages {juz.startPage}–{juz.endPage}
+                    {t("read.pages")} {juz.startPage}–{juz.endPage}
                   </p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
@@ -367,7 +369,7 @@ const ReadQuran: React.FC = () => {
         <div className="animate-fade-in">
           <input
             type="text"
-            placeholder="Search surah by name or number..."
+            placeholder={t("read.searchSurah")}
             value={surahSearch}
             onChange={(e) => setSurahSearch(e.target.value)}
             className="w-full px-4 py-3 rounded-xl bg-card border border-primary/10 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-smooth mb-4 text-sm"
@@ -398,7 +400,7 @@ const ReadQuran: React.FC = () => {
                       <span className="text-xs text-muted-foreground">{s.translation}</span>
                       <div className="flex items-center gap-2">
                         {isBookmarked && <Bookmark className="w-3 h-3 text-primary fill-primary" />}
-                        <span className="text-[10px] text-muted-foreground">{s.ayahs} ayahs</span>
+                        <span className="text-[10px] text-muted-foreground">{s.ayahs} {t("audio.ayahs")}</span>
                         <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${s.type === "Meccan" ? "bg-primary/20 text-primary" : "bg-secondary/20 text-secondary"}`}>
                           {s.type}
                         </span>

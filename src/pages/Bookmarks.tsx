@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { getBookmarks, removeBookmark, clearAllBookmarks, type Bookmark } from "@/lib/bookmarks";
 import { Bookmark as BookmarkIcon, Trash2, BookOpen, X } from "lucide-react";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 
 const Bookmarks: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [filter, setFilter] = useState<"all" | "complete" | "para" | "surah">("all");
 
@@ -19,14 +21,14 @@ const Bookmarks: React.FC = () => {
     e.stopPropagation();
     removeBookmark(id);
     setBookmarks(getBookmarks());
-    toast("Bookmark removed");
+    toast(t("bookmarks.removed"));
   };
 
   const handleClearAll = () => {
     if (bookmarks.length === 0) return;
     clearAllBookmarks();
     setBookmarks([]);
-    toast("All bookmarks cleared");
+    toast(t("bookmarks.cleared"));
   };
 
   const handleNavigate = (b: Bookmark) => {
@@ -35,7 +37,6 @@ const Bookmarks: React.FC = () => {
     } else if (b.mode === "surah" && b.surahNum) {
       navigate(`/surah-read/${b.surahNum}`);
     } else {
-      // Complete mode - navigate to read-quran and set the page
       localStorage.setItem(
         b.style === "indopak" ? "read-quran-indopak-page" : "read-quran-saudi-page",
         String(b.page)
@@ -55,8 +56,8 @@ const Bookmarks: React.FC = () => {
         <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
           <BookmarkIcon className="w-7 h-7 text-primary" />
         </div>
-        <h1 className="text-lg font-bold text-foreground">My Bookmarks</h1>
-        <p className="text-xs text-muted-foreground mt-1">{bookmarks.length} bookmark{bookmarks.length !== 1 ? "s" : ""} saved</p>
+        <h1 className="text-lg font-bold text-foreground">{t("bookmarks.myBookmarks")}</h1>
+        <p className="text-xs text-muted-foreground mt-1">{bookmarks.length} bookmark{bookmarks.length !== 1 ? "s" : ""} {t("bookmarks.saved")}</p>
       </div>
 
       {/* Filter tabs */}
@@ -67,7 +68,7 @@ const Bookmarks: React.FC = () => {
             onClick={() => setFilter(f)}
             className={`flex-1 py-2 text-[11px] font-medium rounded-lg transition-smooth ${filter === f ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
           >
-            {f === "all" ? "All" : f === "complete" ? "📖 Quran" : f === "para" ? "📚 Para" : "📜 Surah"}
+            {f === "all" ? t("bookmarks.all") : f === "complete" ? t("bookmarks.quran") : f === "para" ? t("bookmarks.para") : t("bookmarks.surah")}
           </button>
         ))}
       </div>
@@ -79,7 +80,7 @@ const Bookmarks: React.FC = () => {
             onClick={handleClearAll}
             className="flex items-center gap-1 text-[11px] text-destructive/70 hover:text-destructive transition-smooth"
           >
-            <Trash2 className="w-3 h-3" /> Clear All
+            <Trash2 className="w-3 h-3" /> {t("bookmarks.clearAll")}
           </button>
         </div>
       )}
@@ -88,8 +89,8 @@ const Bookmarks: React.FC = () => {
       {filtered.length === 0 ? (
         <div className="text-center py-12 animate-fade-in">
           <BookOpen className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">No bookmarks yet</p>
-          <p className="text-xs text-muted-foreground/60 mt-1">Long press on any Quran page or tap the bookmark icon to save your place</p>
+          <p className="text-sm text-muted-foreground">{t("bookmarks.noBookmarks")}</p>
+          <p className="text-xs text-muted-foreground/60 mt-1">{t("bookmarks.longPress")}</p>
         </div>
       ) : (
         <div className="flex flex-col gap-2 animate-fade-in">
@@ -105,7 +106,7 @@ const Bookmarks: React.FC = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-sm text-foreground">Page {b.page}</span>
+                  <span className="font-medium text-sm text-foreground">{t("bookmarks.page")} {b.page}</span>
                   <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
                     {b.style === "indopak" ? "Indo-Pak" : "Uthmani"}
                   </span>
