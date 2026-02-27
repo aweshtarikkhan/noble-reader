@@ -5,17 +5,19 @@ const KAABA_LAT = 21.4225;
 const KAABA_LNG = 39.8262;
 
 function calculateQibla(lat: number, lng: number): number {
-  const phiK = (KAABA_LAT * Math.PI) / 180;
-  const lambdaK = (KAABA_LNG * Math.PI) / 180;
-  const phi = (lat * Math.PI) / 180;
-  const lambda = (lng * Math.PI) / 180;
-  const qibla =
-    (180 / Math.PI) *
-    Math.atan2(
-      Math.sin(lambdaK - lambda),
-      Math.cos(phi) * Math.tan(phiK) - Math.sin(phi) * Math.cos(lambdaK - lambda)
-    );
-  return (qibla + 360) % 360;
+  // Standard geodesic bearing formula to Makkah
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const toDeg = (r: number) => (r * 180) / Math.PI;
+
+  const phi1 = toRad(lat);
+  const phi2 = toRad(KAABA_LAT);
+  const dLambda = toRad(KAABA_LNG - lng);
+
+  const y = Math.sin(dLambda);
+  const x = Math.cos(phi1) * Math.tan(phi2) - Math.sin(phi1) * Math.cos(dLambda);
+
+  let bearing = toDeg(Math.atan2(y, x));
+  return ((bearing % 360) + 360) % 360;
 }
 
 function smoothAngle(current: number, target: number, factor = 0.15): number {
@@ -39,22 +41,22 @@ const QiblaDirection: React.FC = () => {
   const rafRef = useRef<number>();
   const sampleCountRef = useRef(0);
 
-  // Always get fresh GPS from device
+  // Get GPS location
   useEffect(() => {
     let cancelled = false;
 
     const getLocation = async () => {
-      // Try Capacitor first
       try {
         const { Geolocation } = await import("@capacitor/geolocation");
         const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 15000 });
         if (!cancelled) {
-          setQiblaAngle(calculateQibla(pos.coords.latitude, pos.coords.longitude));
+          const angle = calculateQibla(pos.coords.latitude, pos.coords.longitude);
+          console.log("Qibla calculated:", angle, "from lat:", pos.coords.latitude, "lng:", pos.coords.longitude);
+          setQiblaAngle(angle);
         }
         return;
       } catch {}
 
-      // Fallback to browser geolocation
       if (!navigator.geolocation) {
         setLocationError("Geolocation not supported on this device");
         return;
@@ -63,7 +65,9 @@ const QiblaDirection: React.FC = () => {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           if (!cancelled) {
-            setQiblaAngle(calculateQibla(pos.coords.latitude, pos.coords.longitude));
+            const angle = calculateQibla(pos.coords.latitude, pos.coords.longitude);
+            console.log("Qibla calculated:", angle, "from lat:", pos.coords.latitude, "lng:", pos.coords.longitude);
+            setQiblaAngle(angle);
           }
         },
         () => {
@@ -79,15 +83,24 @@ const QiblaDirection: React.FC = () => {
     return () => { cancelled = true; };
   }, []);
 
-  // Compass handler with smoothing for accuracy
+  // Compass with smoothing
   const handleOrientation = useCallback((e: DeviceOrientationEvent) => {
     if (e.alpha === null) return;
 
-    const rawHeading = (e as any).webkitCompassHeading ?? (360 - e.alpha);
+    // webkitCompassHeading gives heading relative to magnetic north (iOS)
+    // For Android, alpha is degrees from north, but measured counter-clockwise
+    let rawHeading: number;
+    if ((e as any).webkitCompassHeading !== undefined) {
+      rawHeading = (e as any).webkitCompassHeading;
+    } else {
+      // e.alpha: 0 = north, increases counter-clockwise
+      // heading: 0 = north, increases clockwise
+      rawHeading = (360 - (e.alpha || 0)) % 360;
+    }
+
     headingRef.current = rawHeading;
     sampleCountRef.current++;
 
-    // After enough samples, consider calibrated
     if (sampleCountRef.current > 20) {
       setCalibrating(false);
     }
@@ -103,7 +116,6 @@ const QiblaDirection: React.FC = () => {
     }
   }, []);
 
-  // Start compass listener
   useEffect(() => {
     if (typeof (DeviceOrientationEvent as any).requestPermission === "function") {
       setNeedsIOSPermission(true);
@@ -144,9 +156,12 @@ const QiblaDirection: React.FC = () => {
 
   const discRotation = -compassHeading;
   const needleRotation = qiblaAngle !== null ? qiblaAngle - compassHeading : 0;
-  const isPointingQibla = qiblaAngle !== null && hasCompass && Math.abs(needleRotation % 360) < 5;
-
-  const error = locationError;
+  
+  // Normalize to -180..180 for alignment check
+  let alignDiff = needleRotation % 360;
+  if (alignDiff > 180) alignDiff -= 360;
+  if (alignDiff < -180) alignDiff += 360;
+  const isPointingQibla = qiblaAngle !== null && hasCompass && Math.abs(alignDiff) < 5;
 
   return (
     <div className="px-4 py-6 flex flex-col items-center min-h-[70vh]">
@@ -155,10 +170,10 @@ const QiblaDirection: React.FC = () => {
         <p className="text-xs text-muted-foreground">Point your phone toward the Kaaba 🕋</p>
       </div>
 
-      {error ? (
+      {locationError ? (
         <div className="flex flex-col items-center gap-3 py-12 text-center animate-fade-in">
           <AlertCircle className="w-12 h-12 text-destructive" />
-          <p className="text-sm text-muted-foreground max-w-xs">{error}</p>
+          <p className="text-sm text-muted-foreground max-w-xs">{locationError}</p>
         </div>
       ) : qiblaAngle === null ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
@@ -168,10 +183,7 @@ const QiblaDirection: React.FC = () => {
       ) : (
         <>
           {needsIOSPermission && (
-            <button
-              onClick={requestIOSPermission}
-              className="mb-4 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium animate-fade-in flex items-center gap-2"
-            >
+            <button onClick={requestIOSPermission} className="mb-4 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium animate-fade-in flex items-center gap-2">
               <Navigation className="w-4 h-4" /> Enable Compass
             </button>
           )}
@@ -185,47 +197,26 @@ const QiblaDirection: React.FC = () => {
 
           {/* Compass */}
           <div className="relative w-72 h-72 mb-6 animate-fade-in">
-            {/* Outer ring */}
             <div className={`absolute inset-0 rounded-full border-2 transition-colors duration-300 ${isPointingQibla ? "border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.3)]" : "border-primary/20"}`} />
-            {/* Fixed top indicator */}
             <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-primary rotate-45 rounded-sm z-10" />
 
             {/* Rotating disc */}
-            <div
-              className="absolute inset-2 rounded-full"
-              style={{ transform: `rotate(${discRotation}deg)`, transition: "transform 0.1s ease-out" }}
-            >
+            <div className="absolute inset-2 rounded-full" style={{ transform: `rotate(${discRotation}deg)`, transition: "transform 0.1s ease-out" }}>
               <div className="absolute inset-0 rounded-full bg-card border border-primary/10" />
 
-              {/* Cardinal directions */}
               <div className="absolute top-2 left-1/2 -translate-x-1/2 text-xs font-bold text-destructive z-10">N</div>
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs font-bold text-muted-foreground z-10">S</div>
               <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground z-10">E</div>
               <div className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground z-10">W</div>
 
-              {/* Tick marks */}
               {Array.from({ length: 72 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute left-1/2 top-0 origin-bottom"
-                  style={{ transform: `translateX(-50%) rotate(${i * 5}deg)`, height: "50%" }}
-                >
-                  <div
-                    className={`w-px mx-auto ${
-                      i === 0 ? "h-3 bg-destructive" :
-                      i % 18 === 0 ? "h-3 bg-primary" :
-                      i % 6 === 0 ? "h-2 bg-primary/50" :
-                      "h-1 bg-muted-foreground/30"
-                    }`}
-                  />
+                <div key={i} className="absolute left-1/2 top-0 origin-bottom" style={{ transform: `translateX(-50%) rotate(${i * 5}deg)`, height: "50%" }}>
+                  <div className={`w-px mx-auto ${i === 0 ? "h-3 bg-destructive" : i % 18 === 0 ? "h-3 bg-primary" : i % 6 === 0 ? "h-2 bg-primary/50" : "h-1 bg-muted-foreground/30"}`} />
                 </div>
               ))}
 
-              {/* Qibla needle */}
-              <div
-                className="absolute inset-4 rounded-full"
-                style={{ transform: `rotate(${qiblaAngle}deg)` }}
-              >
+              {/* Qibla needle - fixed on compass disc at qibla bearing */}
+              <div className="absolute inset-4 rounded-full" style={{ transform: `rotate(${qiblaAngle}deg)` }}>
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center">
                   <div className="text-lg drop-shadow-md">🕋</div>
                   <div className={`w-0.5 h-14 rounded-full transition-colors duration-300 ${isPointingQibla ? "bg-gradient-to-b from-green-500 to-green-500/20" : "bg-gradient-to-b from-primary to-primary/20"}`} />
@@ -248,23 +239,15 @@ const QiblaDirection: React.FC = () => {
 
           {/* Info */}
           <div className="text-center space-y-2 animate-fade-in">
-            {isPointingQibla && (
-              <p className="text-sm font-bold text-green-500 animate-pulse">✓ You are facing Qibla!</p>
-            )}
+            {isPointingQibla && <p className="text-sm font-bold text-green-500 animate-pulse">✓ You are facing Qibla!</p>}
             <p className="text-2xl font-bold text-foreground">{Math.round(qiblaAngle)}°</p>
             <p className="text-xs text-muted-foreground">Qibla bearing from North</p>
-            {hasCompass && (
-              <p className="text-xs text-muted-foreground/70">Compass: {Math.round(compassHeading)}°</p>
-            )}
-            {compassError && (
-              <p className="text-xs text-muted-foreground/70 max-w-xs mt-2">{compassError}</p>
-            )}
+            {hasCompass && <p className="text-xs text-muted-foreground/70">Compass: {Math.round(compassHeading)}°</p>}
+            {compassError && <p className="text-xs text-muted-foreground/70 max-w-xs mt-2">{compassError}</p>}
           </div>
 
-          <div className="mt-8 px-4 py-3 rounded-xl bg-card border border-primary/10 max-w-xs text-center animate-fade-in">
-            <p className="text-xs text-muted-foreground">
-              Keep your device flat and away from magnets. Move in a figure-8 to calibrate the compass for best accuracy.
-            </p>
+          <div className="mt-8 px-4 py-3 rounded-xl bg-card border border-border max-w-xs text-center animate-fade-in">
+            <p className="text-xs text-muted-foreground">Keep your device flat and away from magnets. Move in a figure-8 to calibrate the compass for best accuracy.</p>
           </div>
         </>
       )}

@@ -24,17 +24,17 @@ import AzaanSettings from "@/pages/AzaanSettings";
 import Donate from "@/pages/Donate";
 import QiblaDirection from "@/pages/QiblaDirection";
 import Hadith from "@/pages/Hadith";
+import Settings from "@/pages/Settings";
 import NotFound from "@/pages/NotFound";
 import { useLocationPermission } from "@/hooks/useLocationPermission";
 import { useAutoDownload } from "@/hooks/useAutoDownload";
 import { LocationProvider } from "@/hooks/useSharedLocation";
+import { I18nProvider } from "@/lib/i18n";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  // Request location permission on first launch
   useLocationPermission();
-  // Auto-download Quran pages on native platform startup
   useAutoDownload();
 
   return (
@@ -62,6 +62,7 @@ const AppContent = () => {
         <Route path="/donate" element={<Donate />} />
         <Route path="/qibla" element={<QiblaDirection />} />
         <Route path="/hadith" element={<Hadith />} />
+        <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>
@@ -71,13 +72,15 @@ const AppContent = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <LocationProvider>
-        <Toaster />
-        <Sonner />
-        <HashRouter>
-          <AppContent />
-        </HashRouter>
-      </LocationProvider>
+      <I18nProvider>
+        <LocationProvider>
+          <Toaster />
+          <Sonner />
+          <HashRouter>
+            <AppContent />
+          </HashRouter>
+        </LocationProvider>
+      </I18nProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
