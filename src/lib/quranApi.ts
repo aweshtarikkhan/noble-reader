@@ -56,11 +56,13 @@ export const QuranAPI = {
 
   async reverseGeocode(lat: number, lng: number): Promise<string> {
     try {
-      const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=10`;
+      const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=16`;
       const res = await fetch(url, { headers: { "Accept-Language": "en" } });
       const data = await res.json();
       const addr = data.address;
-      return addr?.city || addr?.town || addr?.village || addr?.county || addr?.state || "Unknown";
+      const locality = addr?.suburb || addr?.neighbourhood || addr?.quarter || addr?.hamlet || "";
+      const city = addr?.city || addr?.town || addr?.village || addr?.county || addr?.state || "Unknown";
+      return locality ? `${locality}, ${city}` : city;
     } catch {
       return "Unknown";
     }
@@ -68,13 +70,15 @@ export const QuranAPI = {
 
   async reverseGeocodeWithCountry(lat: number, lng: number): Promise<{ city: string; countryCode: string }> {
     try {
-      const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=10`;
+      const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=16`;
       const res = await fetch(url, { headers: { "Accept-Language": "en" } });
       const data = await res.json();
       const addr = data.address;
+      const locality = addr?.suburb || addr?.neighbourhood || addr?.quarter || addr?.hamlet || "";
       const city = addr?.city || addr?.town || addr?.village || addr?.county || addr?.state || "Unknown";
+      const fullCity = locality ? `${locality}, ${city}` : city;
       const countryCode = (addr?.country_code || "").toUpperCase();
-      return { city, countryCode };
+      return { city: fullCity, countryCode };
     } catch {
       return { city: "Unknown", countryCode: "" };
     }
