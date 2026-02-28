@@ -43,7 +43,7 @@ interface RegionalConfig {
 function getRegionalConfig(countryCode: string): RegionalConfig {
   const cc = countryCode.toUpperCase();
   if (cc === "SA") return { method: 4, adjustment: 0, label: "Umm al-Qura" };
-  if (["IN", "PK", "BD"].includes(cc)) return { method: 1, adjustment: -2, label: "Karachi (Hanafi)" };
+  if (["IN", "PK", "BD"].includes(cc)) return { method: 1, adjustment: -1, label: "Karachi (Hanafi)" };
   if (["US", "CA"].includes(cc)) return { method: 2, adjustment: 0, label: "ISNA" };
   if (["EG", "SD", "SY"].includes(cc)) return { method: 5, adjustment: 0, label: "Egyptian Authority" };
   if (["AE", "QA", "KW", "BH", "OM"].includes(cc)) return { method: 8, adjustment: 0, label: "Gulf Region" };
@@ -93,6 +93,32 @@ const getHijriMonth = async (month: number, year: number, adjustment: number): P
     }
   } catch {}
   return [];
+};
+
+const getHomeStyleHijriDate = (): HijriDate | null => {
+  try {
+    const now = new Date();
+    const adjusted = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    const formatter = new Intl.DateTimeFormat("en-u-ca-islamic-civil", {
+      day: "numeric",
+      month: "numeric",
+      year: "numeric",
+    });
+    const parts = formatter.formatToParts(adjusted);
+    const day = parseInt(parts.find((p) => p.type === "day")?.value || "0", 10);
+    const month = parseInt(parts.find((p) => p.type === "month")?.value || "0", 10);
+    const year = parseInt(parts.find((p) => p.type === "year")?.value || "0", 10);
+
+    if (!day || !month || !year) return null;
+    return {
+      day,
+      month,
+      year,
+      monthName: HIJRI_MONTHS[month - 1] || "",
+    };
+  } catch {
+    return null;
+  }
 };
 
 const IslamicCalendar: React.FC = () => {
@@ -158,6 +184,14 @@ const IslamicCalendar: React.FC = () => {
   useEffect(() => {
     if (detecting) return;
     const fetchToday = async () => {
+      const homeStyleToday = getHomeStyleHijriDate();
+      if (homeStyleToday) {
+        setCurrentHijri(homeStyleToday);
+        setViewMonth(homeStyleToday.month);
+        setViewYear(homeStyleToday.year);
+        return;
+      }
+
       const today = await getHijriFromApi(new Date(), config.adjustment);
       if (today) {
         setCurrentHijri(today);
