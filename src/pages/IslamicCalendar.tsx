@@ -65,7 +65,7 @@ const getHijriFromApi = async (date: Date, adjustment: number): Promise<HijriDat
     const dd = String(date.getDate()).padStart(2, "0");
     const mm = String(date.getMonth() + 1).padStart(2, "0");
     const yyyy = date.getFullYear();
-    const res = await fetch(`https://api.aladhan.com/v1/gpiToH/${dd}-${mm}-${yyyy}?adjustment=${adjustment}`);
+    const res = await fetch(`https://api.aladhan.com/v1/gToH/${dd}-${mm}-${yyyy}?adjustment=${adjustment}`);
     const data = await res.json();
     if (data.code === 200) {
       const h = data.data.hijri;
@@ -77,7 +77,7 @@ const getHijriFromApi = async (date: Date, adjustment: number): Promise<HijriDat
 
 const getHijriMonth = async (month: number, year: number, adjustment: number): Promise<{ gregorian: string; hijriDay: number; weekday: number }[]> => {
   try {
-    const res = await fetch(`https://api.aladhan.com/v1/hpiToG/${month}/${year}?adjustment=${adjustment}`);
+    const res = await fetch(`https://api.aladhan.com/v1/hToGCalendar/${month}/${year}?adjustment=${adjustment}`);
     const data = await res.json();
     if (data.code === 200) {
       return data.data.map((item: any) => {
