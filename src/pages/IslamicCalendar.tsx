@@ -43,7 +43,7 @@ interface RegionalConfig {
 function getRegionalConfig(countryCode: string): RegionalConfig {
   const cc = countryCode.toUpperCase();
   if (cc === "SA") return { method: 4, adjustment: 0, label: "Umm al-Qura" };
-  if (["IN", "PK", "BD"].includes(cc)) return { method: 1, adjustment: -1, label: "Karachi (Hanafi)" };
+  if (["IN", "PK", "BD"].includes(cc)) return { method: 1, adjustment: -2, label: "Karachi (Hanafi)" };
   if (["US", "CA"].includes(cc)) return { method: 2, adjustment: 0, label: "ISNA" };
   if (["EG", "SD", "SY"].includes(cc)) return { method: 5, adjustment: 0, label: "Egyptian Authority" };
   if (["AE", "QA", "KW", "BH", "OM"].includes(cc)) return { method: 8, adjustment: 0, label: "Gulf Region" };
