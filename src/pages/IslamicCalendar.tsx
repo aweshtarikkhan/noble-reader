@@ -43,7 +43,7 @@ interface RegionalConfig {
 function getRegionalConfig(countryCode: string): RegionalConfig {
   const cc = countryCode.toUpperCase();
   if (cc === "SA") return { method: 4, adjustment: 0, label: "Umm al-Qura" };
-  if (["IN", "PK", "BD"].includes(cc)) return { method: 1, adjustment: 1, label: "Karachi (Hanafi)" };
+  if (["IN", "PK", "BD"].includes(cc)) return { method: 1, adjustment: -1, label: "Karachi (Hanafi)" };
   if (["US", "CA"].includes(cc)) return { method: 2, adjustment: 0, label: "ISNA" };
   if (["EG", "SD", "SY"].includes(cc)) return { method: 5, adjustment: 0, label: "Egyptian Authority" };
   if (["AE", "QA", "KW", "BH", "OM"].includes(cc)) return { method: 8, adjustment: 0, label: "Gulf Region" };
@@ -75,7 +75,7 @@ const getHijriFromApi = async (date: Date, adjustment: number): Promise<HijriDat
   return null;
 };
 
-const getHijriMonth = async (month: number, year: number, adjustment: number): Promise<{ gregorian: string; hijriDay: number; weekday: number }[]> => {
+const getHijriMonth = async (month: number, year: number, adjustment: number): Promise<{ gregorian: string; gregorianShort: string; hijriDay: number; weekday: number }[]> => {
   try {
     const res = await fetch(`https://api.aladhan.com/v1/hToGCalendar/${month}/${year}?adjustment=${adjustment}`);
     const data = await res.json();
@@ -85,6 +85,7 @@ const getHijriMonth = async (month: number, year: number, adjustment: number): P
         const gDate = new Date(`${g.year}-${g.month.number}-${g.day}`);
         return {
           gregorian: `${g.day} ${g.month.en} ${g.year}`,
+          gregorianShort: `${g.day} ${g.month.en.substring(0, 3)}`,
           hijriDay: parseInt(item.hijri.day),
           weekday: gDate.getDay(),
         };
@@ -102,7 +103,7 @@ const IslamicCalendar: React.FC = () => {
   const [currentHijri, setCurrentHijri] = useState<HijriDate | null>(null);
   const [viewMonth, setViewMonth] = useState(0);
   const [viewYear, setViewYear] = useState(0);
-  const [monthDays, setMonthDays] = useState<{ gregorian: string; hijriDay: number; weekday: number }[]>([]);
+  const [monthDays, setMonthDays] = useState<{ gregorian: string; gregorianShort: string; hijriDay: number; weekday: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
   const config = useMemo(() => getRegionalConfig(countryCode), [countryCode]);
@@ -190,13 +191,17 @@ const IslamicCalendar: React.FC = () => {
   const weekdays = lang === "ur" ? WEEKDAYS_UR : lang === "hi" ? WEEKDAYS_HI : WEEKDAYS_EN;
   const monthName = lang === "ur" || lang === "hi" ? HIJRI_MONTHS_AR[viewMonth - 1] : HIJRI_MONTHS[viewMonth - 1];
 
-  const calendarGrid = useMemo(() => {
-    if (monthDays.length === 0) return [];
+  const { calendarGrid, gregorianMap } = useMemo(() => {
+    if (monthDays.length === 0) return { calendarGrid: [], gregorianMap: new Map<number, string>() };
     const firstDayWeekday = monthDays[0]?.weekday ?? 0;
     const grid: (number | null)[] = [];
+    const gMap = new Map<number, string>();
     for (let i = 0; i < firstDayWeekday; i++) grid.push(null);
-    monthDays.forEach((d) => grid.push(d.hijriDay));
-    return grid;
+    monthDays.forEach((d) => {
+      grid.push(d.hijriDay);
+      gMap.set(d.hijriDay, d.gregorianShort);
+    });
+    return { calendarGrid: grid, gregorianMap: gMap };
   }, [monthDays]);
 
   const todayDay = currentHijri && viewMonth === currentHijri.month && viewYear === currentHijri.year ? currentHijri.day : null;
@@ -287,7 +292,7 @@ const IslamicCalendar: React.FC = () => {
               return (
                 <div
                   key={`day-${day}`}
-                  className={`relative flex items-center justify-center h-9 rounded-lg text-sm font-medium transition-smooth ${
+                  className={`relative flex flex-col items-center justify-center h-12 rounded-lg transition-smooth ${
                     isToday
                       ? "bg-primary text-primary-foreground font-bold"
                       : isImportant
@@ -297,7 +302,10 @@ const IslamicCalendar: React.FC = () => {
                       : "text-foreground"
                   }`}
                 >
-                  {day}
+                  <span className="text-sm font-medium leading-tight">{day}</span>
+                  <span className={`text-[7px] leading-tight ${isToday ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                    {gregorianMap.get(day)?.split(" ")[0]}
+                  </span>
                   {isImportant && !isToday && (
                     <Star className="w-2 h-2 text-primary absolute top-0.5 right-0.5 fill-primary" />
                   )}
