@@ -65,4 +65,18 @@ export const QuranAPI = {
       return "Unknown";
     }
   },
+
+  async reverseGeocodeWithCountry(lat: number, lng: number): Promise<{ city: string; countryCode: string }> {
+    try {
+      const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=10`;
+      const res = await fetch(url, { headers: { "Accept-Language": "en" } });
+      const data = await res.json();
+      const addr = data.address;
+      const city = addr?.city || addr?.town || addr?.village || addr?.county || addr?.state || "Unknown";
+      const countryCode = (addr?.country_code || "").toUpperCase();
+      return { city, countryCode };
+    } catch {
+      return { city: "Unknown", countryCode: "" };
+    }
+  },
 };

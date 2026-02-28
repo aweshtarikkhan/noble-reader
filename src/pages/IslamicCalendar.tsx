@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { ChevronLeft, ChevronRight, MapPin, Moon, Star } from "lucide-react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { ChevronLeft, ChevronRight, MapPin, Moon, Star, Globe } from "lucide-react";
 import { useSharedLocation } from "@/hooks/useSharedLocation";
 import { useI18n } from "@/lib/i18n";
-
-type CalendarMethod = "indian" | "saudi";
+import { QuranAPI } from "@/lib/quranApi";
 
 const HIJRI_MONTHS = [
   "Muharram", "Safar", "Rabi al-Awwal", "Rabi al-Thani",
@@ -35,6 +34,25 @@ const IMPORTANT_DATES: Record<string, { en: string; ur: string; hi: string }> = 
   "12-10": { en: "Eid ul-Adha", ur: "عید الاضحی", hi: "ईद-उल-अज़हा" },
 };
 
+interface RegionalConfig {
+  method: number;
+  adjustment: number;
+  label: string;
+}
+
+function getRegionalConfig(countryCode: string): RegionalConfig {
+  const cc = countryCode.toUpperCase();
+  if (cc === "SA") return { method: 4, adjustment: 0, label: "Umm al-Qura" };
+  if (["IN", "PK", "BD"].includes(cc)) return { method: 1, adjustment: 1, label: "Karachi (Hanafi)" };
+  if (["US", "CA"].includes(cc)) return { method: 2, adjustment: 0, label: "ISNA" };
+  if (["EG", "SD", "SY"].includes(cc)) return { method: 5, adjustment: 0, label: "Egyptian Authority" };
+  if (["AE", "QA", "KW", "BH", "OM"].includes(cc)) return { method: 8, adjustment: 0, label: "Gulf Region" };
+  if (["TR"].includes(cc)) return { method: 13, adjustment: 0, label: "Turkey (Diyanet)" };
+  if (["MY", "SG", "ID", "BN"].includes(cc)) return { method: 3, adjustment: 0, label: "MWL (Southeast Asia)" };
+  // Europe & default → MWL
+  return { method: 3, adjustment: 0, label: "Muslim World League" };
+}
+
 interface HijriDate {
   day: number;
   month: number;
@@ -42,14 +60,11 @@ interface HijriDate {
   monthName: string;
 }
 
-const getHijriFromApi = async (date: Date, method: CalendarMethod): Promise<HijriDate | null> => {
+const getHijriFromApi = async (date: Date, adjustment: number): Promise<HijriDate | null> => {
   try {
     const dd = String(date.getDate()).padStart(2, "0");
     const mm = String(date.getMonth() + 1).padStart(2, "0");
     const yyyy = date.getFullYear();
-    // method: 1=Muslim World League, 2=ISNA, ...  For Indian we use method 1 (shia), Saudi uses Umm al-Qura (method 4)
-    const apiMethod = method === "indian" ? 1 : 4;
-    const adjustment = method === "indian" ? 1 : 0;
     const res = await fetch(`https://api.aladhan.com/v1/gpiToH/${dd}-${mm}-${yyyy}?adjustment=${adjustment}`);
     const data = await res.json();
     if (data.code === 200) {
@@ -60,10 +75,8 @@ const getHijriFromApi = async (date: Date, method: CalendarMethod): Promise<Hijr
   return null;
 };
 
-const getHijriMonth = async (month: number, year: number, method: CalendarMethod): Promise<{ gregorian: string; hijriDay: number; weekday: number }[]> => {
+const getHijriMonth = async (month: number, year: number, adjustment: number): Promise<{ gregorian: string; hijriDay: number; weekday: number }[]> => {
   try {
-    const apiMethod = method === "indian" ? 1 : 4;
-    const adjustment = method === "indian" ? 1 : 0;
     const res = await fetch(`https://api.aladhan.com/v1/hpiToG/${month}/${year}?adjustment=${adjustment}`);
     const data = await res.json();
     if (data.code === 200) {
@@ -84,21 +97,67 @@ const getHijriMonth = async (month: number, year: number, method: CalendarMethod
 const IslamicCalendar: React.FC = () => {
   const { t, lang } = useI18n();
   const { location } = useSharedLocation();
-  const [method, setMethod] = useState<CalendarMethod>(() => {
-    const saved = localStorage.getItem("calendar_method");
-    if (saved === "indian" || saved === "saudi") return saved;
-    return "indian";
-  });
+  const [countryCode, setCountryCode] = useState<string>("");
+  const [detecting, setDetecting] = useState(true);
   const [currentHijri, setCurrentHijri] = useState<HijriDate | null>(null);
   const [viewMonth, setViewMonth] = useState(0);
   const [viewYear, setViewYear] = useState(0);
   const [monthDays, setMonthDays] = useState<{ gregorian: string; hijriDay: number; weekday: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const config = useMemo(() => getRegionalConfig(countryCode), [countryCode]);
+
+  // Auto-detect country from location
+  useEffect(() => {
+    const detectCountry = async () => {
+      // Check cached
+      const cached = localStorage.getItem("detected_country_code");
+      if (cached) {
+        setCountryCode(cached);
+        setDetecting(false);
+        return;
+      }
+
+      if (location?.lat && location?.lng) {
+        try {
+          const result = await QuranAPI.reverseGeocodeWithCountry(location.lat, location.lng);
+          if (result.countryCode) {
+            setCountryCode(result.countryCode);
+            localStorage.setItem("detected_country_code", result.countryCode);
+          }
+        } catch {}
+        setDetecting(false);
+        return;
+      }
+
+      // Fallback: browser geolocation
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            try {
+              const result = await QuranAPI.reverseGeocodeWithCountry(pos.coords.latitude, pos.coords.longitude);
+              if (result.countryCode) {
+                setCountryCode(result.countryCode);
+                localStorage.setItem("detected_country_code", result.countryCode);
+              }
+            } catch {}
+            setDetecting(false);
+          },
+          () => setDetecting(false),
+          { timeout: 10000 }
+        );
+      } else {
+        setDetecting(false);
+      }
+    };
+    detectCountry();
+  }, [location?.lat, location?.lng]);
+
   // Get today's hijri date
   useEffect(() => {
+    if (detecting) return;
     const fetchToday = async () => {
-      const today = await getHijriFromApi(new Date(), method);
+      const today = await getHijriFromApi(new Date(), config.adjustment);
       if (today) {
         setCurrentHijri(today);
         setViewMonth(today.month);
@@ -106,22 +165,17 @@ const IslamicCalendar: React.FC = () => {
       }
     };
     fetchToday();
-  }, [method]);
+  }, [detecting, config.adjustment]);
 
   // Load month data
   useEffect(() => {
     if (!viewMonth || !viewYear) return;
     setLoading(true);
-    getHijriMonth(viewMonth, viewYear, method).then((days) => {
+    getHijriMonth(viewMonth, viewYear, config.adjustment).then((days) => {
       setMonthDays(days);
       setLoading(false);
     });
-  }, [viewMonth, viewYear, method]);
-
-  const changeMethod = (m: CalendarMethod) => {
-    setMethod(m);
-    localStorage.setItem("calendar_method", m);
-  };
+  }, [viewMonth, viewYear, config.adjustment]);
 
   const prevMonth = () => {
     if (viewMonth <= 1) { setViewMonth(12); setViewYear(y => y - 1); }
@@ -136,7 +190,6 @@ const IslamicCalendar: React.FC = () => {
   const weekdays = lang === "ur" ? WEEKDAYS_UR : lang === "hi" ? WEEKDAYS_HI : WEEKDAYS_EN;
   const monthName = lang === "ur" || lang === "hi" ? HIJRI_MONTHS_AR[viewMonth - 1] : HIJRI_MONTHS[viewMonth - 1];
 
-  // Build calendar grid
   const calendarGrid = useMemo(() => {
     if (monthDays.length === 0) return [];
     const firstDayWeekday = monthDays[0]?.weekday ?? 0;
@@ -148,7 +201,6 @@ const IslamicCalendar: React.FC = () => {
 
   const todayDay = currentHijri && viewMonth === currentHijri.month && viewYear === currentHijri.year ? currentHijri.day : null;
 
-  // Important dates for current month
   const monthEvents = useMemo(() => {
     const events: { day: number; label: string }[] = [];
     for (const [key, val] of Object.entries(IMPORTANT_DATES)) {
@@ -162,16 +214,26 @@ const IslamicCalendar: React.FC = () => {
 
   const importantDays = new Set(monthEvents.map(e => e.day));
 
+  if (detecting) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-muted-foreground">{t("calendar.today")}...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="px-4 py-4 space-y-4">
-      {/* Method Toggle */}
-      <div className="flex bg-card rounded-xl p-1 border border-border animate-fade-in">
-        <button onClick={() => changeMethod("indian")} className={`flex-1 py-2 text-xs font-medium rounded-lg transition-smooth ${method === "indian" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
-          🇮🇳 {t("calendar.indian")}
-        </button>
-        <button onClick={() => changeMethod("saudi")} className={`flex-1 py-2 text-xs font-medium rounded-lg transition-smooth ${method === "saudi" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
-          🇸🇦 {t("calendar.saudi")}
-        </button>
+      {/* Regional Method Badge */}
+      <div className="flex items-center justify-center gap-2 animate-fade-in">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-full">
+          <Globe className="w-3.5 h-3.5 text-primary" />
+          <span className="text-[11px] font-medium text-primary">
+            {config.label}
+            {countryCode && <span className="ml-1 opacity-60">({countryCode})</span>}
+          </span>
+        </div>
       </div>
 
       {/* Today's Date Card */}
@@ -181,7 +243,7 @@ const IslamicCalendar: React.FC = () => {
           <p className="font-arabic text-2xl text-primary mb-1">
             {currentHijri.day} {lang === "ur" || lang === "hi" ? HIJRI_MONTHS_AR[currentHijri.month - 1] : HIJRI_MONTHS[currentHijri.month - 1]} {currentHijri.year} {t("calendar.ah")}
           </p>
-          <p className="text-xs text-muted-foreground">{t("calendar.today")} • {method === "indian" ? t("calendar.indian") : t("calendar.saudi")}</p>
+          <p className="text-xs text-muted-foreground">{t("calendar.today")} • {config.label}</p>
           {location?.city && (
             <p className="text-[10px] text-muted-foreground mt-1 flex items-center justify-center gap-1">
               <MapPin className="w-3 h-3" /> {location.city}
