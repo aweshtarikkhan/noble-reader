@@ -1,4 +1,5 @@
-const BASE = "https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1";
+const CDN_BASE = "https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1";
+const STORAGE_BASE = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/storage/v1/object/public/hadith-data`;
 
 export type HadithBook = {
   id: string;
@@ -57,10 +58,16 @@ const setCache = (key: string, data: any) => {
   } catch { /* storage full, just use memory */ }
 };
 
-async function fetchJSON(url: string): Promise<any> {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
-  return res.json();
+async function fetchJSON(path: string): Promise<any> {
+  // Try storage first, fallback to CDN
+  try {
+    const storageRes = await fetch(`${STORAGE_BASE}/${path}`);
+    if (storageRes.ok) return storageRes.json();
+  } catch { /* storage unavailable, try CDN */ }
+  
+  const cdnRes = await fetch(`${CDN_BASE}/${path}`);
+  if (!cdnRes.ok) throw new Error(`Failed to fetch: ${cdnRes.status}`);
+  return cdnRes.json();
 }
 
 export async function fetchBookSections(edition: string): Promise<SectionData> {
@@ -69,7 +76,7 @@ export async function fetchBookSections(edition: string): Promise<SectionData> {
   if (cached) return cached;
 
   // Fetch section 1 to get metadata with all section names
-  const data = await fetchJSON(`${BASE}/editions/${edition}/sections/1.min.json`);
+  const data = await fetchJSON(`editions/${edition}/sections/1.min.json`);
   setCache(cacheKey, data);
   return data;
 }
@@ -79,7 +86,7 @@ export async function fetchSection(edition: string, sectionNo: number): Promise<
   const cached = getCached(cacheKey);
   if (cached) return cached;
 
-  const data = await fetchJSON(`${BASE}/editions/${edition}/sections/${sectionNo}.min.json`);
+  const data = await fetchJSON(`editions/${edition}/sections/${sectionNo}.min.json`);
   setCache(cacheKey, data);
   return data;
 }
@@ -89,7 +96,7 @@ export async function fetchHadith(edition: string, hadithNo: number): Promise<Se
   const cached = getCached(cacheKey);
   if (cached) return cached;
 
-  const data = await fetchJSON(`${BASE}/editions/${edition}/${hadithNo}.min.json`);
+  const data = await fetchJSON(`editions/${edition}/${hadithNo}.min.json`);
   setCache(cacheKey, data);
   return data;
 }
@@ -99,7 +106,7 @@ export async function fetchFullBook(edition: string): Promise<SectionData> {
   const cached = getCached(cacheKey);
   if (cached) return cached;
 
-  const data = await fetchJSON(`${BASE}/editions/${edition}.min.json`);
+  const data = await fetchJSON(`editions/${edition}.min.json`);
   setCache(cacheKey, data);
   return data;
 }
