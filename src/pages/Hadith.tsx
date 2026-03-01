@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Download, Share2, BookOpen, ChevronRight, Loader2, Search, ChevronLeft, Save, Check } from "lucide-react";
+import { ArrowLeft, Download, Share2, BookOpen, ChevronRight, Loader2, Search, ChevronLeft, Save, Check, HardDriveDownload } from "lucide-react";
 import { HADITH_BOOKS, fetchBookSections, fetchSection, fetchFullBook, type HadithBook, type HadithEntry, type SectionData } from "@/lib/hadithApi";
+import { getHadithBookOffline } from "@/lib/hadithOffline";
 import { shareAsImage } from "@/lib/shareAsImage";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
+import HadithDownloadManager from "@/components/HadithDownloadManager";
 
 type ViewState =
   | { type: "books" }
@@ -21,13 +23,21 @@ const Hadith: React.FC = () => {
   const [search, setSearch] = useState("");
   const [downloading, setDownloading] = useState(false);
   const [savedBooks, setSavedBooks] = useState<string[]>(() => { try { return JSON.parse(localStorage.getItem("hadith_saved_books") || "[]"); } catch { return []; } });
+  const [showDownloadManager, setShowDownloadManager] = useState(false);
 
   const openBook = useCallback(async (book: HadithBook) => {
     setLoading(true); setSearch("");
     try {
-      const edition = lang === "urdu" ? book.urduEdition : book.englishEdition;
-      const data = await fetchBookSections(edition);
-      setView({ type: "sections", book, sections: data.metadata.section, sectionDetail: data.metadata.section_detail });
+      // Try offline first
+      const offline = await getHadithBookOffline(book.id);
+      if (offline) {
+        const src = lang === "urdu" ? offline.urdu : offline.english;
+        setView({ type: "sections", book, sections: src.metadata.section, sectionDetail: src.metadata.section_detail });
+      } else {
+        const edition = lang === "urdu" ? book.urduEdition : book.englishEdition;
+        const data = await fetchBookSections(edition);
+        setView({ type: "sections", book, sections: data.metadata.section, sectionDetail: data.metadata.section_detail });
+      }
     } catch { toast({ title: t("common.error"), description: "Failed to load book.", variant: "destructive" }); }
     setLoading(false);
   }, [lang, toast, t]);
@@ -35,13 +45,24 @@ const Hadith: React.FC = () => {
   const openSection = useCallback(async (book: HadithBook, sectionNo: number, sectionName: string) => {
     setLoading(true); setSearch("");
     try {
-      const [engData, araData, urdData] = await Promise.all([fetchSection(book.englishEdition, sectionNo), fetchSection(book.arabicEdition, sectionNo), fetchSection(book.urduEdition, sectionNo)]);
-      setView({ type: "hadiths", book, sectionNo, sectionName, hadiths: engData.hadiths, arabicHadiths: araData.hadiths, urduHadiths: urdData.hadiths });
+      // Try offline first
+      const offline = await getHadithBookOffline(book.id);
+      if (offline) {
+        const filterBySection = (data: SectionData) => data.hadiths.filter((h) => {
+          const detail = data.metadata.section_detail?.[String(sectionNo)];
+          if (!detail) return true;
+          return h.hadithnumber >= detail.hadithnumber_first && h.hadithnumber <= detail.hadithnumber_last;
+        });
+        setView({ type: "hadiths", book, sectionNo, sectionName, hadiths: filterBySection(offline.english), arabicHadiths: filterBySection(offline.arabic), urduHadiths: filterBySection(offline.urdu) });
+      } else {
+        const [engData, araData, urdData] = await Promise.all([fetchSection(book.englishEdition, sectionNo), fetchSection(book.arabicEdition, sectionNo), fetchSection(book.urduEdition, sectionNo)]);
+        setView({ type: "hadiths", book, sectionNo, sectionName, hadiths: engData.hadiths, arabicHadiths: araData.hadiths, urduHadiths: urdData.hadiths });
+      }
     } catch { toast({ title: t("common.error"), description: "Failed to load hadiths.", variant: "destructive" }); }
     setLoading(false);
   }, [toast, t]);
 
-  const handleBack = () => { if (view.type === "hadiths") openBook(view.book); else if (view.type === "sections") { setView({ type: "books" }); setSearch(""); } else navigate(-1); };
+  const handleBack = () => { if (showDownloadManager) { setShowDownloadManager(false); } else if (view.type === "hadiths") openBook(view.book); else if (view.type === "sections") { setView({ type: "books" }); setSearch(""); } else navigate(-1); };
 
   const handleShareHadith = (eng: HadithEntry, ara: HadithEntry, urd: HadithEntry, bookName: string) => {
     shareAsImage([
@@ -68,7 +89,7 @@ const Hadith: React.FC = () => {
     setDownloading(false);
   };
 
-  const getTitle = () => { if (view.type === "books") return t("hadith.books"); if (view.type === "sections") return view.book.name; return view.sectionName; };
+  const getTitle = () => { if (showDownloadManager) return "Download Hadith Books"; if (view.type === "books") return t("hadith.books"); if (view.type === "sections") return view.book.name; return view.sectionName; };
   const filteredSections = view.type === "sections" ? Object.entries(view.sections).filter(([, name]) => !search || name.toLowerCase().includes(search.toLowerCase())) : [];
   const filteredHadiths = view.type === "hadiths" ? view.hadiths.filter((h, i) => { if (!search) return true; const s = search.toLowerCase(); const ara = view.arabicHadiths[i]; const urd = view.urduHadiths[i]; return h.text.toLowerCase().includes(s) || ara?.text?.includes(search) || urd?.text?.includes(s) || String(h.hadithnumber).includes(s); }) : [];
 
@@ -81,7 +102,12 @@ const Hadith: React.FC = () => {
             <h1 className="text-lg font-bold text-foreground truncate">{getTitle()}</h1>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {view.type !== "books" && (
+            {view.type === "books" && !showDownloadManager && (
+              <button onClick={() => setShowDownloadManager(true)} className="p-2 rounded-xl bg-primary/10 active:scale-90 transition-smooth">
+                <HardDriveDownload className="w-4 h-4 text-primary" />
+              </button>
+            )}
+            {view.type !== "books" && !showDownloadManager && (
               <div className="flex gap-1">
                 {(["english", "urdu"] as const).map((l) => (
                   <button key={l} onClick={() => { setLang(l); localStorage.setItem("hadith_book_lang", l); }} className={`text-[9px] px-2 py-0.5 rounded-full font-medium transition-smooth ${lang === l ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{l === "english" ? "EN" : "UR"}</button>
@@ -100,7 +126,13 @@ const Hadith: React.FC = () => {
 
       {loading && <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}
 
-      {!loading && view.type === "books" && (
+      {showDownloadManager && (
+        <div className="px-4 py-4">
+          <HadithDownloadManager />
+        </div>
+      )}
+
+      {!loading && !showDownloadManager && view.type === "books" && (
         <div className="px-4 py-4 space-y-3">
           {HADITH_BOOKS.map((book) => (
             <div key={book.id} className="rounded-2xl bg-card border border-border overflow-hidden">
@@ -125,7 +157,7 @@ const Hadith: React.FC = () => {
         </div>
       )}
 
-      {!loading && view.type === "sections" && (
+      {!loading && !showDownloadManager && view.type === "sections" && (
         <div className="px-4 py-4 space-y-2">
           <p className="text-[10px] text-muted-foreground mb-2">{filteredSections.length} {t("hadith.chapters")}</p>
           {filteredSections.map(([num, name]) => (
@@ -140,7 +172,7 @@ const Hadith: React.FC = () => {
         </div>
       )}
 
-      {!loading && view.type === "hadiths" && (
+      {!loading && !showDownloadManager && view.type === "hadiths" && (
         <div className="px-4 py-4 space-y-3">
           <p className="text-[10px] text-muted-foreground mb-2">{filteredHadiths.length} {t("hadith.hadiths")}</p>
           {filteredHadiths.map((h) => {
