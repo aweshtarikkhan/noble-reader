@@ -25,6 +25,7 @@ import AzaanSettings from "@/pages/AzaanSettings";
 import Donate from "@/pages/Donate";
 import QiblaDirection from "@/pages/QiblaDirection";
 import Hadith from "@/pages/Hadith";
+import SahihMuslim from "@/pages/SahihMuslim";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/NotFound";
 import { useLocationPermission } from "@/hooks/useLocationPermission";
@@ -64,6 +65,7 @@ const AppContent = () => {
         <Route path="/donate" element={<Donate />} />
         <Route path="/qibla" element={<QiblaDirection />} />
         <Route path="/hadith" element={<Hadith />} />
+        <Route path="/sahih-muslim" element={<SahihMuslim />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
