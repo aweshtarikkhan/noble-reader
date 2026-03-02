@@ -80,6 +80,18 @@ const Donate: React.FC = () => {
         {isValid ? `${t("donate.payViaUPI")} ₹${finalAmount}` : t("donate.selectAmount")}
       </button>
       <p className="text-[10px] text-muted-foreground text-center mt-3">{t("donate.upiNote")}</p>
+      
+      {/* Future Update Banner */}
+      <div className="mt-6 rounded-2xl border border-primary/20 bg-primary/5 p-4 text-center">
+        <div className="flex items-center justify-center gap-2 mb-1.5">
+          <span className="text-base">🚀</span>
+          <p className="text-sm font-semibold text-primary">Coming Soon</p>
+        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Razorpay payment gateway support with automatic donation tracking, multiple payment methods (UPI, Cards, Net Banking) &amp; live donation stats.
+        </p>
+      </div>
+
       <div className="text-center mt-8">
         <p className="font-arabic text-xl text-gold">جزاك الله خيراً</p>
         <p className="text-xs text-muted-foreground mt-1">{t("donate.mayAllahReward")}</p>
