@@ -26,7 +26,7 @@ const Hadith: React.FC = () => {
   const [showDownloadManager, setShowDownloadManager] = useState(false);
 
   const openBook = useCallback(async (book: HadithBook) => {
-    setLoading(true); setSearch("");
+    setLoading(true); setSearch(""); window.scrollTo(0, 0);
     try {
       // Try offline first
       const offline = await getHadithBookOffline(book.id);
@@ -43,7 +43,7 @@ const Hadith: React.FC = () => {
   }, [lang, toast, t]);
 
   const openSection = useCallback(async (book: HadithBook, sectionNo: number, sectionName: string) => {
-    setLoading(true); setSearch("");
+    setLoading(true); setSearch(""); window.scrollTo(0, 0);
     try {
       // Try offline first
       const offline = await getHadithBookOffline(book.id);
@@ -62,7 +62,7 @@ const Hadith: React.FC = () => {
     setLoading(false);
   }, [toast, t]);
 
-  const handleBack = () => { if (showDownloadManager) { setShowDownloadManager(false); } else if (view.type === "hadiths") openBook(view.book); else if (view.type === "sections") { setView({ type: "books" }); setSearch(""); } else navigate(-1); };
+  const handleBack = () => { window.scrollTo(0, 0); if (showDownloadManager) { setShowDownloadManager(false); } else if (view.type === "hadiths") openBook(view.book); else if (view.type === "sections") { setView({ type: "books" }); setSearch(""); } else navigate(-1); };
 
   const handleShareHadith = (eng: HadithEntry, ara: HadithEntry, urd: HadithEntry, bookName: string) => {
     shareAsImage([
