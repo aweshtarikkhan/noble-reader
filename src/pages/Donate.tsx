@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
+import { supabase } from "@/integrations/supabase/client";
 
 const UPI_ID = "7049402994-4@ybl";
 const DEVELOPER_NAME = "Awesh Tarik Khan";
@@ -12,6 +13,19 @@ const Donate: React.FC = () => {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(100);
   const [customAmount, setCustomAmount] = useState("");
   const [isCustom, setIsCustom] = useState(false);
+  const [stats, setStats] = useState<{ count: number; total: number } | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from("donations")
+      .select("amount")
+      .eq("status", "completed")
+      .then(({ data }) => {
+        if (data) {
+          setStats({ count: data.length, total: data.reduce((s, d) => s + Number(d.amount), 0) });
+        }
+      });
+  }, []);
 
   const finalAmount = isCustom ? Number(customAmount) : selectedAmount;
   const isValid = finalAmount && finalAmount >= 10;
@@ -26,6 +40,18 @@ const Donate: React.FC = () => {
         <h2 className="text-xl font-semibold text-foreground">{t("donate.supportApp")}</h2>
         <p className="text-sm text-muted-foreground mt-1">{t("donate.enjoyDesc")}</p>
       </div>
+      {stats && stats.count > 0 && (
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="rounded-2xl bg-card border border-gold/10 p-4 text-center">
+            <p className="text-2xl font-bold text-gold">{stats.count}</p>
+            <p className="text-xs text-muted-foreground mt-1">Donations</p>
+          </div>
+          <div className="rounded-2xl bg-card border border-gold/10 p-4 text-center">
+            <p className="text-2xl font-bold text-gold">₹{stats.total.toLocaleString("en-IN")}</p>
+            <p className="text-xs text-muted-foreground mt-1">Raised</p>
+          </div>
+        </div>
+      )}
       <div className="rounded-2xl bg-card border border-gold/10 p-4 mb-6 text-center">
         <p className="text-xs text-muted-foreground">{t("donate.developedBy")}</p>
         <p className="text-base font-semibold text-gold mt-0.5">{DEVELOPER_NAME}</p>
