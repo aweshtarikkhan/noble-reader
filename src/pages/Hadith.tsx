@@ -128,7 +128,7 @@ const Hadith: React.FC = () => {
 
       {showDownloadManager && (
         <div className="px-4 py-4">
-          <HadithDownloadManager />
+          <HadithDownloadManager autoStart />
         </div>
       )}
 

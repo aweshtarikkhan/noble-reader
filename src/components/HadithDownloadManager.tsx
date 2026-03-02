@@ -13,11 +13,12 @@ interface BookProgress {
   editionsDone: number; // 0-3 (arabic, english, urdu)
 }
 
-const HadithDownloadManager: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
+const HadithDownloadManager: React.FC<{ onClose?: () => void; autoStart?: boolean }> = ({ onClose, autoStart = false }) => {
   const { toast } = useToast();
   const [bookProgress, setBookProgress] = useState<Record<string, BookProgress>>({});
   const [bulkRunning, setBulkRunning] = useState(false);
   const abortRef = useRef(false);
+  const autoStartedRef = useRef(false);
 
   useEffect(() => {
     // Initialize status from offline cache
@@ -28,9 +29,19 @@ const HadithDownloadManager: React.FC<{ onClose?: () => void }> = ({ onClose }) 
         initial[b.id] = { status: saved.includes(b.id) ? "done" : "idle", progress: saved.includes(b.id) ? 100 : 0, editionsDone: saved.includes(b.id) ? 3 : 0 };
       });
       setBookProgress(initial);
+      
+      // Auto-start bulk download if requested and not all done
+      if (autoStart && !autoStartedRef.current) {
+        const allDone = HADITH_BOOKS.every((b) => saved.includes(b.id));
+        if (!allDone) {
+          autoStartedRef.current = true;
+          // Trigger download after state is set
+          setTimeout(() => downloadAllRef.current?.(), 100);
+        }
+      }
     };
     init();
-  }, []);
+  }, [autoStart]);
 
   const downloadBook = useCallback(async (book: HadithBook) => {
     setBookProgress((prev) => ({ ...prev, [book.id]: { status: "downloading", progress: 0, editionsDone: 0 } }));
@@ -63,6 +74,8 @@ const HadithDownloadManager: React.FC<{ onClose?: () => void }> = ({ onClose }) 
     }
   }, []);
 
+  const downloadAllRef = useRef<(() => void) | null>(null);
+
   const downloadAll = async () => {
     setBulkRunning(true);
     abortRef.current = false;
@@ -79,6 +92,8 @@ const HadithDownloadManager: React.FC<{ onClose?: () => void }> = ({ onClose }) 
       toast({ title: "✅ All hadith books saved offline" });
     }
   };
+
+  downloadAllRef.current = downloadAll;
 
   const stopAll = () => {
     abortRef.current = true;
