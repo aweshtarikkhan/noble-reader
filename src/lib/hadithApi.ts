@@ -75,8 +75,8 @@ export async function fetchBookSections(edition: string): Promise<SectionData> {
   const cached = getCached(cacheKey);
   if (cached) return cached;
 
-  // Fetch section 1 to get metadata with all section names
-  const data = await fetchJSON(`editions/${edition}/sections/1.min.json`);
+  // Fetch the full book to get complete metadata with all sections
+  const data = await fetchJSON(`editions/${edition}.min.json`);
   setCache(cacheKey, data);
   return data;
 }
