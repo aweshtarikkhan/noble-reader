@@ -38,6 +38,13 @@ export type SectionData = {
 // Simple in-memory + localStorage cache
 const memoryCache: Record<string, any> = {};
 
+// Clear old section caches that may have incomplete data
+const CACHE_VERSION = "v2";
+if (localStorage.getItem("hadith_cache_version") !== CACHE_VERSION) {
+  Object.keys(localStorage).filter(k => k.startsWith("hadith_cache_sections_")).forEach(k => localStorage.removeItem(k));
+  localStorage.setItem("hadith_cache_version", CACHE_VERSION);
+}
+
 const getCached = (key: string): any => {
   if (memoryCache[key]) return memoryCache[key];
   try {
@@ -70,12 +77,56 @@ async function fetchJSON(path: string): Promise<any> {
   return cdnRes.json();
 }
 
+// Fetch the master info.json which has all section metadata for every book
+async function fetchInfo(): Promise<Record<string, any>> {
+  const cacheKey = "hadith_info";
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
+
+  const data = await fetchJSON("info.json");
+  setCache(cacheKey, data);
+  return data;
+}
+
+// Extract book ID from edition string (e.g. "eng-bukhari" -> "bukhari")
+function bookIdFromEdition(edition: string): string {
+  return edition.replace(/^(ara|eng|urd)-/, "");
+}
+
 export async function fetchBookSections(edition: string): Promise<SectionData> {
   const cacheKey = `sections_${edition}`;
   const cached = getCached(cacheKey);
   if (cached) return cached;
 
-  // Fetch the full book to get complete metadata with all sections
+  const bookId = bookIdFromEdition(edition);
+  const info = await fetchInfo();
+  const bookInfo = info[bookId];
+
+  if (bookInfo?.metadata) {
+    // info.json uses "sections" and "section_details" keys
+    const sectionData: SectionData = {
+      metadata: {
+        name: bookInfo.metadata.name,
+        section: bookInfo.metadata.sections || {},
+        section_detail: {},
+      },
+      hadiths: [],
+    };
+    // Map section_details -> section_detail format
+    if (bookInfo.metadata.section_details) {
+      for (const [k, v] of Object.entries(bookInfo.metadata.section_details)) {
+        const detail = v as any;
+        sectionData.metadata.section_detail[k] = {
+          hadithnumber_first: detail.hadithnumber_first,
+          hadithnumber_last: detail.hadithnumber_last,
+        };
+      }
+    }
+    setCache(cacheKey, sectionData);
+    return sectionData;
+  }
+
+  // Fallback: fetch full book
   const data = await fetchJSON(`editions/${edition}.min.json`);
   setCache(cacheKey, data);
   return data;
