@@ -1,41 +1,44 @@
 
 
-## Current Situation
+## Automatic Donation Tracking with Payment Gateway
 
-Your app currently fetches hadith data from `cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1` — a free public CDN. This works but you don't control it, and it could go down or rate-limit you.
+Since the current setup uses raw UPI links (which don't provide callbacks), we need to integrate a proper payment gateway to automatically track donations. **Razorpay** is the best fit here — it supports UPI, cards, and provides webhooks to record every successful payment.
 
-## Cloudflare R2 — What's Needed
+### Architecture
 
-Cloudflare R2 is an external service that **you** need to set up. Lovable cannot create or manage Cloudflare accounts. Here's exactly what to do:
+```text
+User clicks "Pay" → Razorpay Checkout opens → User pays via UPI/Card
+                                                      ↓
+Razorpay webhook → Edge Function → Saves to "donations" table
+                                                      ↓
+Donate page loads → Fetches donation stats → Shows total raised + count
+```
 
-### Your Part (Setup R2)
+### Steps
 
-1. **Create a Cloudflare account** at cloudflare.com (free tier includes 10GB R2 storage — more than enough for hadith JSON files)
-2. **Create an R2 bucket** — name it something like `hadith-data`
-3. **Enable public access** on the bucket (so the app can fetch JSON files directly without auth)
-4. **Connect a custom domain** (optional) or use the default R2 public URL
-5. **Upload the hadith JSON files** — Download them from the fawazahmed0 API and upload to R2 in the same folder structure:
-   - `editions/eng-muslim/sections/1.min.json`
-   - `editions/ara-muslim/sections/1.min.json`
-   - `editions/urd-muslim/sections/1.min.json`
-   - ... (repeat for all 56 sections × 3 languages × 6 books)
+1. **Create a `donations` table** in the database with columns: `id`, `amount`, `currency`, `razorpay_payment_id`, `status`, `donor_name` (optional), `created_at`. Public read access (RLS) so the stats can be displayed without auth.
 
-### My Part (Code Update)
+2. **Set up Razorpay integration**:
+   - You'll need a Razorpay account (free to create at razorpay.com)
+   - Store `RAZORPAY_KEY_ID` (publishable, used in frontend) and `RAZORPAY_KEY_SECRET` as secrets
+   - Create an edge function `create-razorpay-order` to generate orders server-side
+   - Create an edge function `razorpay-webhook` to receive payment confirmations and insert into the `donations` table
 
-Once you give me the R2 public URL, I will:
+3. **Update the Donate page**:
+   - Replace raw UPI link with Razorpay Checkout (loads their JS SDK)
+   - Add a "Community Support" stats section at the top showing:
+     - Total donations received (count)
+     - Total amount raised (sum)
+     - Optional: recent donor names (if provided)
+   - Keep the QR code as a fallback for manual UPI (those won't be tracked)
 
-1. **Update `src/lib/hadithApi.ts`** — Change the `BASE` URL from the jsDelivr CDN to your R2 bucket URL
-2. **Add fallback logic** — Try R2 first, fall back to the original jsDelivr CDN if R2 fails
-3. That's it — the rest of the app (localforage caching, offline logic) stays the same
+4. **Display donation stats on the Donate page** by querying the `donations` table for aggregated count and sum.
 
-### Alternative: Skip R2 Entirely
+### Important Notes
 
-The current jsDelivr CDN is reliable and free. R2 only makes sense if:
-- You want full control over the data
-- You plan to add/modify hadith content
-- You're hitting rate limits on jsDelivr
+- You will need to create a free Razorpay account and provide two keys (one public, one secret)
+- Razorpay test mode can be used first to verify everything works before going live
+- Manual UPI payments (via QR) won't be automatically tracked — only payments through the Razorpay checkout will be recorded
 
----
-
-**Next step:** If you want to proceed, create the R2 bucket with public access, upload the JSON files, and share the public URL with me. I'll update the code in one line.
+Would you like to proceed with this approach? I'll need you to set up a Razorpay account first so we can store the API keys.
 
