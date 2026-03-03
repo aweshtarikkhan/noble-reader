@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Download, Share2, BookOpen, ChevronRight, Loader2, Search, ChevronLeft, Save, Check, HardDriveDownload } from "lucide-react";
 import { HADITH_BOOKS, fetchBookSections, fetchSection, fetchFullBook, type HadithBook, type HadithEntry, type SectionData } from "@/lib/hadithApi";
-import { getHadithBookOffline } from "@/lib/hadithOffline";
+import { getHadithBookOffline, saveHadithBookOffline } from "@/lib/hadithOffline";
 import { shareAsImage } from "@/lib/shareAsImage";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
@@ -83,11 +83,9 @@ const Hadith: React.FC = () => {
     setDownloading(true);
     try {
       const [engData, araData, urdData] = await Promise.all([fetchFullBook(book.englishEdition), fetchFullBook(book.arabicEdition), fetchFullBook(book.urduEdition)]);
+      await saveHadithBookOffline(book.id, araData, engData, urdData);
       const updated = [...new Set([...savedBooks, book.id])]; setSavedBooks(updated); localStorage.setItem("hadith_saved_books", JSON.stringify(updated));
-      let text = `=== ${book.name} ===\n\n`;
-      engData.hadiths.forEach((eng, i) => { const ara = araData.hadiths[i]; const urd = urdData.hadiths[i]; text += `--- Hadith ${eng.hadithnumber} ---\n`; if (ara) text += `Arabic: ${ara.text}\n`; text += `English: ${eng.text}\n`; if (urd) text += `Urdu: ${urd.text}\n`; text += `\n`; });
-      const blob = new Blob([text], { type: "text/plain;charset=utf-8" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `${book.id}-hadiths.txt`; a.click(); URL.revokeObjectURL(url);
-      toast({ title: "✅", description: `${book.name} — ${engData.hadiths.length} hadiths` });
+      toast({ title: "✅", description: `${book.name} saved offline — ${engData.hadiths.length} hadiths` });
     } catch { toast({ title: t("common.error"), description: "Download failed.", variant: "destructive" }); }
     setDownloading(false);
   };
