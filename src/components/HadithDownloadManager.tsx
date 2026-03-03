@@ -59,9 +59,10 @@ const HadithDownloadManager: React.FC<{ onClose?: () => void; autoStart?: boolea
         if (abortRef.current) throw new Error("aborted");
         const ed = editions[i];
         data[ed.key] = await fetchFullBook(ed.edition);
+        const progress = Math.round(((i + 1) / editions.length) * 100);
         setBookProgress((prev) => ({
           ...prev,
-          [book.id]: { status: "downloading", progress: Math.round(((i + 1) / 3) * 100), editionsDone: i + 1 },
+          [book.id]: { status: "downloading", progress: Math.min(progress, 99), editionsDone: i + 1 },
         }));
       }
 
