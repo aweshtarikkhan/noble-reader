@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Download, CheckCircle2, Loader2, XCircle, DownloadCloud, Pause } from "lucide-react";
+import { Download, CheckCircle2, Loader2, XCircle, DownloadCloud, Pause, ChevronRight } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { HADITH_BOOKS, fetchFullBook, type HadithBook } from "@/lib/hadithApi";
 import { saveHadithBookOffline, isBookSavedOffline, getOfflineBookIds } from "@/lib/hadithOffline";
@@ -13,7 +13,7 @@ interface BookProgress {
   editionsDone: number; // 0-3 (arabic, english, urdu)
 }
 
-const HadithDownloadManager: React.FC<{ onClose?: () => void; autoStart?: boolean }> = ({ onClose, autoStart = false }) => {
+const HadithDownloadManager: React.FC<{ onClose?: () => void; autoStart?: boolean; onOpenBook?: (book: HadithBook) => void | Promise<void> }> = ({ onClose, autoStart = false, onOpenBook }) => {
   const { toast } = useToast();
   const [bookProgress, setBookProgress] = useState<Record<string, BookProgress>>({});
   const [bulkRunning, setBulkRunning] = useState(false);
@@ -104,6 +104,13 @@ const HadithDownloadManager: React.FC<{ onClose?: () => void; autoStart?: boolea
   const allDone = HADITH_BOOKS.every((b) => bookProgress[b.id]?.status === "done");
   const totalProgress = HADITH_BOOKS.reduce((sum, b) => sum + (bookProgress[b.id]?.progress || 0), 0) / HADITH_BOOKS.length;
 
+  const handleOpenSavedBook = useCallback((book: HadithBook) => {
+    if (!onOpenBook) return;
+    Promise.resolve(onOpenBook(book)).catch(() => {
+      toast({ title: "Failed to open book", description: "Please try again.", variant: "destructive" });
+    });
+  }, [onOpenBook, toast]);
+
   return (
     <div className="space-y-4">
       {/* Overall progress */}
@@ -147,14 +154,24 @@ const HadithDownloadManager: React.FC<{ onClose?: () => void; autoStart?: boolea
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{book.name}</p>
                   <p className="text-[10px] text-muted-foreground">
-                    {bp.status === "done" && "Saved offline ✅"}
+                    {bp.status === "done" && (onOpenBook ? "Saved offline ✅ • Tap to open" : "Saved offline ✅")}
                     {bp.status === "downloading" && `Downloading edition ${bp.editionsDone + 1}/3...`}
                     {bp.status === "error" && "Failed — tap to retry"}
                     {bp.status === "idle" && "Not downloaded"}
                   </p>
                 </div>
                 <div className="shrink-0 ml-2">
-                  {bp.status === "done" && <CheckCircle2 className="w-5 h-5 text-primary" />}
+                  {bp.status === "done" && onOpenBook && (
+                    <button
+                      onClick={() => handleOpenSavedBook(book)}
+                      className="active:scale-90 transition-smooth flex items-center gap-1"
+                      aria-label={`Open ${book.name}`}
+                    >
+                      <CheckCircle2 className="w-5 h-5 text-primary" />
+                      <ChevronRight className="w-4 h-4 text-primary" />
+                    </button>
+                  )}
+                  {bp.status === "done" && !onOpenBook && <CheckCircle2 className="w-5 h-5 text-primary" />}
                   {bp.status === "downloading" && <Loader2 className="w-5 h-5 animate-spin text-primary" />}
                   {bp.status === "error" && (
                     <button onClick={() => downloadBook(book)} className="active:scale-90 transition-smooth">

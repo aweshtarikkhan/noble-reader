@@ -131,7 +131,7 @@ const Hadith: React.FC = () => {
 
       {showDownloadManager && (
         <div className="px-4 py-4">
-          <HadithDownloadManager autoStart />
+          <HadithDownloadManager autoStart onOpenBook={async (book) => { setShowDownloadManager(false); await openBook(book); }} />
         </div>
       )}
 
