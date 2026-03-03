@@ -32,7 +32,9 @@ const Hadith: React.FC = () => {
       const offline = await getHadithBookOffline(book.id);
       if (offline) {
         const src = lang === "urdu" ? offline.urdu : offline.english;
-        setView({ type: "sections", book, sections: src.metadata.section, sectionDetail: src.metadata.section_detail });
+        const sections = src.metadata.section || (src.metadata as any).sections || {};
+        const sectionDetail = src.metadata.section_detail || (src.metadata as any).section_details || {};
+        setView({ type: "sections", book, sections, sectionDetail });
       } else {
         const edition = lang === "urdu" ? book.urduEdition : book.englishEdition;
         const data = await fetchBookSections(edition);
@@ -48,11 +50,12 @@ const Hadith: React.FC = () => {
       // Try offline first
       const offline = await getHadithBookOffline(book.id);
       if (offline) {
-        const filterBySection = (data: SectionData) => data.hadiths.filter((h) => {
-          const detail = data.metadata.section_detail?.[String(sectionNo)];
-          if (!detail) return true;
-          return h.hadithnumber >= detail.hadithnumber_first && h.hadithnumber <= detail.hadithnumber_last;
-        });
+        const filterBySection = (data: SectionData) => {
+          const details = data.metadata.section_detail || (data.metadata as any).section_details || {};
+          const detail = details[String(sectionNo)];
+          if (!detail) return data.hadiths;
+          return data.hadiths.filter((h) => h.hadithnumber >= detail.hadithnumber_first && h.hadithnumber <= detail.hadithnumber_last);
+        };
         setView({ type: "hadiths", book, sectionNo, sectionName, hadiths: filterBySection(offline.english), arabicHadiths: filterBySection(offline.arabic), urduHadiths: filterBySection(offline.urdu) });
       } else {
         const [engData, araData, urdData] = await Promise.all([fetchSection(book.englishEdition, sectionNo), fetchSection(book.arabicEdition, sectionNo), fetchSection(book.urduEdition, sectionNo)]);
