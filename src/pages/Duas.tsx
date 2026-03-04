@@ -196,11 +196,16 @@ const Duas: React.FC = () => {
               {isOpen && (
                 <div className="border-t border-border">
                   {cat.duas.map((dua, i) => (
-                    <button key={i} onClick={() => setSelectedDua({ dua, catName: cat.name })} className={`w-full text-left px-4 py-4 space-y-2 active:bg-muted/30 transition-smooth ${i > 0 ? "border-t border-border/50" : ""}`}>
-                      <p className="font-arabic text-lg leading-[2] text-foreground text-right line-clamp-2" dir="rtl">{dua.arabic}</p>
-                      <p className={`text-xs leading-relaxed line-clamp-2 ${lang === "urdu" ? "text-right font-urdu" : ""} text-muted-foreground`} dir={lang === "urdu" ? "rtl" : "ltr"}>{dua[lang]}</p>
-                      {dua.reference && <p className="text-[10px] text-primary/70 font-medium">📖 {dua.reference}</p>}
-                    </button>
+                    <div key={i} className={`flex items-center ${i > 0 ? "border-t border-border/50" : ""}`}>
+                      <button onClick={() => setSelectedDua({ dua, catName: cat.name })} className="flex-1 text-left px-4 py-4 space-y-2 active:bg-muted/30 transition-smooth min-w-0">
+                        <p className="font-arabic text-lg leading-[2] text-foreground text-right line-clamp-2" dir="rtl">{dua.arabic}</p>
+                        <p className={`text-xs leading-relaxed line-clamp-2 ${lang === "urdu" ? "text-right font-urdu" : ""} text-muted-foreground`} dir={lang === "urdu" ? "rtl" : "ltr"}>{dua[lang]}</p>
+                        {dua.reference && <p className="text-[10px] text-primary/70 font-medium">📖 {dua.reference}</p>}
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); const text = `${dua.arabic}\n\n${dua[lang]}${dua.reference ? '\n\n📖 ' + dua.reference : ''}`; navigator.clipboard.writeText(text); toast({ title: "📋", description: "Copied!" }); }} className="px-3 py-4 active:bg-muted/50 shrink-0">
+                        <Copy className="w-3.5 h-3.5 text-muted-foreground" />
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}
