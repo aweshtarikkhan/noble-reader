@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Search, Settings, ChevronDown, ChevronUp, Heart, Share2, ArrowLeft, BookOpen, Languages, Pin, PinOff } from "lucide-react";
+import { Search, Settings, ChevronDown, ChevronUp, Heart, Share2, ArrowLeft, BookOpen, Languages, Pin, PinOff, Copy } from "lucide-react";
 import { DUA_CATEGORIES, DuaTranslation, DuaCategory } from "@/data/duas";
 import { RABBANA_DUAS } from "@/data/rabbanaDuas";
 import { useNavigate } from "react-router-dom";
@@ -142,6 +142,7 @@ const Duas: React.FC = () => {
           )}
         </div>
         <div className="fixed bottom-24 right-5 flex flex-col gap-3">
+          <button onClick={() => { const text = `${dua.arabic}\n\n${dua[lang]}${dua.reference ? '\n\n📖 ' + dua.reference : ''}`; navigator.clipboard.writeText(text); toast({ title: "📋", description: "Copied to clipboard" }); }} className="w-12 h-12 rounded-full bg-card text-muted-foreground border border-border shadow-lg flex items-center justify-center active:scale-95 transition-smooth"><Copy className="w-5 h-5" /></button>
           <button onClick={() => toggleFav(key)} className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-smooth ${isFav ? "bg-destructive text-destructive-foreground" : "bg-card text-muted-foreground border border-border"}`}><Heart className={`w-5 h-5 ${isFav ? "fill-current" : ""}`} /></button>
           <button onClick={() => shareDua(dua)} className="w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center active:scale-95 transition-smooth"><Share2 className="w-5 h-5" /></button>
         </div>

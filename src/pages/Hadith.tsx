@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Download, Share2, BookOpen, ChevronRight, Loader2, Search, ChevronLeft, Save, Check, HardDriveDownload } from "lucide-react";
+import { ArrowLeft, Download, Share2, BookOpen, ChevronRight, Loader2, Search, ChevronLeft, Save, Check, HardDriveDownload, Copy } from "lucide-react";
 import { HADITH_BOOKS, fetchBookSections, fetchSection, fetchFullBook, type HadithBook, type HadithEntry, type SectionData } from "@/lib/hadithApi";
 import { getHadithBookOffline, saveHadithBookOffline } from "@/lib/hadithOffline";
 import { shareAsImage } from "@/lib/shareAsImage";
@@ -182,7 +182,10 @@ const Hadith: React.FC = () => {
               <div key={h.hadithnumber} className="rounded-2xl bg-card border border-border overflow-hidden">
                 <div className="px-4 py-3 flex items-start justify-between gap-2 border-b border-border">
                   <span className="text-[10px] font-bold text-primary">#{h.hadithnumber}</span>
-                  <button onClick={() => handleShareHadith(h, ara, urd, view.book.name)} className="text-[10px] font-semibold text-primary flex items-center gap-1 px-2 py-0.5 rounded-lg bg-primary/10 active:scale-95 transition-smooth shrink-0"><Share2 className="w-3 h-3" />{t("hadith.share")}</button>
+                  <div className="flex items-center gap-1.5">
+                    <button onClick={() => { const text = `${ara?.text ? ara.text + '\n\n' : ''}${h.text}${urd ? '\n\n' + urd.text : ''}\n\n— ${view.book.name}, Hadith #${h.hadithnumber}`; navigator.clipboard.writeText(text); toast({ title: "📋", description: "Copied to clipboard" }); }} className="text-[10px] font-semibold text-primary flex items-center gap-1 px-2 py-0.5 rounded-lg bg-primary/10 active:scale-95 transition-smooth shrink-0"><Copy className="w-3 h-3" />Copy</button>
+                    <button onClick={() => handleShareHadith(h, ara, urd, view.book.name)} className="text-[10px] font-semibold text-primary flex items-center gap-1 px-2 py-0.5 rounded-lg bg-primary/10 active:scale-95 transition-smooth shrink-0"><Share2 className="w-3 h-3" />{t("hadith.share")}</button>
+                  </div>
                 </div>
                 {ara && <div className="px-4 pt-3 pb-2"><p className="font-arabic text-lg leading-[2.2] text-foreground text-right" dir="rtl">{ara.text}</p></div>}
                 <div className="px-4 pb-3">{lang === "urdu" && urd ? <p className="text-sm text-muted-foreground leading-relaxed text-right font-urdu" dir="rtl">{urd.text}</p> : <p className="text-sm text-muted-foreground leading-relaxed">{h.text}</p>}</div>
