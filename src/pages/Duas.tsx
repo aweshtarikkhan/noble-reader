@@ -7,12 +7,24 @@ import { useI18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import { shareAsImage } from "@/lib/shareAsImage";
 
-type Lang = "english" | "urdu" | "romanUrdu";
+type Lang = "english" | "urdu" | "romanUrdu" | "hindi";
 const LANG_OPTIONS: { key: Lang; label: string }[] = [
   { key: "english", label: "English" },
   { key: "urdu", label: "اردو" },
+  { key: "hindi", label: "हिंदी" },
   { key: "romanUrdu", label: "Roman Urdu" },
 ];
+
+const getDuaText = (dua: DuaTranslation, lang: Lang): string => {
+  if (lang === "hindi") return dua.romanUrdu; // Fallback: Roman Urdu is readable by Hindi speakers
+  return dua[lang];
+};
+
+const getAppLangToDuaLang = (appLang: string): Lang => {
+  if (appLang === "ur") return "urdu";
+  if (appLang === "hi") return "hindi";
+  return "english";
+};
 
 const PERMANENT_PINS = ["ramadan-duas", "40-rabbana-duas"];
 const DEFAULT_PINS = [
@@ -39,7 +51,11 @@ const Duas: React.FC = () => {
   const { t } = useI18n();
   const { toast } = useToast();
   const [search, setSearch] = useState("");
-  const [lang, setLang] = useState<Lang>(() => (localStorage.getItem("dua_lang") as Lang) || "english");
+  const [lang, setLang] = useState<Lang>(() => {
+    const stored = localStorage.getItem("dua_lang") as Lang;
+    if (stored) return stored;
+    return getAppLangToDuaLang(localStorage.getItem("app_lang") || "en");
+  });
   const [showSettings, setShowSettings] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedDua, setSelectedDua] = useState<{ dua: DuaTranslation; catName: string } | null>(null);
@@ -131,7 +147,7 @@ const Duas: React.FC = () => {
           </div>
           <div className="space-y-3">
             <div className="flex items-center gap-2"><Languages className="w-4.5 h-4.5 text-primary" /><h2 className="text-sm font-bold text-foreground">{t("duas.translation")}</h2></div>
-            <p className={`text-sm leading-relaxed text-muted-foreground pl-1 ${lang === "urdu" ? "text-right font-urdu" : ""}`} dir={lang === "urdu" ? "rtl" : "ltr"}>{dua[lang]}</p>
+            <p className={`text-sm leading-relaxed text-muted-foreground pl-1 ${lang === "urdu" ? "text-right font-urdu" : lang === "hindi" ? "font-hindi" : ""}`} dir={lang === "urdu" ? "rtl" : "ltr"}>{getDuaText(dua, lang)}</p>
           </div>
           <div className="border-t border-border" />
           {dua.reference && (
@@ -142,7 +158,7 @@ const Duas: React.FC = () => {
           )}
         </div>
         <div className="fixed bottom-24 right-5 flex flex-col gap-3">
-          <button onClick={() => { const text = `${dua.arabic}\n\n${dua[lang]}${dua.reference ? '\n\n📖 ' + dua.reference : ''}`; navigator.clipboard.writeText(text); toast({ title: "📋", description: "Copied to clipboard" }); }} className="w-12 h-12 rounded-full bg-card text-muted-foreground border border-border shadow-lg flex items-center justify-center active:scale-95 transition-smooth"><Copy className="w-5 h-5" /></button>
+          <button onClick={() => { const text = `${dua.arabic}\n\n${getDuaText(dua, lang)}${dua.reference ? '\n\n📖 ' + dua.reference : ''}`; navigator.clipboard.writeText(text); toast({ title: "📋", description: "Copied to clipboard" }); }} className="w-12 h-12 rounded-full bg-card text-muted-foreground border border-border shadow-lg flex items-center justify-center active:scale-95 transition-smooth"><Copy className="w-5 h-5" /></button>
           <button onClick={() => toggleFav(key)} className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-smooth ${isFav ? "bg-destructive text-destructive-foreground" : "bg-card text-muted-foreground border border-border"}`}><Heart className={`w-5 h-5 ${isFav ? "fill-current" : ""}`} /></button>
           <button onClick={() => shareDua(dua)} className="w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center active:scale-95 transition-smooth"><Share2 className="w-5 h-5" /></button>
         </div>
@@ -199,10 +215,10 @@ const Duas: React.FC = () => {
                     <div key={i} className={`flex items-center ${i > 0 ? "border-t border-border/50" : ""}`}>
                       <button onClick={() => setSelectedDua({ dua, catName: cat.name })} className="flex-1 text-left px-4 py-4 space-y-2 active:bg-muted/30 transition-smooth min-w-0">
                         <p className="font-arabic text-lg leading-[2] text-foreground text-right line-clamp-2" dir="rtl">{dua.arabic}</p>
-                        <p className={`text-xs leading-relaxed line-clamp-2 ${lang === "urdu" ? "text-right font-urdu" : ""} text-muted-foreground`} dir={lang === "urdu" ? "rtl" : "ltr"}>{dua[lang]}</p>
+                        <p className={`text-xs leading-relaxed line-clamp-2 ${lang === "urdu" ? "text-right font-urdu" : lang === "hindi" ? "font-hindi" : ""} text-muted-foreground`} dir={lang === "urdu" ? "rtl" : "ltr"}>{getDuaText(dua, lang)}</p>
                         {dua.reference && <p className="text-[10px] text-primary/70 font-medium">📖 {dua.reference}</p>}
                       </button>
-                      <button onClick={(e) => { e.stopPropagation(); const text = `${dua.arabic}\n\n${dua[lang]}${dua.reference ? '\n\n📖 ' + dua.reference : ''}`; navigator.clipboard.writeText(text); toast({ title: "📋", description: "Copied!" }); }} className="px-3 py-4 active:bg-muted/50 shrink-0">
+                      <button onClick={(e) => { e.stopPropagation(); const text = `${dua.arabic}\n\n${getDuaText(dua, lang)}${dua.reference ? '\n\n📖 ' + dua.reference : ''}`; navigator.clipboard.writeText(text); toast({ title: "📋", description: "Copied!" }); }} className="px-3 py-4 active:bg-muted/50 shrink-0">
                         <Copy className="w-3.5 h-3.5 text-muted-foreground" />
                       </button>
                     </div>
