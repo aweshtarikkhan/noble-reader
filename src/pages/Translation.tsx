@@ -329,7 +329,7 @@ const Translation: React.FC = () => {
         <div className="sticky top-[60px] z-10 bg-card border-b border-border px-4 py-3 max-h-[70vh] overflow-y-auto animate-fade-in">
           <h3 className="text-xs font-bold text-foreground uppercase tracking-wide mb-3">Translations</h3>
           {EDITIONS.map((group) => {
-            const isExpanded = expandedGroups[group.group] !== false;
+            const isExpanded = expandedGroups[group.group] === true;
             const selectedCount = group.editions.filter((e) => selectedEditions.includes(e.id)).length;
             return (
               <div key={group.group} className="mb-1">
@@ -380,7 +380,7 @@ const Translation: React.FC = () => {
             <span>None</span>
           </label>
           {TAFSEERS.map((group) => {
-            const isExpanded = expandedGroups[`taf-${group.group}`] !== false;
+            const isExpanded = expandedGroups[`taf-${group.group}`] === true;
             return (
               <div key={group.group} className="mb-1">
                 <button

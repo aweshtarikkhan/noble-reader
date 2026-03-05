@@ -6,7 +6,7 @@ import { TOTAL_PAGES_INDIAN, getIndianPageImage, INDIAN_JUZ_DATA } from "@/data/
 import { getCachedCount, getCachedPage, setCachedPage, downloadImageAsDataUrl } from "@/lib/quranCache";
 import { getIndianPageImageFallback } from "@/data/indianMushaf";
 import QuranPageView, { type QuranStyle, getCacheKey } from "@/components/QuranPageView";
-import { BookOpen, BookMarked, Bookmark, ChevronRight, ArrowLeft } from "lucide-react";
+import { BookOpen, BookMarked, Bookmark, ChevronRight } from "lucide-react";
 import CompleteTextReader from "@/components/CompleteTextReader";
 import StyleSwitcher, { type ReadingStyle } from "@/components/StyleSwitcher";
 import { useI18n } from "@/lib/i18n";
@@ -61,6 +61,7 @@ const ReadQuran: React.FC = () => {
     setMode(m);
     if (m === "complete") {
       setStep("reading");
+      window.history.pushState({ readQuranView: "reading", mode: m }, "");
       const start = getBookmark("complete", readingStyle);
       const tp = readingStyle === "text" ? TOTAL_PAGES_INDIAN : (readingStyle === "indopak" ? TOTAL_PAGES_INDIAN : TOTAL_PAGES);
       const initial = Array.from({ length: 5 }, (_, i) => start + i).filter((p) => p <= tp);
@@ -68,13 +69,13 @@ const ReadQuran: React.FC = () => {
       window.scrollTo(0, 0);
     } else {
       setStep("reading");
+      window.history.pushState({ readQuranView: "reading", mode: m }, "");
     }
   };
 
   const handleStyleChange = (s: ReadingStyle) => {
     setReadingStyle(s);
     localStorage.setItem("read-quran-style-full", s);
-    // Reset pages for complete mode when style changes
     if (mode === "complete" && s !== "text") {
       const tp = s === "indopak" ? TOTAL_PAGES_INDIAN : TOTAL_PAGES;
       const start = getBookmark("complete", s);
@@ -84,14 +85,18 @@ const ReadQuran: React.FC = () => {
     }
   };
 
-  const handleBack = () => {
-    if (step === "reading") {
+  // Handle browser back to go from reading → mode selection
+  useEffect(() => {
+    if (step !== "reading") return;
+    const handlePopState = () => {
       setStep("mode");
       setPages([]);
       setDownloading(false);
       downloadAbort.current = true;
-    }
-  };
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [step]);
 
   // Complete mode: save bookmark on scroll
   useEffect(() => {
@@ -226,12 +231,6 @@ const ReadQuran: React.FC = () => {
   // ============= STEP 2: Reading =============
   return (
     <div ref={containerRef} className="px-4 py-4">
-      {/* Top bar with back */}
-      <div className="flex items-center justify-between mb-4 animate-fade-in">
-        <button onClick={handleBack} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-smooth">
-          <ArrowLeft className="w-4 h-4" /> {t("read.back")}
-        </button>
-      </div>
 
       {/* Style switcher - always visible */}
       <StyleSwitcher style={readingStyle} onChange={handleStyleChange} />
