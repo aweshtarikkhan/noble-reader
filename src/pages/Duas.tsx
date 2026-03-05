@@ -1,8 +1,7 @@
-import React, { useState, useMemo } from "react";
-import { Search, Settings, ChevronDown, ChevronUp, Heart, Share2, ArrowLeft, BookOpen, Languages, Pin, PinOff, Copy } from "lucide-react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { Search, Settings, ChevronDown, ChevronUp, Heart, Share2, BookOpen, Languages, Pin, PinOff, Copy } from "lucide-react";
 import { DUA_CATEGORIES, DuaTranslation, DuaCategory } from "@/data/duas";
 import { RABBANA_DUAS } from "@/data/rabbanaDuas";
-import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import { shareAsImage } from "@/lib/shareAsImage";
@@ -47,7 +46,6 @@ const isRamadanMonth = (): boolean => {
 };
 
 const Duas: React.FC = () => {
-  const navigate = useNavigate();
   const { t } = useI18n();
   const { toast } = useToast();
   const [search, setSearch] = useState("");
@@ -59,6 +57,19 @@ const Duas: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedDua, setSelectedDua] = useState<{ dua: DuaTranslation; catName: string } | null>(null);
+
+  const selectDua = useCallback((dua: DuaTranslation, catName: string) => {
+    window.history.pushState({ duaDetail: true }, "");
+    setSelectedDua({ dua, catName });
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (selectedDua) { setSelectedDua(null); }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [selectedDua]);
   const [favorites, setFavorites] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem("dua_favs") || "[]"); } catch { return []; }
   });
@@ -126,9 +137,8 @@ const Duas: React.FC = () => {
     const isFav = favorites.includes(key);
     return (
       <div className="min-h-screen bg-background">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card sticky top-0 z-10">
-          <button onClick={() => setSelectedDua(null)} className="p-2 -ml-2 rounded-lg active:bg-muted/50"><ArrowLeft className="w-5 h-5 text-foreground" /></button>
-          <h1 className="text-sm font-semibold text-foreground truncate max-w-[60%]">{catName}</h1>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card sticky z-10" style={{ top: "calc(56px + env(safe-area-inset-top, 20px))" }}>
+          <h1 className="text-sm font-semibold text-foreground truncate max-w-[70%]">{catName}</h1>
           <button onClick={() => setShowSettings(!showSettings)} className="p-2 -mr-2 rounded-lg active:bg-muted/50"><Settings className="w-4.5 h-4.5 text-muted-foreground" /></button>
         </div>
         {showSettings && (
@@ -213,7 +223,7 @@ const Duas: React.FC = () => {
                 <div className="border-t border-border">
                   {cat.duas.map((dua, i) => (
                     <div key={i} className={`flex items-center ${i > 0 ? "border-t border-border/50" : ""}`}>
-                      <button onClick={() => setSelectedDua({ dua, catName: cat.name })} className="flex-1 text-left px-4 py-4 space-y-2 active:bg-muted/30 transition-smooth min-w-0">
+                      <button onClick={() => selectDua(dua, cat.name)} className="flex-1 text-left px-4 py-4 space-y-2 active:bg-muted/30 transition-smooth min-w-0">
                         <p className="font-arabic text-lg leading-[2] text-foreground text-right line-clamp-2" dir="rtl">{dua.arabic}</p>
                         <p className={`text-xs leading-relaxed line-clamp-2 ${lang === "urdu" ? "text-right font-urdu" : lang === "hindi" ? "font-hindi" : ""} text-muted-foreground`} dir={lang === "urdu" ? "rtl" : "ltr"}>{getDuaText(dua, lang)}</p>
                         {dua.reference && <p className="text-[10px] text-primary/70 font-medium">📖 {dua.reference}</p>}
