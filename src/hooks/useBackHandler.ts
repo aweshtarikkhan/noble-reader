@@ -37,8 +37,13 @@ export function useBackHandler() {
     if (isHome) {
       setShowExitDialog(true);
     } else {
-      const parent = getParentRoute(location.pathname);
-      navigate(parent);
+      // Use history.back() so pushState-based internal navigation (Hadith, Duas, ReadQuran) works
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        const parent = getParentRoute(location.pathname);
+        navigate(parent);
+      }
     }
   }, [isHome, navigate, location.pathname]);
 
