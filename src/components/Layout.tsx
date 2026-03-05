@@ -69,12 +69,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           )}
           <div className="flex-1 text-center">
             {isHome ? (
-              <div>
+              <div className="cursor-pointer" onClick={() => navigate("/")}>
                 <h1 className="font-arabic text-lg text-gold leading-tight">القرآن الكريم</h1>
                 <p className="text-[10px] text-muted-foreground">{t("header.holyQuran")}</p>
               </div>
             ) : (
-              <h1 className="text-base font-semibold text-foreground">{getTitle()}</h1>
+              <h1 className="text-base font-semibold text-foreground cursor-pointer" onClick={() => navigate("/")}>{getTitle()}</h1>
             )}
           </div>
           <button

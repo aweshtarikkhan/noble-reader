@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Download, Share2, BookOpen, ChevronRight, Loader2, Search, ChevronLeft, Save, Check, HardDriveDownload, Copy } from "lucide-react";
+
+import { Download, Share2, BookOpen, ChevronRight, Loader2, Search, ChevronLeft, Save, Check, HardDriveDownload, Copy } from "lucide-react";
 import { HADITH_BOOKS, fetchBookSections, fetchSection, fetchFullBook, type HadithBook, type HadithEntry, type SectionData } from "@/lib/hadithApi";
 import { getHadithBookOffline, saveHadithBookOffline } from "@/lib/hadithOffline";
 import { shareAsImage } from "@/lib/shareAsImage";
@@ -14,7 +14,7 @@ type ViewState =
   | { type: "hadiths"; book: HadithBook; sectionNo: number; sectionName: string; hadiths: HadithEntry[]; arabicHadiths: HadithEntry[]; urduHadiths: HadithEntry[] };
 
 const Hadith: React.FC = () => {
-  const navigate = useNavigate();
+  
   const { toast } = useToast();
   const { t } = useI18n();
   const [lang, setLang] = useState<"english" | "urdu" | "hindi">(() => {
@@ -34,8 +34,8 @@ const Hadith: React.FC = () => {
 
   const openBook = useCallback(async (book: HadithBook) => {
     setLoading(true); setSearch(""); window.scrollTo(0, 0);
+    window.history.pushState({ hadithView: "sections", bookId: book.id }, "");
     try {
-      // Try offline first
       const offline = await getHadithBookOffline(book.id);
       if (offline) {
         const src = (lang === "urdu" || lang === "hindi") ? offline.urdu : offline.english;
@@ -53,8 +53,8 @@ const Hadith: React.FC = () => {
 
   const openSection = useCallback(async (book: HadithBook, sectionNo: number, sectionName: string) => {
     setLoading(true); setSearch(""); window.scrollTo(0, 0);
+    window.history.pushState({ hadithView: "hadiths", bookId: book.id, sectionNo }, "");
     try {
-      // Try offline first
       const offline = await getHadithBookOffline(book.id);
       if (offline) {
         const filterBySection = (data: SectionData) => {
@@ -72,7 +72,21 @@ const Hadith: React.FC = () => {
     setLoading(false);
   }, [toast, t]);
 
-  const handleBack = () => { window.scrollTo(0, 0); if (showDownloadManager) { setShowDownloadManager(false); } else if (view.type === "hadiths") openBook(view.book); else if (view.type === "sections") { setView({ type: "books" }); setSearch(""); } else navigate(-1); };
+  // Handle browser back button for internal navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      window.scrollTo(0, 0);
+      if (showDownloadManager) { setShowDownloadManager(false); return; }
+      if (view.type === "hadiths") { 
+        // Go back to sections - re-open the book
+        openBook(view.book);
+      } else if (view.type === "sections") { 
+        setView({ type: "books" }); setSearch(""); 
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [view, showDownloadManager, openBook]);
 
   const handleShareHadith = (eng: HadithEntry, ara: HadithEntry, urd: HadithEntry, bookName: string) => {
     shareAsImage([
@@ -103,10 +117,9 @@ const Hadith: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
+      <div className="sticky z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3" style={{ top: "calc(56px + env(safe-area-inset-top, 20px))" }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
-            <button onClick={handleBack} className="active:scale-90 transition-smooth shrink-0"><ArrowLeft className="w-5 h-5 text-foreground" /></button>
             <h1 className="text-lg font-bold text-foreground truncate">{getTitle()}</h1>
           </div>
           <div className="flex items-center gap-2 shrink-0">
