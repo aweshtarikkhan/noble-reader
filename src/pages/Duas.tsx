@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { Search, Settings, ChevronDown, ChevronUp, Heart, Share2, BookOpen, Languages, Pin, PinOff, Copy } from "lucide-react";
 import { DUA_CATEGORIES, DuaTranslation, DuaCategory } from "@/data/duas";
 import { RABBANA_DUAS } from "@/data/rabbanaDuas";
+import { DUA_CATEGORY_TRANSLATIONS } from "@/data/duaCategoryTranslations";
 import { useI18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
 import { shareAsImage } from "@/lib/shareAsImage";
@@ -17,6 +18,13 @@ const LANG_OPTIONS: { key: Lang; label: string }[] = [
 const getDuaText = (dua: DuaTranslation, lang: Lang): string => {
   if (lang === "hindi") return dua.romanUrdu; // Fallback: Roman Urdu is readable by Hindi speakers
   return dua[lang];
+};
+
+const getCatName = (cat: DuaCategory, appLang: string): string => {
+  const tr = DUA_CATEGORY_TRANSLATIONS[cat.id];
+  if (appLang === "ur" && tr?.ur) return tr.ur;
+  if (appLang === "hi" && tr?.hi) return tr.hi;
+  return cat.name;
 };
 
 const getAppLangToDuaLang = (appLang: string): Lang => {
@@ -46,7 +54,7 @@ const isRamadanMonth = (): boolean => {
 };
 
 const Duas: React.FC = () => {
-  const { t } = useI18n();
+  const { t, lang: appLang } = useI18n();
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [lang, setLang] = useState<Lang>(() => {
@@ -138,7 +146,7 @@ const Duas: React.FC = () => {
     return (
       <div className="min-h-screen bg-background">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card sticky z-10" style={{ top: "calc(56px + env(safe-area-inset-top, 20px))" }}>
-          <h1 className="text-sm font-semibold text-foreground truncate max-w-[70%]">{catName}</h1>
+           <h1 className="text-sm font-semibold text-foreground truncate max-w-[70%]">{catName}</h1>
           <button onClick={() => setShowSettings(!showSettings)} className="p-2 -mr-2 rounded-lg active:bg-muted/50"><Settings className="w-4.5 h-4.5 text-muted-foreground" /></button>
         </div>
         {showSettings && (
@@ -208,7 +216,7 @@ const Duas: React.FC = () => {
                 <button onClick={() => setExpandedId(isOpen ? null : cat.id)} className="flex-1 flex items-center justify-between px-4 py-3.5 text-left active:bg-muted/50 transition-smooth">
                   <div className="flex items-center gap-2 pr-2">
                     {isPinned && <Pin className="w-3 h-3 text-primary shrink-0" />}
-                    <span className="text-sm font-semibold text-foreground">{cat.name}</span>
+                    <span className="text-sm font-semibold text-foreground">{getCatName(cat, appLang)}</span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">{cat.duas.length}</span>
@@ -223,7 +231,7 @@ const Duas: React.FC = () => {
                 <div className="border-t border-border">
                   {cat.duas.map((dua, i) => (
                     <div key={i} className={`flex items-center ${i > 0 ? "border-t border-border/50" : ""}`}>
-                      <button onClick={() => selectDua(dua, cat.name)} className="flex-1 text-left px-4 py-4 space-y-2 active:bg-muted/30 transition-smooth min-w-0">
+                      <button onClick={() => selectDua(dua, getCatName(cat, appLang))} className="flex-1 text-left px-4 py-4 space-y-2 active:bg-muted/30 transition-smooth min-w-0">
                         <p className="font-arabic text-lg leading-[2] text-foreground text-right line-clamp-2" dir="rtl">{dua.arabic}</p>
                         <p className={`text-xs leading-relaxed line-clamp-2 ${lang === "urdu" ? "text-right font-urdu" : lang === "hindi" ? "font-hindi" : ""} text-muted-foreground`} dir={lang === "urdu" ? "rtl" : "ltr"}>{getDuaText(dua, lang)}</p>
                         {dua.reference && <p className="text-[10px] text-primary/70 font-medium">📖 {dua.reference}</p>}
