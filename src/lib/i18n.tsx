@@ -238,6 +238,14 @@ const T: Translations = {
   "calendar.ah": { en: "AH", ur: "ہجری", hi: "हिजरी" },
   "calendar.importantDates": { en: "Important Dates This Month", ur: "اس ماہ کی اہم تاریخیں", hi: "इस माह की महत्वपूर्ण तिथियां" },
 
+  // Prayer names
+  "prayerName.Fajr": { en: "Fajr", ur: "فجر", hi: "फ़ज्र" },
+  "prayerName.Dhuhr": { en: "Dhuhr", ur: "ظہر", hi: "ज़ुहर" },
+  "prayerName.Asr": { en: "Asr", ur: "عصر", hi: "अस्र" },
+  "prayerName.Maghrib": { en: "Maghrib", ur: "مغرب", hi: "मग़रिब" },
+  "prayerName.Isha": { en: "Isha", ur: "عشاء", hi: "इशा" },
+  "prayerName.Sunrise": { en: "Sunrise", ur: "طلوع آفتاب", hi: "सूर्योदय" },
+
   // Common
   "common.retry": { en: "Retry", ur: "دوبارہ کوشش کریں", hi: "पुनः प्रयास करें" },
   "common.prev": { en: "← Prev", ur: "← پچھلا", hi: "← पिछला" },

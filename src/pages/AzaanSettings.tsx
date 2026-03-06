@@ -5,6 +5,8 @@ import { AZAAN_OPTIONS, PRAYER_NAMES, loadAzaanSettings, saveAzaanSettings, type
 import { stopAzaan } from "@/hooks/useAzaanScheduler";
 import { useI18n } from "@/lib/i18n";
 
+const getPrayerLabel = (prayer: PrayerName, t: (k: string) => string) => t(`prayerName.${prayer}`);
+
 const AzaanSettingsPage: React.FC = () => {
   const { t } = useI18n();
   const [settings, setSettings] = useState<AzaanSettingsType>(loadAzaanSettings);
@@ -61,7 +63,7 @@ const AzaanSettingsPage: React.FC = () => {
             <p className="text-xs text-muted-foreground px-1">{t("azaan.manualOverride")}</p>
             {PRAYER_NAMES.map((prayer) => (
               <div key={prayer} className="flex items-center gap-3 p-3 rounded-xl bg-card border border-gold/5">
-                <span className="text-sm font-medium text-foreground flex-1">{prayer}</span>
+                <span className="text-sm font-medium text-foreground flex-1">{getPrayerLabel(prayer, t)}</span>
                 <input type="time" value={settings.manualTimings[prayer]} onChange={(e) => setManualTime(prayer, e.target.value)} className="bg-muted text-foreground text-xs px-2 py-1 rounded-lg border border-gold/10 w-24 text-center" />
               </div>
             ))}
