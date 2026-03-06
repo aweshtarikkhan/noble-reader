@@ -41,13 +41,13 @@ const PrayerTimes: React.FC = () => {
   }, [data]);
 
   const prayers = data?.timings ? [
-    { name: "Fajr" as PrayerName, time: data.timings.Fajr, icon: "🌙" },
-    { name: "Dhuhr" as PrayerName, time: data.timings.Dhuhr, icon: "☀️" },
-    { name: "Asr" as PrayerName, time: data.timings.Asr, icon: "🌤" },
-    { name: "Maghrib" as PrayerName, time: data.timings.Maghrib, icon: "🌇" },
-    { name: "Isha" as PrayerName, time: data.timings.Isha, icon: "🌃" },
+    { name: "Fajr" as PrayerName, label: t("prayerName.Fajr"), time: data.timings.Fajr, icon: "🌙" },
+    { name: "Dhuhr" as PrayerName, label: t("prayerName.Dhuhr"), time: data.timings.Dhuhr, icon: "☀️" },
+    { name: "Asr" as PrayerName, label: t("prayerName.Asr"), time: data.timings.Asr, icon: "🌤" },
+    { name: "Maghrib" as PrayerName, label: t("prayerName.Maghrib"), time: data.timings.Maghrib, icon: "🌇" },
+    { name: "Isha" as PrayerName, label: t("prayerName.Isha"), time: data.timings.Isha, icon: "🌃" },
   ] : [];
-  const extraTimings = data?.timings ? [{ name: "Sunrise", time: data.timings.Sunrise, icon: "🌅" }] : [];
+  const extraTimings = data?.timings ? [{ name: "Sunrise", label: t("prayerName.Sunrise"), time: data.timings.Sunrise, icon: "🌅" }] : [];
 
   const hijri = React.useMemo(() => {
     if (!data?.date?.hijri || !data?.timings?.Maghrib) return data?.date?.hijri;
@@ -92,7 +92,7 @@ const PrayerTimes: React.FC = () => {
           )}
           {extraTimings.map((p) => (
             <div key={p.name} className="flex items-center justify-between p-3 rounded-xl bg-card border border-gold/5">
-              <div className="flex items-center gap-3"><span className="text-lg">{p.icon}</span><span className="text-sm font-medium text-foreground">{p.name}</span></div>
+              <div className="flex items-center gap-3"><span className="text-lg">{p.icon}</span><span className="text-sm font-medium text-foreground">{p.label}</span></div>
               <span className="text-sm text-gold font-semibold">{p.time?.split(" ")[0]}</span>
             </div>
           ))}
@@ -101,7 +101,7 @@ const PrayerTimes: React.FC = () => {
             {prayers.map((p) => (
               <div key={p.name} className="p-3 rounded-xl bg-card border border-gold/5 space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3"><span className="text-lg">{p.icon}</span><span className="text-sm font-medium text-foreground">{p.name}</span></div>
+                  <div className="flex items-center gap-3"><span className="text-lg">{p.icon}</span><span className="text-sm font-medium text-foreground">{p.label}</span></div>
                   <span className="text-sm text-gold font-semibold">{p.time?.split(" ")[0]}</span>
                 </div>
                 {settings.enabled && (
