@@ -225,8 +225,8 @@ const Home: React.FC = () => {
             const Icon = tool.icon;
             return (
               <button key={tool.path} onClick={() => navigate(tool.path)} className="flex flex-col items-center gap-4 py-6 px-4 rounded-2xl bg-card border border-primary/10 active:scale-95 transition-smooth shadow-sm">
-                <div className={`w-20 h-20 rounded-2xl ${tool.bg} flex items-center justify-center`}>
-                  <Icon className={`w-10 h-10 ${tool.color}`} />
+                <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center">
+                  <Icon className="w-10 h-10 text-primary" />
                 </div>
                 <span className="text-base font-bold text-foreground text-center leading-tight">{tool.title}</span>
               </button>
