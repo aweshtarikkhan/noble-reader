@@ -63,14 +63,14 @@ const Home: React.FC = () => {
   }, []);
 
   const QUICK_TOOLS = [
-    { icon: BookOpen, title: t("tool.readQuran"), path: "/read-quran" },
-    { icon: Languages, title: t("tool.translation"), path: "/translation" },
-    { icon: Calendar, title: t("tool.islamicCalendar"), path: "/islamic-calendar" },
-    { icon: Bookmark, title: t("tool.bookmarks"), path: "/bookmarks" },
-    { icon: Clock, title: t("tool.namaz"), path: "/prayer-times" },
-    { icon: Compass, title: t("tool.qibla"), path: "/qibla" },
-    { icon: HandHeart, title: t("tool.duas"), path: "/duas" },
-    { icon: BookMarked, title: t("tool.hadith"), path: "/hadith" },
+    { icon: BookOpen, title: t("tool.readQuran"), path: "/read-quran", bg: "bg-emerald-500/15", color: "text-emerald-400" },
+    { icon: Languages, title: t("tool.translation"), path: "/translation", bg: "bg-amber-500/15", color: "text-amber-400" },
+    { icon: Calendar, title: t("tool.islamicCalendar"), path: "/islamic-calendar", bg: "bg-sky-500/15", color: "text-sky-400" },
+    { icon: Bookmark, title: t("tool.bookmarks"), path: "/bookmarks", bg: "bg-rose-500/15", color: "text-rose-400" },
+    { icon: Clock, title: t("tool.namaz"), path: "/prayer-times", bg: "bg-violet-500/15", color: "text-violet-400" },
+    { icon: Compass, title: t("tool.qibla"), path: "/qibla", bg: "bg-teal-500/15", color: "text-teal-400" },
+    { icon: HandHeart, title: t("tool.duas"), path: "/duas", bg: "bg-orange-500/15", color: "text-orange-400" },
+    { icon: BookMarked, title: t("tool.hadith"), path: "/hadith", bg: "bg-cyan-500/15", color: "text-cyan-400" },
   ];
 
   const toggleSilent = (e: React.MouseEvent) => {
