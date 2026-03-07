@@ -156,20 +156,20 @@ const Home: React.FC = () => {
   return (
     <div className="px-4 py-4 space-y-6">
       {/* Location & Date Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-2">
-          <MapPin className="w-5 h-5 text-primary" />
-          <button onClick={() => setCitySearchOpen(true)} className="text-sm font-bold text-foreground flex items-center gap-1">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <MapPin className="w-4 h-4 text-primary shrink-0" />
+          <button onClick={() => setCitySearchOpen(true)} className="text-xs font-bold text-foreground flex items-center gap-0.5 truncate">
             {cityName}
-            <Search className="w-3.5 h-3.5 text-muted-foreground" />
+            <Search className="w-3 h-3 text-muted-foreground shrink-0" />
           </button>
-          <button onClick={() => detect(true)} className="active:scale-90 transition-smooth" aria-label="Detect location">
-            <LocateFixed className="w-4 h-4 text-primary" />
+          <button onClick={() => detect(true)} className="active:scale-90 transition-smooth shrink-0" aria-label="Detect location">
+            <LocateFixed className="w-3.5 h-3.5 text-primary" />
           </button>
         </div>
-        <div className="text-right">
-          <p className="text-sm font-bold text-foreground">{islamicDate}</p>
-          <p className="text-[11px] text-muted-foreground">{gregorianDate}</p>
+        <div className="text-right shrink-0">
+          <p className="text-xs font-bold text-foreground whitespace-nowrap">{islamicDate}</p>
+          <p className="text-[10px] text-muted-foreground whitespace-nowrap">{gregorianDate}</p>
         </div>
       </div>
 
