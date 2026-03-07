@@ -25,7 +25,10 @@ const URDU_TRANSLATORS: TranslationAuthor[] = [
   { id: "mehmoodulhasan", name: "Mehmood ul Hasan", language: "Urdu", subfolder: "Mehmood_ul_Hassan_Urdu" },
 ];
 
-const getAudioUrl = (subfolder: string, surahNum: number) =>
+const getQuranAudioUrl = (subfolder: string, surahNum: number) =>
+  `https://cdn.islamic.network/quran/audio-surah/128/${subfolder}/${surahNum}.mp3`;
+
+const getTranslationAudioUrl = (subfolder: string, surahNum: number) =>
   `https://server8.mp3quran.net/${subfolder}/${String(surahNum).padStart(3, "0")}.mp3`;
 
 const QuranAudio: React.FC = () => {
