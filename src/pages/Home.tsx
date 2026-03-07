@@ -224,11 +224,11 @@ const Home: React.FC = () => {
           {QUICK_TOOLS.map((tool) => {
             const Icon = tool.icon;
             return (
-              <button key={tool.path} onClick={() => navigate(tool.path)} className="flex flex-col items-center gap-2.5 py-4 px-2 rounded-2xl bg-card active:scale-90 transition-smooth">
-                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Icon className="w-6 h-6 text-primary" />
+              <button key={tool.path} onClick={() => navigate(tool.path)} className="flex flex-col items-center gap-3 py-5 px-3 rounded-2xl bg-card border border-primary/10 active:scale-95 transition-smooth">
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                  <Icon className="w-8 h-8 text-primary" />
                 </div>
-                <span className="text-xs font-medium text-foreground">{tool.title}</span>
+                <span className="text-sm font-semibold text-foreground text-center leading-tight">{tool.title}</span>
               </button>
             );
           })}
