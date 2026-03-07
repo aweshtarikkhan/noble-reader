@@ -10,14 +10,14 @@ interface Reciter { id: string; name: string; subfolder: string; }
 interface TranslationAuthor { id: string; name: string; language: string; subfolder: string; }
 
 const RECITERS: Reciter[] = [
-  { id: "mishary", name: "Mishary Rashid Alafasy", subfolder: "Alafasy_128kbps" },
-  { id: "sudais", name: "Abdul Rahman Al-Sudais", subfolder: "Abdurrahmaan_As-Sudais_192kbps" },
-  { id: "shuraim", name: "Saud Al-Shuraim", subfolder: "Saood_ash-Shuraym_128kbps" },
-  { id: "minshawi", name: "Mohamed Siddiq Al-Minshawi", subfolder: "Minshawy_Murattal_128kbps" },
-  { id: "husary", name: "Mahmoud Khalil Al-Husary", subfolder: "Husary_128kbps" },
-  { id: "abdulbasit", name: "Abdul Basit Abdul Samad", subfolder: "Abdul_Basit_Murattal_192kbps" },
-  { id: "mahermuaiqly", name: "Maher Al Muaiqly", subfolder: "MaherAlMuworthy_128kbps" },
-  { id: "ajmy", name: "Ahmed Al Ajmy", subfolder: "ahmed_ibn_ali_al_ajamy_128kbps" },
+  { id: "mishary", name: "Mishary Rashid Alafasy", subfolder: "ar.alafasy" },
+  { id: "sudais", name: "Abdul Rahman Al-Sudais", subfolder: "ar.abdurrahmaansudais" },
+  { id: "shuraim", name: "Saud Al-Shuraim", subfolder: "ar.saaborshuraim" },
+  { id: "minshawi", name: "Mohamed Siddiq Al-Minshawi", subfolder: "ar.minshawi" },
+  { id: "husary", name: "Mahmoud Khalil Al-Husary", subfolder: "ar.husary" },
+  { id: "abdulbasit", name: "Abdul Basit Abdul Samad", subfolder: "ar.abdulbasitmurattal" },
+  { id: "mahermuaiqly", name: "Maher Al Muaiqly", subfolder: "ar.maaborali" },
+  { id: "ajmy", name: "Ahmed Al Ajmy", subfolder: "ar.ahmedajamy" },
 ];
 
 const URDU_TRANSLATORS: TranslationAuthor[] = [
