@@ -24,7 +24,7 @@ const getQuranAudioUrl = (server: string, subfolder: string, surahNum: number) =
 const getTranslationAudioUrl = (translatorId: string, surahNum: number) => {
   if (translatorId === "drisrar") {
     const fileName = DR_ISRAR_AUDIO_MAP[surahNum];
-    return fileName ? `${DR_ISRAR_BASE_URL}${fileName}` : "";
+    return fileName ? `${DR_ISRAR_BASE_URL}${encodeURIComponent(fileName)}` : "";
   }
   return "";
 };
