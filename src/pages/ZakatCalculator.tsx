@@ -48,8 +48,8 @@ const ZakatCalculator: React.FC = () => {
     lastUpdated: "Chennai Rates (Editable)"
   });
   
-  const [manualGold22, setManualGold22] = useState("7150");
-  const [manualSilver, setManualSilver] = useState("95");
+  const [manualGold22, setManualGold22] = useState("15000");
+  const [manualSilver, setManualSilver] = useState("278");
   
   const [goldEntries, setGoldEntries] = useState<GoldEntry[]>([
     { id: "1", inputType: "grams", carat: "22", value: "" }
