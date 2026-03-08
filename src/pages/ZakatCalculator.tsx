@@ -297,7 +297,7 @@ const ZakatCalculator: React.FC = () => {
     
     doc.save(`Zakat_Calculation_${new Date().toISOString().split('T')[0]}.pdf`);
     
-    toast({ title: "PDF Downloaded", description: "Zakat calculation saved successfully." });
+    toast({ title: t("zakat.pdfDownloaded"), description: t("zakat.pdfSaved") });
   };
 
   return (
