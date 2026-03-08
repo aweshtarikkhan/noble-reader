@@ -9,7 +9,7 @@ const SURAHS_PER_BATCH = 3;
 
 interface SurahData {
   number: number;
-  ayahs: { text: string; numberInSurah: number }[];
+  ayahs: { text: string; numberInSurah: number; number: number }[];
 }
 
 const CompleteTextReader: React.FC = () => {
