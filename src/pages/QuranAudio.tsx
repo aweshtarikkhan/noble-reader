@@ -233,12 +233,13 @@ const QuranAudio: React.FC = () => {
 
     if (success) {
       setCachedSurahs((prev) => new Set([...prev, surahNum]));
+      refreshStorageUsage();
       toast({ title: "✅ Downloaded", description: `Surah ${surahNum} saved offline` });
     } else {
       toast({ title: t("common.error"), description: "Download failed", variant: "destructive" });
     }
     setDownloadingSurah(null);
-  }, [audioMode, currentModeId, getAudioUrl, toast, t]);
+  }, [audioMode, currentModeId, getAudioUrl, toast, t, refreshStorageUsage]);
 
   // Download all surahs
   const downloadAll = useCallback(async () => {
