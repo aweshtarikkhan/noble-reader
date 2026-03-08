@@ -80,7 +80,7 @@ const TextAyahsView: React.FC<{ ayahs: Ayah[]; surahNum: number }> = ({ ayahs, s
       )}
       <div className="space-y-3">
         {ayahs.map((ayah) => (
-          <div key={ayah.numberInSurah} className="p-4 rounded-xl bg-card/50 border border-primary/5">
+          <div key={ayah.numberInSurah} className={`p-4 rounded-xl border transition-smooth ${playingVerse === ayah.number ? "bg-primary/10 border-primary/30 shadow-md shadow-primary/10" : "bg-card/50 border-primary/5"}`}>
             <div className="flex items-start gap-3" dir="rtl">
               <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-xs text-primary font-bold mt-1">
                 {ayah.numberInSurah}
