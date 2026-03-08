@@ -296,24 +296,24 @@ const QuranAudio: React.FC = () => {
       </div>
 
       {/* Scrollable content with padding for fixed player */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4" style={{ paddingTop: "80px" }}>
+      <div className="flex-1 overflow-y-auto px-4 pb-4" style={{ paddingTop: "85px" }}>
         {/* Mode Toggle */}
         <div className="flex bg-card rounded-xl p-1 border border-border mb-3 animate-fade-in">
           <button onClick={() => setAudioMode("quran")} className={`flex-1 py-2 text-xs font-medium rounded-lg transition-smooth ${audioMode === "quran" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{t("audio.quranAudio")}</button>
           <button onClick={() => setAudioMode("translation")} className={`flex-1 py-2 text-xs font-medium rounded-lg transition-smooth ${audioMode === "translation" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{t("audio.urduTranslation")}</button>
         </div>
 
-        {/* Reciter/Translator Selection */}
-        <div className="bg-card rounded-xl border border-border p-3 mb-3 animate-fade-in">
-          <p className="text-xs font-medium text-foreground mb-2">{audioMode === "quran" ? t("audio.selectReciter") : t("audio.selectTranslator")}</p>
-          <div className="flex flex-col gap-1.5 max-h-24 overflow-y-auto">
-            {audioMode === "quran" ? RECITERS.map((r) => (
-              <button key={r.id} onClick={() => setSelectedReciter(r.id)} className={`text-left px-3 py-2 rounded-lg text-xs transition-smooth ${selectedReciter === r.id ? "bg-primary/20 text-primary font-medium" : "text-muted-foreground hover:bg-muted"}`}>{r.name}</button>
-            )) : URDU_TRANSLATORS.map((t) => (
-              <button key={t.id} onClick={() => setSelectedTranslator(t.id)} className={`text-left px-3 py-2 rounded-lg text-xs transition-smooth ${selectedTranslator === t.id ? "bg-primary/20 text-primary font-medium" : "text-muted-foreground hover:bg-muted"}`}>{t.name} ({t.language})</button>
-            ))}
+        {/* Translator Selection - only for translation mode */}
+        {audioMode === "translation" && (
+          <div className="bg-card rounded-xl border border-border p-3 mb-3 animate-fade-in">
+            <p className="text-xs font-medium text-foreground mb-2">{t("audio.selectTranslator")}</p>
+            <div className="flex flex-col gap-1.5 max-h-24 overflow-y-auto">
+              {URDU_TRANSLATORS.map((t) => (
+                <button key={t.id} onClick={() => setSelectedTranslator(t.id)} className={`text-left px-3 py-2 rounded-lg text-xs transition-smooth ${selectedTranslator === t.id ? "bg-primary/20 text-primary font-medium" : "text-muted-foreground hover:bg-muted"}`}>{t.name} ({t.language})</button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Search and Surah List */}
         <input type="text" placeholder={t("audio.searchSurah")} value={search} onChange={(e) => setSearch(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-smooth mb-3 text-sm" />
