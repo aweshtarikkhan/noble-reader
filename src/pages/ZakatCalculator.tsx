@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, Calculator, Download } from "lucide-react";
+import { ArrowLeft, Calculator, Download, Plus, Trash2 } from "lucide-react";
 import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,19 @@ interface GoldRates {
   gold18ct: number;
   silver: number;
   lastUpdated: string;
+}
+
+interface GoldEntry {
+  id: string;
+  inputType: "grams" | "rupees";
+  carat: "22" | "24" | "18";
+  value: string;
+}
+
+interface SilverEntry {
+  id: string;
+  inputType: "grams" | "rupees";
+  value: string;
 }
 
 const NISAB_GOLD_GRAMS = 87.48; // 7.5 tola
@@ -38,14 +51,15 @@ const ZakatCalculator: React.FC = () => {
   const [manualGold22, setManualGold22] = useState("7150");
   const [manualSilver, setManualSilver] = useState("95");
   
-  // Gold inputs
-  const [goldInputType, setGoldInputType] = useState<"grams" | "rupees">("grams");
-  const [goldCarat, setGoldCarat] = useState<"22" | "24" | "18">("22");
-  const [goldValue, setGoldValue] = useState("");
+  // Multiple Gold entries
+  const [goldEntries, setGoldEntries] = useState<GoldEntry[]>([
+    { id: "1", inputType: "grams", carat: "22", value: "" }
+  ]);
   
-  // Silver inputs
-  const [silverInputType, setSilverInputType] = useState<"grams" | "rupees">("grams");
-  const [silverValue, setSilverValue] = useState("");
+  // Multiple Silver entries
+  const [silverEntries, setSilverEntries] = useState<SilverEntry[]>([
+    { id: "1", inputType: "grams", value: "" }
+  ]);
   
   // Cash & other assets
   const [cashValue, setCashValue] = useState("");
