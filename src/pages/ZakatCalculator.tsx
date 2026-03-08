@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, Calculator, Loader2, RefreshCw } from "lucide-react";
+import { ArrowLeft, Calculator } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,8 +24,18 @@ const ZakatCalculator: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const [rates, setRates] = useState<GoldRates | null>(null);
-  const [loadingRates, setLoadingRates] = useState(true);
+  const [rates, setRates] = useState<GoldRates>({
+    gold24ct: 7800,
+    gold22ct: 7150,
+    gold18ct: 5850,
+    silver: 95,
+    lastUpdated: "Chennai Rates (Editable)"
+  });
+  const [loadingRates, setLoadingRates] = useState(false);
+  
+  // Manual rate inputs
+  const [manualGold22, setManualGold22] = useState("7150");
+  const [manualSilver, setManualSilver] = useState("95");
   
   // Gold inputs
   const [goldInputType, setGoldInputType] = useState<"grams" | "rupees">("grams");
@@ -50,52 +60,28 @@ const ZakatCalculator: React.FC = () => {
     isEligible: boolean;
   } | null>(null);
 
-  const fetchGoldRates = async () => {
-    setLoadingRates(true);
-    try {
-      // Using a free gold rate API - GoldAPI.io alternative
-      // Fallback to approximate Chennai rates if API fails
-      const response = await fetch("https://api.metalpriceapi.com/v1/latest?api_key=demo&base=INR&currencies=XAU,XAG");
-      
-      if (response.ok) {
-        const data = await response.json();
-        // Convert from troy ounce to gram (1 troy oz = 31.1035 grams)
-        const goldPerGram24ct = 1 / (data.rates.XAU * 31.1035);
-        const silverPerGram = 1 / (data.rates.XAG * 31.1035);
-        
-        setRates({
-          gold24ct: Math.round(goldPerGram24ct),
-          gold22ct: Math.round(goldPerGram24ct * 0.916), // 22/24 purity
-          gold18ct: Math.round(goldPerGram24ct * 0.75),  // 18/24 purity
-          silver: Math.round(silverPerGram),
-          lastUpdated: new Date().toLocaleString('en-IN')
-        });
-      } else {
-        throw new Error("API failed");
-      }
-    } catch (error) {
-      // Fallback to approximate Chennai rates (March 2024)
-      setRates({
-        gold24ct: 7200,
-        gold22ct: 6600,
-        gold18ct: 5400,
-        silver: 85,
-        lastUpdated: "Approximate rates"
-      });
-      toast({
-        title: "Using approximate rates",
-        description: "Live rates unavailable. Using approximate Chennai rates.",
-      });
-    }
-    setLoadingRates(false);
+  const updateRatesFromManual = () => {
+    const gold22 = parseFloat(manualGold22) || 7150;
+    const silver = parseFloat(manualSilver) || 95;
+    
+    // Calculate 24K and 18K from 22K rate
+    const gold24 = Math.round(gold22 / 0.916);
+    const gold18 = Math.round(gold22 * (18/22));
+    
+    setRates({
+      gold24ct: gold24,
+      gold22ct: gold22,
+      gold18ct: gold18,
+      silver: silver,
+      lastUpdated: "Chennai Rates (Manual)"
+    });
   };
 
   useEffect(() => {
-    fetchGoldRates();
-  }, []);
+    updateRatesFromManual();
+  }, [manualGold22, manualSilver]);
 
   const getGoldRate = () => {
-    if (!rates) return 0;
     switch (goldCarat) {
       case "24": return rates.gold24ct;
       case "22": return rates.gold22ct;
@@ -105,11 +91,6 @@ const ZakatCalculator: React.FC = () => {
   };
 
   const calculateZakat = () => {
-    if (!rates) {
-      toast({ title: "Please wait", description: "Rates are loading..." });
-      return;
-    }
-
     const goldRate = getGoldRate();
     const silverRate = rates.silver;
 
@@ -179,42 +160,49 @@ const ZakatCalculator: React.FC = () => {
       </div>
 
       <div className="px-4 py-6 space-y-6">
-        {/* Live Rates Card */}
+        {/* Chennai Rates - Manual Entry */}
         <Card className="border-primary/20">
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-semibold">Live Rates (Chennai)</CardTitle>
-              <Button variant="ghost" size="sm" onClick={fetchGoldRates} disabled={loadingRates}>
-                <RefreshCw className={`w-4 h-4 ${loadingRates ? "animate-spin" : ""}`} />
-              </Button>
-            </div>
+            <CardTitle className="text-sm font-semibold">📊 Chennai Gold & Silver Rates (Enter Today's Rate)</CardTitle>
           </CardHeader>
-          <CardContent>
-            {loadingRates ? (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Gold 22K Rate (₹/gm)</Label>
+                <Input
+                  type="number"
+                  value={manualGold22}
+                  onChange={(e) => setManualGold22(e.target.value)}
+                  placeholder="7150"
+                  className="mt-1"
+                />
               </div>
-            ) : rates ? (
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="p-3 rounded-lg bg-primary/10">
-                  <p className="text-xs text-muted-foreground">Gold 24K</p>
-                  <p className="font-bold text-foreground">₹{rates.gold24ct}/gm</p>
-                </div>
-                <div className="p-3 rounded-lg bg-primary/10">
-                  <p className="text-xs text-muted-foreground">Gold 22K</p>
-                  <p className="font-bold text-foreground">₹{rates.gold22ct}/gm</p>
-                </div>
-                <div className="p-3 rounded-lg bg-primary/10">
-                  <p className="text-xs text-muted-foreground">Gold 18K</p>
-                  <p className="font-bold text-foreground">₹{rates.gold18ct}/gm</p>
-                </div>
-                <div className="p-3 rounded-lg bg-primary/10">
-                  <p className="text-xs text-muted-foreground">Silver</p>
-                  <p className="font-bold text-foreground">₹{rates.silver}/gm</p>
-                </div>
-                <p className="col-span-2 text-[10px] text-muted-foreground text-right">{rates.lastUpdated}</p>
+              <div>
+                <Label className="text-xs">Silver Rate (₹/gm)</Label>
+                <Input
+                  type="number"
+                  value={manualSilver}
+                  onChange={(e) => setManualSilver(e.target.value)}
+                  placeholder="95"
+                  className="mt-1"
+                />
               </div>
-            ) : null}
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-xs">
+              <div className="p-2 rounded-lg bg-primary/10 text-center">
+                <p className="text-muted-foreground">24K</p>
+                <p className="font-bold text-foreground">₹{rates.gold24ct}/gm</p>
+              </div>
+              <div className="p-2 rounded-lg bg-primary/10 text-center">
+                <p className="text-muted-foreground">22K</p>
+                <p className="font-bold text-foreground">₹{rates.gold22ct}/gm</p>
+              </div>
+              <div className="p-2 rounded-lg bg-primary/10 text-center">
+                <p className="text-muted-foreground">18K</p>
+                <p className="font-bold text-foreground">₹{rates.gold18ct}/gm</p>
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground">💡 Enter today's Chennai gold rate (22K) and silver rate. Other carat rates will be calculated automatically.</p>
           </CardContent>
         </Card>
 
