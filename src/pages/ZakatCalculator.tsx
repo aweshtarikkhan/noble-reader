@@ -386,7 +386,7 @@ const ZakatCalculator: React.FC = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-xs">Carat</Label>
+                    <Label className="text-xs">{t("zakat.carat")}</Label>
                     <Select value={entry.carat} onValueChange={(v) => updateGoldEntry(entry.id, "carat", v)}>
                       <SelectTrigger className="mt-1">
                         <SelectValue />
