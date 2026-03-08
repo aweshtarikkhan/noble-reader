@@ -380,8 +380,8 @@ const ZakatCalculator: React.FC = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="grams">Grams</SelectItem>
-                        <SelectItem value="rupees">Rupees (₹)</SelectItem>
+                        <SelectItem value="grams">{t("zakat.grams")}</SelectItem>
+                        <SelectItem value="rupees">{t("zakat.rupees")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
