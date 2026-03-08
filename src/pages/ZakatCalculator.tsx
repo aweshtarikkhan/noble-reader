@@ -418,7 +418,7 @@ const ZakatCalculator: React.FC = () => {
             ))}
             {goldEntries.some(e => e.value) && (
               <div className="text-sm font-medium text-right">
-                Total Gold: {formatCurrency(calculateGoldTotal())}
+                {t("zakat.totalGold")}: {formatCurrency(calculateGoldTotal())}
               </div>
             )}
           </CardContent>
