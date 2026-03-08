@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, Calculator, Download, Plus, Trash2 } from "lucide-react";
+import { Calculator, Download, Plus, Trash2 } from "lucide-react";
 import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
