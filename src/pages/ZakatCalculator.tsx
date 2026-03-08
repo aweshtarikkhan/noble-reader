@@ -301,7 +301,7 @@ const ZakatCalculator: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24">
+    <div className="min-h-screen bg-background pt-2 pb-24">
 
       <div className="px-4 py-6 space-y-6">
         {/* Chennai Rates */}
