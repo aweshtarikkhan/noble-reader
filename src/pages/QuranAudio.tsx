@@ -12,11 +12,11 @@ interface TranslationAuthor { id: string; name: string; language: string; subfol
 const RECITERS: Reciter[] = [
   { id: "mishary", name: "Mishary Rashid Alafasy", subfolder: "ar.alafasy" },
   { id: "sudais", name: "Abdul Rahman Al-Sudais", subfolder: "ar.abdurrahmaansudais" },
-  { id: "shuraim", name: "Saud Al-Shuraim", subfolder: "ar.saaborshuraim" },
+  { id: "shuraim", name: "Saud Al-Shuraim", subfolder: "ar.saoodshuraym" },
   { id: "minshawi", name: "Mohamed Siddiq Al-Minshawi", subfolder: "ar.minshawi" },
   { id: "husary", name: "Mahmoud Khalil Al-Husary", subfolder: "ar.husary" },
   { id: "abdulbasit", name: "Abdul Basit Abdul Samad", subfolder: "ar.abdulbasitmurattal" },
-  { id: "mahermuaiqly", name: "Maher Al Muaiqly", subfolder: "ar.maaborali" },
+  { id: "mahermuaiqly", name: "Maher Al Muaiqly", subfolder: "ar.mahermuaiqly" },
   { id: "ajmy", name: "Ahmed Al Ajmy", subfolder: "ar.ahmedajamy" },
 ];
 
@@ -52,7 +52,7 @@ const QuranAudio: React.FC = () => {
   const surah = SURAHS.find((s) => s.number === selectedSurah)!;
   const audioSrc = audioMode === "quran" ? getQuranAudioUrl(reciter.subfolder, selectedSurah) : getTranslationAudioUrl(translator.subfolder, selectedSurah);
 
-  useEffect(() => { const audio = new Audio(); audio.preload = "auto"; audio.crossOrigin = "anonymous"; audioRef.current = audio; return () => { audio.pause(); audio.src = ""; audio.load(); }; }, []);
+  useEffect(() => { const audio = new Audio(); audio.preload = "auto"; audioRef.current = audio; return () => { audio.pause(); audio.src = ""; audio.load(); }; }, []);
 
   useEffect(() => {
     const audio = audioRef.current; if (!audio) return;
