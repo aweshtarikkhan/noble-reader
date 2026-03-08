@@ -573,11 +573,11 @@ const ZakatCalculator: React.FC = () => {
 
         {/* Info */}
         <div className="text-xs text-muted-foreground space-y-2 p-4 bg-muted/50 rounded-xl">
-          <p className="font-semibold text-foreground">ℹ️ Nisab Information:</p>
-          <p>• Gold Nisab: {NISAB_GOLD_GRAMS}g (7.5 tola)</p>
-          <p>• Silver Nisab: {NISAB_SILVER_GRAMS}g (52.5 tola)</p>
-          <p>• Zakat Rate: 2.5% of total zakatable wealth</p>
-          <p className="pt-2 text-[10px]">Note: We use Silver Nisab as it results in lower threshold.</p>
+          <p className="font-semibold text-foreground">ℹ️ {t("zakat.nisabInfo")}:</p>
+          <p>• {t("zakat.goldNisab")}</p>
+          <p>• {t("zakat.silverNisab")}</p>
+          <p>• {t("zakat.zakatRate")}</p>
+          <p className="pt-2 text-[10px]">{t("zakat.silverNisabNote")}</p>
         </div>
       </div>
     </div>
