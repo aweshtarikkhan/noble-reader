@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 
 interface GoldRates {
   gold22ct: number;
@@ -37,6 +38,7 @@ const ZAKAT_RATE = 0.025;
 const ZakatCalculator: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useI18n();
   
   const [rates, setRates] = useState<GoldRates>({
     gold24ct: 7800,
@@ -178,7 +180,7 @@ const ZakatCalculator: React.FC = () => {
 
   const exportToPDF = () => {
     if (!zakatResult) {
-      toast({ title: "Calculate first", description: "Please calculate zakat before exporting." });
+      toast({ title: t("zakat.calculateFirst"), description: t("zakat.calculateFirstDesc") });
       return;
     }
 
@@ -295,7 +297,7 @@ const ZakatCalculator: React.FC = () => {
     
     doc.save(`Zakat_Calculation_${new Date().toISOString().split('T')[0]}.pdf`);
     
-    toast({ title: "PDF Downloaded", description: "Zakat calculation saved successfully." });
+    toast({ title: t("zakat.pdfDownloaded"), description: t("zakat.pdfSaved") });
   };
 
   return (
@@ -305,12 +307,12 @@ const ZakatCalculator: React.FC = () => {
         {/* Chennai Rates */}
         <Card className="border-primary/20">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold">📊 Chennai Gold & Silver Rates</CardTitle>
+            <CardTitle className="text-sm font-semibold">📊 {t("zakat.goldSilverRates")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">Gold 22K Rate (₹/gm)</Label>
+                <Label className="text-xs">{t("zakat.goldRate")}</Label>
                 <Input
                   type="number"
                   value={manualGold22}
@@ -320,7 +322,7 @@ const ZakatCalculator: React.FC = () => {
                 />
               </div>
               <div>
-                <Label className="text-xs">Silver Rate (₹/gm)</Label>
+                <Label className="text-xs">{t("zakat.silverRate")}</Label>
                 <Input
                   type="number"
                   value={manualSilver}
@@ -352,10 +354,10 @@ const ZakatCalculator: React.FC = () => {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                🥇 Gold (سونا)
+                🥇 {t("zakat.gold")} (سونا)
               </CardTitle>
               <Button variant="outline" size="sm" onClick={addGoldEntry} className="h-8">
-                <Plus className="w-4 h-4 mr-1" /> Add
+                <Plus className="w-4 h-4 mr-1" /> {t("common.add")}
               </Button>
             </div>
           </CardHeader>
@@ -363,7 +365,7 @@ const ZakatCalculator: React.FC = () => {
             {goldEntries.map((entry, index) => (
               <div key={entry.id} className="p-3 rounded-lg bg-muted/50 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">Item {index + 1}</span>
+                  <span className="text-xs font-medium text-muted-foreground">{t("common.item")} {index + 1}</span>
                   {goldEntries.length > 1 && (
                     <button onClick={() => removeGoldEntry(entry.id)} className="text-destructive hover:bg-destructive/10 p-1 rounded">
                       <Trash2 className="w-4 h-4" />
@@ -372,19 +374,19 @@ const ZakatCalculator: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs">Input Type</Label>
+                    <Label className="text-xs">{t("zakat.inputType")}</Label>
                     <Select value={entry.inputType} onValueChange={(v) => updateGoldEntry(entry.id, "inputType", v)}>
                       <SelectTrigger className="mt-1">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="grams">Grams</SelectItem>
-                        <SelectItem value="rupees">Rupees (₹)</SelectItem>
+                        <SelectItem value="grams">{t("zakat.grams")}</SelectItem>
+                        <SelectItem value="rupees">{t("zakat.rupees")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-xs">Carat</Label>
+                    <Label className="text-xs">{t("zakat.carat")}</Label>
                     <Select value={entry.carat} onValueChange={(v) => updateGoldEntry(entry.id, "carat", v)}>
                       <SelectTrigger className="mt-1">
                         <SelectValue />
@@ -398,10 +400,10 @@ const ZakatCalculator: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <Label className="text-xs">Value ({entry.inputType === "grams" ? "grams" : "₹"})</Label>
+                  <Label className="text-xs">{t("zakat.value")} ({entry.inputType === "grams" ? t("zakat.grams") : "₹"})</Label>
                   <Input
                     type="number"
-                    placeholder={entry.inputType === "grams" ? "Enter weight" : "Enter value"}
+                    placeholder={entry.inputType === "grams" ? t("zakat.enterWeight") : t("zakat.enterValue")}
                     value={entry.value}
                     onChange={(e) => updateGoldEntry(entry.id, "value", e.target.value)}
                     className="mt-1"
@@ -416,7 +418,7 @@ const ZakatCalculator: React.FC = () => {
             ))}
             {goldEntries.some(e => e.value) && (
               <div className="text-sm font-medium text-right">
-                Total Gold: {formatCurrency(calculateGoldTotal())}
+                {t("zakat.totalGold")}: {formatCurrency(calculateGoldTotal())}
               </div>
             )}
           </CardContent>
@@ -427,10 +429,10 @@ const ZakatCalculator: React.FC = () => {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                🥈 Silver (چاندی)
+                🥈 {t("zakat.silver")} (چاندی)
               </CardTitle>
               <Button variant="outline" size="sm" onClick={addSilverEntry} className="h-8">
-                <Plus className="w-4 h-4 mr-1" /> Add
+                <Plus className="w-4 h-4 mr-1" /> {t("common.add")}
               </Button>
             </div>
           </CardHeader>
@@ -438,7 +440,7 @@ const ZakatCalculator: React.FC = () => {
             {silverEntries.map((entry, index) => (
               <div key={entry.id} className="p-3 rounded-lg bg-muted/50 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">Item {index + 1}</span>
+                  <span className="text-xs font-medium text-muted-foreground">{t("common.item")} {index + 1}</span>
                   {silverEntries.length > 1 && (
                     <button onClick={() => removeSilverEntry(entry.id)} className="text-destructive hover:bg-destructive/10 p-1 rounded">
                       <Trash2 className="w-4 h-4" />
@@ -446,22 +448,22 @@ const ZakatCalculator: React.FC = () => {
                   )}
                 </div>
                 <div>
-                  <Label className="text-xs">Input Type</Label>
+                  <Label className="text-xs">{t("zakat.inputType")}</Label>
                   <Select value={entry.inputType} onValueChange={(v) => updateSilverEntry(entry.id, "inputType", v)}>
                     <SelectTrigger className="mt-1">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="grams">Grams</SelectItem>
-                      <SelectItem value="rupees">Rupees (₹)</SelectItem>
+                      <SelectItem value="grams">{t("zakat.grams")}</SelectItem>
+                      <SelectItem value="rupees">{t("zakat.rupees")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-xs">Value ({entry.inputType === "grams" ? "grams" : "₹"})</Label>
+                  <Label className="text-xs">{t("zakat.value")} ({entry.inputType === "grams" ? t("zakat.grams") : "₹"})</Label>
                   <Input
                     type="number"
-                    placeholder={entry.inputType === "grams" ? "Enter weight" : "Enter value"}
+                    placeholder={entry.inputType === "grams" ? t("zakat.enterWeight") : t("zakat.enterValue")}
                     value={entry.value}
                     onChange={(e) => updateSilverEntry(entry.id, "value", e.target.value)}
                     className="mt-1"
@@ -476,7 +478,7 @@ const ZakatCalculator: React.FC = () => {
             ))}
             {silverEntries.some(e => e.value) && (
               <div className="text-sm font-medium text-right">
-                Total Silver: {formatCurrency(calculateSilverTotal())}
+                {t("zakat.totalSilver")}: {formatCurrency(calculateSilverTotal())}
               </div>
             )}
           </CardContent>
@@ -485,34 +487,34 @@ const ZakatCalculator: React.FC = () => {
         {/* Cash & Other Assets */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold">💵 Cash & Other Assets</CardTitle>
+            <CardTitle className="text-sm font-semibold">💵 {t("zakat.cashAssets")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label className="text-xs">Cash in Hand/Bank (نقد رقم)</Label>
+              <Label className="text-xs">{t("zakat.cashInHand")} (نقد رقم)</Label>
               <Input
                 type="number"
-                placeholder="Enter amount in ₹"
+                placeholder={t("zakat.enterAmount")}
                 value={cashValue}
                 onChange={(e) => setCashValue(e.target.value)}
                 className="mt-1"
               />
             </div>
             <div>
-              <Label className="text-xs">Other Assets (Business, Investments)</Label>
+              <Label className="text-xs">{t("zakat.otherAssets")}</Label>
               <Input
                 type="number"
-                placeholder="Enter amount in ₹"
+                placeholder={t("zakat.enterAmount")}
                 value={otherAssets}
                 onChange={(e) => setOtherAssets(e.target.value)}
                 className="mt-1"
               />
             </div>
             <div>
-              <Label className="text-xs">Liabilities/Debts (قرض)</Label>
+              <Label className="text-xs">{t("zakat.liabilities")} (قرض)</Label>
               <Input
                 type="number"
-                placeholder="Enter amount in ₹"
+                placeholder={t("zakat.enterAmount")}
                 value={liabilities}
                 onChange={(e) => setLiabilities(e.target.value)}
                 className="mt-1"
@@ -524,7 +526,7 @@ const ZakatCalculator: React.FC = () => {
         {/* Calculate Button */}
         <Button onClick={calculateZakat} className="w-full h-12 text-base font-semibold">
           <Calculator className="w-5 h-5 mr-2" />
-          Calculate Zakat
+          {t("zakat.calculate")}
         </Button>
 
         {/* Results */}
@@ -532,25 +534,25 @@ const ZakatCalculator: React.FC = () => {
           <Card className={`border-2 ${zakatResult.isEligible ? "border-primary bg-primary/5" : "border-muted"}`}>
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-bold text-center">
-                {zakatResult.isEligible ? "💰 Zakat Due" : "ℹ️ Below Nisab"}
+                {zakatResult.isEligible ? `💰 ${t("zakat.zakatDue")}` : `ℹ️ ${t("zakat.belowNisab")}`}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Total Assets</span>
+                <span className="text-muted-foreground">{t("zakat.totalAssets")}</span>
                 <span className="font-medium">{formatCurrency(zakatResult.totalAssets)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Net Assets (after debts)</span>
+                <span className="text-muted-foreground">{t("zakat.netAssets")}</span>
                 <span className="font-medium">{formatCurrency(zakatResult.netAssets)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Nisab Threshold</span>
+                <span className="text-muted-foreground">{t("zakat.nisabThreshold")}</span>
                 <span className="font-medium">{formatCurrency(zakatResult.nisabValue)}</span>
               </div>
               <div className="border-t border-border pt-3">
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold">Zakat Payable (2.5%)</span>
+                  <span className="font-semibold">{t("zakat.zakatPayable")}</span>
                   <span className="text-xl font-bold text-primary">
                     {formatCurrency(zakatResult.zakatDue)}
                   </span>
@@ -558,12 +560,12 @@ const ZakatCalculator: React.FC = () => {
               </div>
               {!zakatResult.isEligible && (
                 <p className="text-xs text-muted-foreground text-center pt-2">
-                  Your net assets are below the Nisab threshold. Zakat is not obligatory.
+                  {t("zakat.belowNisabDesc")}
                 </p>
               )}
               <Button onClick={exportToPDF} variant="outline" className="w-full mt-4">
                 <Download className="w-4 h-4 mr-2" />
-                Download PDF Report
+                {t("zakat.downloadPDF")}
               </Button>
             </CardContent>
           </Card>
@@ -571,11 +573,11 @@ const ZakatCalculator: React.FC = () => {
 
         {/* Info */}
         <div className="text-xs text-muted-foreground space-y-2 p-4 bg-muted/50 rounded-xl">
-          <p className="font-semibold text-foreground">ℹ️ Nisab Information:</p>
-          <p>• Gold Nisab: {NISAB_GOLD_GRAMS}g (7.5 tola)</p>
-          <p>• Silver Nisab: {NISAB_SILVER_GRAMS}g (52.5 tola)</p>
-          <p>• Zakat Rate: 2.5% of total zakatable wealth</p>
-          <p className="pt-2 text-[10px]">Note: We use Silver Nisab as it results in lower threshold.</p>
+          <p className="font-semibold text-foreground">ℹ️ {t("zakat.nisabInfo")}:</p>
+          <p>• {t("zakat.goldNisab")}</p>
+          <p>• {t("zakat.silverNisab")}</p>
+          <p>• {t("zakat.zakatRate")}</p>
+          <p className="pt-2 text-[10px]">{t("zakat.silverNisabNote")}</p>
         </div>
       </div>
     </div>

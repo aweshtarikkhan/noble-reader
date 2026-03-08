@@ -44,11 +44,11 @@ const Donate: React.FC = () => {
         <div className="grid grid-cols-2 gap-3 mb-6">
           <div className="rounded-2xl bg-card border border-gold/10 p-4 text-center">
             <p className="text-2xl font-bold text-gold">{stats.count}</p>
-            <p className="text-xs text-muted-foreground mt-1">Donations</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("donate.donations")}</p>
           </div>
           <div className="rounded-2xl bg-card border border-gold/10 p-4 text-center">
             <p className="text-2xl font-bold text-gold">₹{stats.total.toLocaleString("en-IN")}</p>
-            <p className="text-xs text-muted-foreground mt-1">Raised</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("donate.raised")}</p>
           </div>
         </div>
       )}
@@ -85,10 +85,10 @@ const Donate: React.FC = () => {
       <div className="mt-6 rounded-2xl border border-primary/20 bg-primary/5 p-4 text-center">
         <div className="flex items-center justify-center gap-2 mb-1.5">
           <span className="text-base">🚀</span>
-          <p className="text-sm font-semibold text-primary">Coming Soon</p>
+          <p className="text-sm font-semibold text-primary">{t("donate.comingSoon")}</p>
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed">
-          Razorpay payment gateway support with automatic donation tracking, multiple payment methods (UPI, Cards, Net Banking) &amp; live donation stats.
+          {t("donate.razorpayDesc")}
         </p>
       </div>
 

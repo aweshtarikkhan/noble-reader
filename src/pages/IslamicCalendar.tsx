@@ -104,7 +104,7 @@ const getHijriMonth = async (month: number, year: number, adjustment: number): P
     if (data.code === 200) {
       return data.data.map((item: any) => {
         const g = item.gregorian;
-        const gDate = new Date(`${g.year}-${g.month.number}-${g.day}`);
+        const gDate = new Date(parseInt(g.year), parseInt(g.month.number) - 1, parseInt(g.day));
         return {
           gregorian: `${g.day} ${g.month.en} ${g.year}`,
           gregorianShort: `${g.day} ${g.month.en.substring(0, 3)}`,
