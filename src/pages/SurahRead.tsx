@@ -5,7 +5,7 @@ import { QuranAPI } from "@/lib/quranApi";
 import { getIndianPageImage } from "@/data/indianMushaf";
 import { getCachedPage, setCachedPage, downloadImageAsDataUrl } from "@/lib/quranCache";
 import { getIndianPageImageFallback } from "@/data/indianMushaf";
-import { Loader2, CheckCircle2, HardDriveDownload, Play, Pause, Volume2 } from "lucide-react";
+import { Loader2, CheckCircle2, HardDriveDownload, Play, Pause } from "lucide-react";
 import QuranPageView, { type QuranStyle, getCacheKey } from "@/components/QuranPageView";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import StyleSwitcher, { type ReadingStyle } from "@/components/StyleSwitcher";
@@ -19,26 +19,48 @@ interface Ayah {
   number: number; // global verse number
 }
 
-const useAyahAudio = () => {
+const useAyahAudio = (ayahs: Ayah[]) => {
   const [playingVerse, setPlayingVerse] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const ayahsRef = useRef(ayahs);
+  ayahsRef.current = ayahs;
 
-  const toggleAudio = useCallback((globalNumber: number) => {
-    if (playingVerse === globalNumber) {
-      audioRef.current?.pause();
-      setPlayingVerse(null);
-      return;
-    }
+  const stopAudio = useCallback(() => {
+    audioRef.current?.pause();
+    audioRef.current = null;
+    setPlayingVerse(null);
+  }, []);
+
+  const playFromVerse = useCallback((globalNumber: number) => {
     if (audioRef.current) {
       audioRef.current.pause();
+      audioRef.current = null;
     }
     const audio = new Audio(`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalNumber}.mp3`);
-    audio.onended = () => setPlayingVerse(null);
-    audio.onerror = () => setPlayingVerse(null);
+    audio.onended = () => {
+      // Find next ayah and auto-play
+      const currentIdx = ayahsRef.current.findIndex(a => a.number === globalNumber);
+      if (currentIdx >= 0 && currentIdx < ayahsRef.current.length - 1) {
+        const nextAyah = ayahsRef.current[currentIdx + 1];
+        playFromVerse(nextAyah.number);
+      } else {
+        setPlayingVerse(null);
+        audioRef.current = null;
+      }
+    };
+    audio.onerror = () => { setPlayingVerse(null); audioRef.current = null; };
     audio.play();
     audioRef.current = audio;
     setPlayingVerse(globalNumber);
-  }, [playingVerse]);
+  }, []);
+
+  const toggleAudio = useCallback((globalNumber: number) => {
+    if (playingVerse === globalNumber) {
+      stopAudio();
+      return;
+    }
+    playFromVerse(globalNumber);
+  }, [playingVerse, stopAudio, playFromVerse]);
 
   useEffect(() => {
     return () => { audioRef.current?.pause(); };
@@ -49,51 +71,10 @@ const useAyahAudio = () => {
 
 // Text ayahs with audio buttons
 const TextAyahsView: React.FC<{ ayahs: Ayah[]; surahNum: number }> = ({ ayahs, surahNum }) => {
-  const { playingVerse, toggleAudio } = useAyahAudio();
-  const [playingAll, setPlayingAll] = useState(false);
-  const playAllRef = useRef(false);
-  const audioAllRef = useRef<HTMLAudioElement | null>(null);
-
-  const playAllAyahs = useCallback(async () => {
-    if (playingAll) {
-      playAllRef.current = false;
-      audioAllRef.current?.pause();
-      setPlayingAll(false);
-      return;
-    }
-    playAllRef.current = true;
-    setPlayingAll(true);
-    for (const ayah of ayahs) {
-      if (!playAllRef.current) break;
-      await new Promise<void>((resolve) => {
-        const audio = new Audio(`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayah.number}.mp3`);
-        audioAllRef.current = audio;
-        audio.onended = () => resolve();
-        audio.onerror = () => resolve();
-        audio.play().catch(() => resolve());
-      });
-    }
-    setPlayingAll(false);
-    playAllRef.current = false;
-  }, [ayahs, playingAll]);
-
-  useEffect(() => {
-    return () => { playAllRef.current = false; audioAllRef.current?.pause(); };
-  }, []);
+  const { playingVerse, toggleAudio } = useAyahAudio(ayahs);
 
   return (
     <div className="animate-fade-in">
-      <div className="flex justify-center mb-4">
-        <button
-          onClick={playAllAyahs}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-smooth text-sm font-medium ${
-            playingAll ? "bg-primary text-primary-foreground border-primary" : "bg-card border-primary/10 text-foreground hover:border-primary/30"
-          }`}
-        >
-          {playingAll ? <Pause className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          {playingAll ? "Stop" : "Play Full Surah"}
-        </button>
-      </div>
       {surahNum !== 9 && (
         <p className="font-arabic text-xl text-primary text-center mb-6 leading-relaxed">{BISMILLAH}</p>
       )}
