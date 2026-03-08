@@ -322,7 +322,7 @@ const ZakatCalculator: React.FC = () => {
                 />
               </div>
               <div>
-                <Label className="text-xs">Silver Rate (₹/gm)</Label>
+                <Label className="text-xs">{t("zakat.silverRate")}</Label>
                 <Input
                   type="number"
                   value={manualSilver}
