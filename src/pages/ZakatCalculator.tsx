@@ -38,6 +38,7 @@ const ZAKAT_RATE = 0.025;
 const ZakatCalculator: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useI18n();
   
   const [rates, setRates] = useState<GoldRates>({
     gold24ct: 7800,
