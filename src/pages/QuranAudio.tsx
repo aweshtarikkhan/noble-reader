@@ -260,15 +260,19 @@ const QuranAudio: React.FC = () => {
       setBatchProgress(i);
       setDownloadingSurah(null);
 
+      // Refresh storage every 10 surahs
+      if (i % 10 === 0) refreshStorageUsage();
+
       // Small delay
       if (i % 5 === 0) await new Promise((r) => setTimeout(r, 200));
     }
 
     setBatchDownloading(false); setDownloadingSurah(null);
+    refreshStorageUsage();
     if (!abortBatchRef.current) {
       toast({ title: "✅ All downloaded!", description: "All surahs saved offline" });
     }
-  }, [audioMode, currentModeId, cachedSurahs, getAudioUrl, toast]);
+  }, [audioMode, currentModeId, cachedSurahs, getAudioUrl, toast, refreshStorageUsage]);
 
   const stopBatchDownload = useCallback(() => { abortBatchRef.current = true; }, []);
 
