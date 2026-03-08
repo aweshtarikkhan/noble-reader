@@ -534,7 +534,7 @@ const ZakatCalculator: React.FC = () => {
           <Card className={`border-2 ${zakatResult.isEligible ? "border-primary bg-primary/5" : "border-muted"}`}>
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-bold text-center">
-                {zakatResult.isEligible ? "💰 Zakat Due" : "ℹ️ Below Nisab"}
+                {zakatResult.isEligible ? `💰 ${t("zakat.zakatDue")}` : `ℹ️ ${t("zakat.belowNisab")}`}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
