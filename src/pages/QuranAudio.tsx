@@ -4,6 +4,7 @@ import { Play, Pause, SkipBack, SkipForward, Volume2, Loader2 } from "lucide-rea
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { DR_ISRAR_AUDIO_MAP, DR_ISRAR_BASE_URL } from "@/data/drIsrarAudioMap";
+import { FATEH_MUHAMMAD_AUDIO_MAP, FATEH_MUHAMMAD_BASE_URL } from "@/data/fatehMuhammadAudioMap";
 
 type AudioMode = "quran" | "translation";
 
@@ -15,6 +16,7 @@ const RECITERS: Reciter[] = [
 ];
 
 const URDU_TRANSLATORS: TranslationAuthor[] = [
+  { id: "fateh", name: "Fateh Muhammad Jalandhari", language: "Urdu" },
   { id: "drisrar", name: "Dr. Israr Ahmad (Bayan ul Quran)", language: "Urdu" },
 ];
 
@@ -22,6 +24,10 @@ const getQuranAudioUrl = (server: string, subfolder: string, surahNum: number) =
   `https://${server}.mp3quran.net/${subfolder}/${String(surahNum).padStart(3, "0")}.mp3`;
 
 const getTranslationAudioUrl = (translatorId: string, surahNum: number) => {
+  if (translatorId === "fateh") {
+    const fileName = FATEH_MUHAMMAD_AUDIO_MAP[surahNum];
+    return fileName ? `${FATEH_MUHAMMAD_BASE_URL}${encodeURIComponent(fileName)}` : "";
+  }
   if (translatorId === "drisrar") {
     const fileName = DR_ISRAR_AUDIO_MAP[surahNum];
     return fileName ? `${DR_ISRAR_BASE_URL}${encodeURIComponent(fileName)}` : "";
