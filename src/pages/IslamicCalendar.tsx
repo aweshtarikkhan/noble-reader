@@ -230,25 +230,28 @@ const IslamicCalendar: React.FC = () => {
     fetchToday();
   }, [detecting, config.adjustment]);
 
-  // Load month data
+  // Fetch hijri dates for each day of the gregorian month
   useEffect(() => {
-    if (!viewMonth || !viewYear) return;
-    setLoading(true);
-    getHijriMonth(viewMonth, viewYear, config.adjustment).then((days) => {
-      setMonthDays(days);
-      setLoading(false);
-    });
-  }, [viewMonth, viewYear, config.adjustment]);
-
-  const prevMonth = () => {
-    if (viewMonth <= 1) { setViewMonth(12); setViewYear(y => y - 1); }
-    else setViewMonth(m => m - 1);
-  };
-
-  const nextMonth = () => {
-    if (viewMonth >= 12) { setViewMonth(1); setViewYear(y => y + 1); }
-    else setViewMonth(m => m + 1);
-  };
+    const fetchHijriForMonth = async () => {
+      const daysInMonth = getGregorianDaysInMonth(gMonth, gYear);
+      const map = new Map<number, { day: number; month: number }>();
+      try {
+        const mm = String(gMonth).padStart(2, "0");
+        const res = await fetch(`https://api.aladhan.com/v1/gToHCalendar/${gMonth}/${gYear}?adjustment=${config.adjustment}`);
+        const data = await res.json();
+        if (data.code === 200) {
+          data.data.forEach((item: any) => {
+            const gDay = parseInt(item.gregorian.day);
+            const hDay = parseInt(item.hijri.day);
+            const hMonth = parseInt(item.hijri.month.number);
+            map.set(gDay, { day: hDay, month: hMonth });
+          });
+        }
+      } catch {}
+      setHijriForGregorian(map);
+    };
+    fetchHijriForMonth();
+  }, [gMonth, gYear, config.adjustment]);
 
   const prevGMonth = () => {
     if (gMonth <= 1) { setGMonth(12); setGYear(y => y - 1); }
@@ -261,35 +264,6 @@ const IslamicCalendar: React.FC = () => {
   };
 
   const weekdays = lang === "ur" ? WEEKDAYS_UR : lang === "hi" ? WEEKDAYS_HI : WEEKDAYS_EN;
-  const monthName = lang === "ur" || lang === "hi" ? HIJRI_MONTHS_AR[viewMonth - 1] : HIJRI_MONTHS[viewMonth - 1];
-
-  const { calendarGrid, gregorianMap } = useMemo(() => {
-    if (monthDays.length === 0) return { calendarGrid: [], gregorianMap: new Map<number, string>() };
-    const firstDayWeekday = monthDays[0]?.weekday ?? 0;
-    const grid: (number | null)[] = [];
-    const gMap = new Map<number, string>();
-    for (let i = 0; i < firstDayWeekday; i++) grid.push(null);
-    monthDays.forEach((d) => {
-      grid.push(d.hijriDay);
-      gMap.set(d.hijriDay, d.gregorianShort);
-    });
-    return { calendarGrid: grid, gregorianMap: gMap };
-  }, [monthDays]);
-
-  const todayDay = currentHijri && viewMonth === currentHijri.month && viewYear === currentHijri.year ? currentHijri.day : null;
-
-  const monthEvents = useMemo(() => {
-    const events: { day: number; label: string }[] = [];
-    for (const [key, val] of Object.entries(IMPORTANT_DATES)) {
-      const [m, d] = key.split("-").map(Number);
-      if (m === viewMonth) {
-        events.push({ day: d, label: val[lang] || val.en });
-      }
-    }
-    return events;
-  }, [viewMonth, lang]);
-
-  const importantDays = new Set(monthEvents.map(e => e.day));
 
   // Gregorian calendar grid
   const gCalendarGrid = useMemo(() => {
@@ -303,18 +277,34 @@ const IslamicCalendar: React.FC = () => {
 
   const gTodayDay = now.getMonth() + 1 === gMonth && now.getFullYear() === gYear ? now.getDate() : null;
 
-  const gMonthEvents = useMemo(() => {
-    const events: { day: number; label: string }[] = [];
+  // Combine both islamic and gregorian important dates for this month
+  const allMonthEvents = useMemo(() => {
+    const events: { day: number; label: string; type: "islamic" | "gregorian" }[] = [];
+    
+    // Gregorian important dates
     for (const [key, val] of Object.entries(GREGORIAN_IMPORTANT_DATES)) {
       const [m, d] = key.split("-").map(Number);
       if (m === gMonth) {
-        events.push({ day: d, label: val[lang] || val.en });
+        events.push({ day: d, label: val[lang] || val.en, type: "gregorian" });
       }
     }
-    return events;
-  }, [gMonth, lang]);
 
-  const gImportantDays = new Set(gMonthEvents.map(e => e.day));
+    // Islamic important dates mapped to gregorian days
+    for (const [key, val] of Object.entries(IMPORTANT_DATES)) {
+      const [hm, hd] = key.split("-").map(Number);
+      // Find which gregorian day has this hijri date
+      for (const [gDay, hijri] of hijriForGregorian.entries()) {
+        if (hijri.month === hm && hijri.day === hd) {
+          events.push({ day: gDay, label: val[lang] || val.en, type: "islamic" });
+        }
+      }
+    }
+
+    events.sort((a, b) => a.day - b.day);
+    return events;
+  }, [gMonth, gYear, lang, hijriForGregorian]);
+
+  const allImportantDays = new Set(allMonthEvents.map(e => e.day));
 
   if (detecting) {
     return (
