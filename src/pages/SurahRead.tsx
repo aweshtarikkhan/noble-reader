@@ -16,7 +16,36 @@ const BISMILLAH = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَ
 interface Ayah {
   text: string;
   numberInSurah: number;
+  number: number; // global verse number
 }
+
+const useAyahAudio = () => {
+  const [playingVerse, setPlayingVerse] = useState<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const toggleAudio = useCallback((globalNumber: number) => {
+    if (playingVerse === globalNumber) {
+      audioRef.current?.pause();
+      setPlayingVerse(null);
+      return;
+    }
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    const audio = new Audio(`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalNumber}.mp3`);
+    audio.onended = () => setPlayingVerse(null);
+    audio.onerror = () => setPlayingVerse(null);
+    audio.play();
+    audioRef.current = audio;
+    setPlayingVerse(globalNumber);
+  }, [playingVerse]);
+
+  useEffect(() => {
+    return () => { audioRef.current?.pause(); };
+  }, []);
+
+  return { playingVerse, toggleAudio };
+};
 
 const SurahRead: React.FC = () => {
   const { num } = useParams();
