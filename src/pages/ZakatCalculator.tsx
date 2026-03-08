@@ -317,7 +317,7 @@ const ZakatCalculator: React.FC = () => {
                   type="number"
                   value={manualGold22}
                   onChange={(e) => setManualGold22(e.target.value)}
-                  placeholder="7150"
+                  placeholder="15000"
                   className="mt-1"
                 />
               </div>
