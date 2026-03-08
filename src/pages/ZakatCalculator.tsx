@@ -180,7 +180,7 @@ const ZakatCalculator: React.FC = () => {
 
   const exportToPDF = () => {
     if (!zakatResult) {
-      toast({ title: "Calculate first", description: "Please calculate zakat before exporting." });
+      toast({ title: t("zakat.calculateFirst"), description: t("zakat.calculateFirstDesc") });
       return;
     }
 
