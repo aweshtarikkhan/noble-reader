@@ -429,10 +429,10 @@ const ZakatCalculator: React.FC = () => {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                🥈 Silver (چاندی)
+                🥈 {t("zakat.silver")} (چاندی)
               </CardTitle>
               <Button variant="outline" size="sm" onClick={addSilverEntry} className="h-8">
-                <Plus className="w-4 h-4 mr-1" /> Add
+                <Plus className="w-4 h-4 mr-1" /> {t("common.add")}
               </Button>
             </div>
           </CardHeader>
