@@ -303,15 +303,23 @@ const QuranAudio: React.FC = () => {
           <button onClick={() => setAudioMode("translation")} className={`flex-1 py-2 text-xs font-medium rounded-lg transition-smooth ${audioMode === "translation" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{t("audio.urduTranslation")}</button>
         </div>
 
-        {/* Translator Selection - only for translation mode */}
+        {/* Translator Selection - collapsible, only for translation mode */}
         {audioMode === "translation" && (
-          <div className="bg-card rounded-xl border border-border p-3 mb-3 animate-fade-in">
-            <p className="text-xs font-medium text-foreground mb-2">{t("audio.selectTranslator")}</p>
-            <div className="flex flex-col gap-1.5 max-h-24 overflow-y-auto">
-              {URDU_TRANSLATORS.map((t) => (
-                <button key={t.id} onClick={() => setSelectedTranslator(t.id)} className={`text-left px-3 py-2 rounded-lg text-xs transition-smooth ${selectedTranslator === t.id ? "bg-primary/20 text-primary font-medium" : "text-muted-foreground hover:bg-muted"}`}>{t.name} ({t.language})</button>
-              ))}
-            </div>
+          <div className="bg-card rounded-xl border border-border mb-3 animate-fade-in overflow-hidden">
+            <button 
+              onClick={() => setShowTranslatorList(!showTranslatorList)} 
+              className="w-full flex items-center justify-between p-3"
+            >
+              <p className="text-xs font-medium text-foreground">{t("audio.selectTranslator")}</p>
+              <span className={`text-muted-foreground text-xs transition-transform ${showTranslatorList ? "rotate-180" : ""}`}>▼</span>
+            </button>
+            {showTranslatorList && (
+              <div className="flex flex-col gap-1.5 px-3 pb-3">
+                {URDU_TRANSLATORS.map((t) => (
+                  <button key={t.id} onClick={() => { setSelectedTranslator(t.id); setShowTranslatorList(false); }} className={`text-left px-3 py-2 rounded-lg text-xs transition-smooth ${selectedTranslator === t.id ? "bg-primary/20 text-primary font-medium" : "text-muted-foreground hover:bg-muted"}`}>{t.name} ({t.language})</button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
