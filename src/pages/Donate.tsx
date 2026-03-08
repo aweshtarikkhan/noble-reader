@@ -44,7 +44,7 @@ const Donate: React.FC = () => {
         <div className="grid grid-cols-2 gap-3 mb-6">
           <div className="rounded-2xl bg-card border border-gold/10 p-4 text-center">
             <p className="text-2xl font-bold text-gold">{stats.count}</p>
-            <p className="text-xs text-muted-foreground mt-1">Donations</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("donate.donations")}</p>
           </div>
           <div className="rounded-2xl bg-card border border-gold/10 p-4 text-center">
             <p className="text-2xl font-bold text-gold">₹{stats.total.toLocaleString("en-IN")}</p>
