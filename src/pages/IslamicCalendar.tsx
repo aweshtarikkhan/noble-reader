@@ -219,8 +219,6 @@ const IslamicCalendar: React.FC = () => {
       const today = await getHijriFromApi(new Date(), config.adjustment);
       if (today) {
         setCurrentHijri(today);
-        setViewMonth(today.month);
-        setViewYear(today.year);
       }
     };
     fetchToday();
