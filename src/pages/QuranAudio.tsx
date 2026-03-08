@@ -6,22 +6,26 @@ import { useI18n } from "@/lib/i18n";
 
 type AudioMode = "quran" | "translation";
 
-interface Reciter { id: string; name: string; subfolder: string; }
-interface TranslationAuthor { id: string; name: string; language: string; subfolder: string; }
+interface Reciter { id: string; name: string; server: string; subfolder: string; }
+interface TranslationAuthor { id: string; name: string; language: string; server: string; subfolder: string; }
 
 const RECITERS: Reciter[] = [
-  { id: "mishary", name: "Mishary Rashid Alafasy", subfolder: "ar.alafasy" },
+  { id: "mishary", name: "Mishary Rashid Alafasy", server: "server8", subfolder: "afs" },
+  { id: "sudais", name: "Abdur-Rahman As-Sudais", server: "server11", subfolder: "sds" },
+  { id: "basit", name: "Abdul Basit Abdul Samad", server: "server7", subfolder: "basit" },
+  { id: "shatri", name: "Abu Bakr Al-Shatri", server: "server11", subfolder: "shatri" },
+  { id: "maher", name: "Maher Al-Muaiqly", server: "server12", subfolder: "maher" },
 ];
 
 const URDU_TRANSLATORS: TranslationAuthor[] = [
-  { id: "fatehjalandhry", name: "Fateh Muhammad Jalandhry", language: "Urdu", subfolder: "fateh" },
+  { id: "fatehjalandhry", name: "Fateh Muhammad Jalandhry", language: "Urdu", server: "server6", subfolder: "fateh" },
 ];
 
-const getQuranAudioUrl = (subfolder: string, surahNum: number) =>
-  `https://cdn.islamic.network/quran/audio-surah/128/${subfolder}/${surahNum}.mp3`;
+const getQuranAudioUrl = (server: string, subfolder: string, surahNum: number) =>
+  `https://${server}.mp3quran.net/${subfolder}/${String(surahNum).padStart(3, "0")}.mp3`;
 
-const getTranslationAudioUrl = (subfolder: string, surahNum: number) =>
-  `https://server6.mp3quran.net/${subfolder}/${String(surahNum).padStart(3, "0")}.mp3`;
+const getTranslationAudioUrl = (server: string, subfolder: string, surahNum: number) =>
+  `https://${server}.mp3quran.net/${subfolder}/${String(surahNum).padStart(3, "0")}.mp3`;
 
 const QuranAudio: React.FC = () => {
   const { toast } = useToast();
@@ -42,7 +46,7 @@ const QuranAudio: React.FC = () => {
   const reciter = RECITERS.find((r) => r.id === selectedReciter) || RECITERS[0];
   const translator = URDU_TRANSLATORS.find((t) => t.id === selectedTranslator) || URDU_TRANSLATORS[0];
   const surah = SURAHS.find((s) => s.number === selectedSurah)!;
-  const audioSrc = audioMode === "quran" ? getQuranAudioUrl(reciter.subfolder, selectedSurah) : getTranslationAudioUrl(translator.subfolder, selectedSurah);
+  const audioSrc = audioMode === "quran" ? getQuranAudioUrl(reciter.server, reciter.subfolder, selectedSurah) : getTranslationAudioUrl(translator.server, translator.subfolder, selectedSurah);
 
   useEffect(() => { const audio = new Audio(); audio.preload = "auto"; audioRef.current = audio; return () => { audio.pause(); audio.src = ""; audio.load(); }; }, []);
 
