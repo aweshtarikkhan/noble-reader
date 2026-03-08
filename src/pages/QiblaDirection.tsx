@@ -232,7 +232,7 @@ const QiblaDirection: React.FC = () => {
 
         // Try absolute first on iOS too
         window.addEventListener("deviceorientationabsolute" as any, (e: any) => {
-          setUseAbsolute(true);
+          useAbsoluteRef.current = true;
           handleOrientation(e);
         }, true);
         window.addEventListener("deviceorientation", handleOrientation, true);
