@@ -560,7 +560,7 @@ const ZakatCalculator: React.FC = () => {
               </div>
               {!zakatResult.isEligible && (
                 <p className="text-xs text-muted-foreground text-center pt-2">
-                  Your net assets are below the Nisab threshold. Zakat is not obligatory.
+                  {t("zakat.belowNisabDesc")}
                 </p>
               )}
               <Button onClick={exportToPDF} variant="outline" className="w-full mt-4">
