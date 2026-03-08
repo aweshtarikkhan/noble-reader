@@ -565,7 +565,7 @@ const ZakatCalculator: React.FC = () => {
               )}
               <Button onClick={exportToPDF} variant="outline" className="w-full mt-4">
                 <Download className="w-4 h-4 mr-2" />
-                Download PDF Report
+                {t("zakat.downloadPDF")}
               </Button>
             </CardContent>
           </Card>
