@@ -547,7 +547,7 @@ const ZakatCalculator: React.FC = () => {
                 <span className="font-medium">{formatCurrency(zakatResult.netAssets)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Nisab Threshold</span>
+                <span className="text-muted-foreground">{t("zakat.nisabThreshold")}</span>
                 <span className="font-medium">{formatCurrency(zakatResult.nisabValue)}</span>
               </div>
               <div className="border-t border-border pt-3">
