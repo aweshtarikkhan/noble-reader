@@ -440,7 +440,7 @@ const ZakatCalculator: React.FC = () => {
             {silverEntries.map((entry, index) => (
               <div key={entry.id} className="p-3 rounded-lg bg-muted/50 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">Item {index + 1}</span>
+                  <span className="text-xs font-medium text-muted-foreground">{t("common.item")} {index + 1}</span>
                   {silverEntries.length > 1 && (
                     <button onClick={() => removeSilverEntry(entry.id)} className="text-destructive hover:bg-destructive/10 p-1 rounded">
                       <Trash2 className="w-4 h-4" />
