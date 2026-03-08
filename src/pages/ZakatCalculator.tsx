@@ -539,7 +539,7 @@ const ZakatCalculator: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Total Assets</span>
+                <span className="text-muted-foreground">{t("zakat.totalAssets")}</span>
                 <span className="font-medium">{formatCurrency(zakatResult.totalAssets)}</span>
               </div>
               <div className="flex justify-between text-sm">
