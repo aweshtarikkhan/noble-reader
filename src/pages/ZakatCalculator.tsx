@@ -160,42 +160,49 @@ const ZakatCalculator: React.FC = () => {
       </div>
 
       <div className="px-4 py-6 space-y-6">
-        {/* Live Rates Card */}
+        {/* Chennai Rates - Manual Entry */}
         <Card className="border-primary/20">
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-semibold">Live Rates (Chennai)</CardTitle>
-              <Button variant="ghost" size="sm" onClick={fetchGoldRates} disabled={loadingRates}>
-                <RefreshCw className={`w-4 h-4 ${loadingRates ? "animate-spin" : ""}`} />
-              </Button>
-            </div>
+            <CardTitle className="text-sm font-semibold">📊 Chennai Gold & Silver Rates (Enter Today's Rate)</CardTitle>
           </CardHeader>
-          <CardContent>
-            {loadingRates ? (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Gold 22K Rate (₹/gm)</Label>
+                <Input
+                  type="number"
+                  value={manualGold22}
+                  onChange={(e) => setManualGold22(e.target.value)}
+                  placeholder="7150"
+                  className="mt-1"
+                />
               </div>
-            ) : rates ? (
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="p-3 rounded-lg bg-primary/10">
-                  <p className="text-xs text-muted-foreground">Gold 24K</p>
-                  <p className="font-bold text-foreground">₹{rates.gold24ct}/gm</p>
-                </div>
-                <div className="p-3 rounded-lg bg-primary/10">
-                  <p className="text-xs text-muted-foreground">Gold 22K</p>
-                  <p className="font-bold text-foreground">₹{rates.gold22ct}/gm</p>
-                </div>
-                <div className="p-3 rounded-lg bg-primary/10">
-                  <p className="text-xs text-muted-foreground">Gold 18K</p>
-                  <p className="font-bold text-foreground">₹{rates.gold18ct}/gm</p>
-                </div>
-                <div className="p-3 rounded-lg bg-primary/10">
-                  <p className="text-xs text-muted-foreground">Silver</p>
-                  <p className="font-bold text-foreground">₹{rates.silver}/gm</p>
-                </div>
-                <p className="col-span-2 text-[10px] text-muted-foreground text-right">{rates.lastUpdated}</p>
+              <div>
+                <Label className="text-xs">Silver Rate (₹/gm)</Label>
+                <Input
+                  type="number"
+                  value={manualSilver}
+                  onChange={(e) => setManualSilver(e.target.value)}
+                  placeholder="95"
+                  className="mt-1"
+                />
               </div>
-            ) : null}
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-xs">
+              <div className="p-2 rounded-lg bg-primary/10 text-center">
+                <p className="text-muted-foreground">24K</p>
+                <p className="font-bold text-foreground">₹{rates.gold24ct}/gm</p>
+              </div>
+              <div className="p-2 rounded-lg bg-primary/10 text-center">
+                <p className="text-muted-foreground">22K</p>
+                <p className="font-bold text-foreground">₹{rates.gold22ct}/gm</p>
+              </div>
+              <div className="p-2 rounded-lg bg-primary/10 text-center">
+                <p className="text-muted-foreground">18K</p>
+                <p className="font-bold text-foreground">₹{rates.gold18ct}/gm</p>
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground">💡 Enter today's Chennai gold rate (22K) and silver rate. Other carat rates will be calculated automatically.</p>
           </CardContent>
         </Card>
 
