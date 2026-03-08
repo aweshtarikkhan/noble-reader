@@ -157,12 +157,11 @@ const IslamicCalendar: React.FC = () => {
   const [viewYear, setViewYear] = useState(0);
   const [monthDays, setMonthDays] = useState<{ gregorian: string; gregorianShort: string; hijriDay: number; weekday: number }[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("islamic");
-
   // Gregorian state
   const now = new Date();
   const [gMonth, setGMonth] = useState(now.getMonth() + 1); // 1-12
   const [gYear, setGYear] = useState(now.getFullYear());
+  const [hijriForGregorian, setHijriForGregorian] = useState<Map<number, { day: number; month: number }>>(new Map());
 
   const config = useMemo(() => getRegionalConfig(countryCode), [countryCode]);
 
