@@ -307,7 +307,7 @@ const QuranAudio: React.FC = () => {
                 <Gauge className="w-3 h-3 text-muted-foreground" /><span className="text-[9px] font-medium text-foreground">{playbackSpeed}x</span>
               </button>
               {showSpeedMenu && (
-                <div className="absolute right-0 bottom-full mb-1 bg-card border border-border rounded-lg shadow-lg p-1 z-50">
+                <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg p-1 z-50">
                   {PLAYBACK_SPEEDS.map((speed) => (
                     <button key={speed} onClick={() => changeSpeed(speed)} className={`block w-full px-3 py-1.5 text-xs text-left rounded transition-smooth ${playbackSpeed === speed ? "bg-primary/20 text-primary font-medium" : "text-foreground hover:bg-muted"}`}>{speed}x</button>
                   ))}
