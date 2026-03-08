@@ -83,41 +83,51 @@ const QuranAudio: React.FC = () => {
   const filteredSurahs = SURAHS.filter((s) => s.englishName.toLowerCase().includes(search.toLowerCase()) || s.name.includes(search) || String(s.number).includes(search));
 
   return (
-    <div className="px-4 py-4">
-      <div className="flex bg-card rounded-xl p-1 border border-border mb-4 animate-fade-in">
-        <button onClick={() => setAudioMode("quran")} className={`flex-1 py-2 text-xs font-medium rounded-lg transition-smooth ${audioMode === "quran" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{t("audio.quranAudio")}</button>
-        <button onClick={() => setAudioMode("translation")} className={`flex-1 py-2 text-xs font-medium rounded-lg transition-smooth ${audioMode === "translation" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{t("audio.urduTranslation")}</button>
+    <div className="flex flex-col h-full">
+      {/* Fixed top section */}
+      <div className="sticky top-0 z-20 bg-background px-4 pt-4 pb-2">
+        {/* Mode Toggle */}
+        <div className="flex bg-card rounded-xl p-1 border border-border mb-3 animate-fade-in">
+          <button onClick={() => setAudioMode("quran")} className={`flex-1 py-2 text-xs font-medium rounded-lg transition-smooth ${audioMode === "quran" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{t("audio.quranAudio")}</button>
+          <button onClick={() => setAudioMode("translation")} className={`flex-1 py-2 text-xs font-medium rounded-lg transition-smooth ${audioMode === "translation" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{t("audio.urduTranslation")}</button>
+        </div>
+
+        {/* Reciter/Translator Selection - Now at top */}
+        <div className="bg-card rounded-xl border border-border p-3 mb-3 animate-fade-in">
+          <p className="text-xs font-medium text-foreground mb-2">{audioMode === "quran" ? t("audio.selectReciter") : t("audio.selectTranslator")}</p>
+          <div className="flex flex-col gap-1.5 max-h-24 overflow-y-auto">
+            {audioMode === "quran" ? RECITERS.map((r) => (
+              <button key={r.id} onClick={() => setSelectedReciter(r.id)} className={`text-left px-3 py-2 rounded-lg text-xs transition-smooth ${selectedReciter === r.id ? "bg-primary/20 text-primary font-medium" : "text-muted-foreground hover:bg-muted"}`}>{r.name}</button>
+            )) : URDU_TRANSLATORS.map((t) => (
+              <button key={t.id} onClick={() => setSelectedTranslator(t.id)} className={`text-left px-3 py-2 rounded-lg text-xs transition-smooth ${selectedTranslator === t.id ? "bg-primary/20 text-primary font-medium" : "text-muted-foreground hover:bg-muted"}`}>{t.name} ({t.language})</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Audio Player - Now sticky */}
+        <div className="bg-card rounded-2xl border border-border p-4 animate-fade-in">
+          <div className="text-center mb-3">
+            <p className="font-arabic text-2xl text-primary mb-1">{surah.name}</p>
+            <p className="text-sm font-medium text-foreground">{surah.englishName}</p>
+            <p className="text-[10px] text-muted-foreground">{surah.translation} • {surah.ayahs} {t("audio.ayahs")}</p>
+          </div>
+          <div className="mb-3">
+            <input type="range" min="0" max="100" step="0.1" value={progress} onChange={handleSeek} className="w-full h-1.5 bg-muted rounded-full appearance-none cursor-pointer accent-primary" />
+            <div className="flex justify-between mt-1"><span className="text-[10px] text-muted-foreground">{formatTime(currentTime)}</span><span className="text-[10px] text-muted-foreground">{formatTime(duration)}</span></div>
+          </div>
+          <div className="flex items-center justify-center gap-6">
+            <button onClick={handlePrev} disabled={selectedSurah <= 1} className="p-2 rounded-full hover:bg-muted transition-smooth disabled:opacity-30"><SkipBack className="w-5 h-5 text-foreground" /></button>
+            <button onClick={togglePlay} className="w-14 h-14 rounded-full bg-primary flex items-center justify-center transition-smooth active:scale-95" disabled={isLoading}>
+              {isLoading ? <Loader2 className="w-6 h-6 text-primary-foreground animate-spin" /> : isPlaying ? <Pause className="w-6 h-6 text-primary-foreground" /> : <Play className="w-6 h-6 text-primary-foreground ml-0.5" />}
+            </button>
+            <button onClick={handleNext} disabled={selectedSurah >= 114} className="p-2 rounded-full hover:bg-muted transition-smooth disabled:opacity-30"><SkipForward className="w-5 h-5 text-foreground" /></button>
+          </div>
+          <p className="text-center text-[10px] text-muted-foreground mt-2"><Volume2 className="w-3 h-3 inline mr-1" />{audioMode === "quran" ? reciter.name : translator.name}</p>
+        </div>
       </div>
-      <div className="bg-card rounded-2xl border border-border p-4 mb-4 animate-fade-in">
-        <div className="text-center mb-3">
-          <p className="font-arabic text-2xl text-primary mb-1">{surah.name}</p>
-          <p className="text-sm font-medium text-foreground">{surah.englishName}</p>
-          <p className="text-[10px] text-muted-foreground">{surah.translation} • {surah.ayahs} {t("audio.ayahs")}</p>
-        </div>
-        <div className="mb-3">
-          <input type="range" min="0" max="100" step="0.1" value={progress} onChange={handleSeek} className="w-full h-1.5 bg-muted rounded-full appearance-none cursor-pointer accent-primary" />
-          <div className="flex justify-between mt-1"><span className="text-[10px] text-muted-foreground">{formatTime(currentTime)}</span><span className="text-[10px] text-muted-foreground">{formatTime(duration)}</span></div>
-        </div>
-        <div className="flex items-center justify-center gap-6">
-          <button onClick={handlePrev} disabled={selectedSurah <= 1} className="p-2 rounded-full hover:bg-muted transition-smooth disabled:opacity-30"><SkipBack className="w-5 h-5 text-foreground" /></button>
-          <button onClick={togglePlay} className="w-14 h-14 rounded-full bg-primary flex items-center justify-center transition-smooth active:scale-95" disabled={isLoading}>
-            {isLoading ? <Loader2 className="w-6 h-6 text-primary-foreground animate-spin" /> : isPlaying ? <Pause className="w-6 h-6 text-primary-foreground" /> : <Play className="w-6 h-6 text-primary-foreground ml-0.5" />}
-          </button>
-          <button onClick={handleNext} disabled={selectedSurah >= 114} className="p-2 rounded-full hover:bg-muted transition-smooth disabled:opacity-30"><SkipForward className="w-5 h-5 text-foreground" /></button>
-        </div>
-        <p className="text-center text-[10px] text-muted-foreground mt-2"><Volume2 className="w-3 h-3 inline mr-1" />{audioMode === "quran" ? reciter.name : translator.name}</p>
-      </div>
-      <div className="bg-card rounded-xl border border-border p-3 mb-4 animate-fade-in">
-        <p className="text-xs font-medium text-foreground mb-2">{audioMode === "quran" ? t("audio.selectReciter") : t("audio.selectTranslator")}</p>
-        <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
-          {audioMode === "quran" ? RECITERS.map((r) => (
-            <button key={r.id} onClick={() => setSelectedReciter(r.id)} className={`text-left px-3 py-2 rounded-lg text-xs transition-smooth ${selectedReciter === r.id ? "bg-primary/20 text-primary font-medium" : "text-muted-foreground hover:bg-muted"}`}>{r.name}</button>
-          )) : URDU_TRANSLATORS.map((t) => (
-            <button key={t.id} onClick={() => setSelectedTranslator(t.id)} className={`text-left px-3 py-2 rounded-lg text-xs transition-smooth ${selectedTranslator === t.id ? "bg-primary/20 text-primary font-medium" : "text-muted-foreground hover:bg-muted"}`}>{t.name} ({t.language})</button>
-          ))}
-        </div>
-      </div>
-      <div className="animate-fade-in">
+
+      {/* Scrollable Surah List */}
+      <div className="flex-1 overflow-y-auto px-4 pb-4">
         <input type="text" placeholder={t("audio.searchSurah")} value={search} onChange={(e) => setSearch(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-smooth mb-3 text-sm" />
         <div className="flex flex-col gap-1.5">
           {filteredSurahs.map((s) => (
