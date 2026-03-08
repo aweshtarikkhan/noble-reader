@@ -48,8 +48,8 @@ const ZakatCalculator: React.FC = () => {
     lastUpdated: "Chennai Rates (Editable)"
   });
   
-  const [manualGold22, setManualGold22] = useState("7150");
-  const [manualSilver, setManualSilver] = useState("95");
+  const [manualGold22, setManualGold22] = useState("15000");
+  const [manualSilver, setManualSilver] = useState("278");
   
   const [goldEntries, setGoldEntries] = useState<GoldEntry[]>([
     { id: "1", inputType: "grams", carat: "22", value: "" }
@@ -72,8 +72,8 @@ const ZakatCalculator: React.FC = () => {
   } | null>(null);
 
   const updateRatesFromManual = () => {
-    const gold22 = parseFloat(manualGold22) || 7150;
-    const silver = parseFloat(manualSilver) || 95;
+    const gold22 = parseFloat(manualGold22) || 15000;
+    const silver = parseFloat(manualSilver) || 278;
     const gold24 = Math.round(gold22 / 0.916);
     const gold18 = Math.round(gold22 * (18/22));
     
@@ -317,7 +317,7 @@ const ZakatCalculator: React.FC = () => {
                   type="number"
                   value={manualGold22}
                   onChange={(e) => setManualGold22(e.target.value)}
-                  placeholder="7150"
+                  placeholder="15000"
                   className="mt-1"
                 />
               </div>
@@ -327,7 +327,7 @@ const ZakatCalculator: React.FC = () => {
                   type="number"
                   value={manualSilver}
                   onChange={(e) => setManualSilver(e.target.value)}
-                  placeholder="95"
+                  placeholder="278"
                   className="mt-1"
                 />
               </div>
