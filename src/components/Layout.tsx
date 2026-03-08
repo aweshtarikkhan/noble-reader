@@ -43,6 +43,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (p.startsWith("/donate")) return t("page.donate");
     if (p.startsWith("/hadith")) return t("page.hadith");
     if (p.startsWith("/settings")) return t("page.settings");
+    if (p.startsWith("/zakat-calculator")) return t("page.zakatCalculator");
     return "";
   };
 

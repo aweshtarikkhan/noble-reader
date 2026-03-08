@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, Calculator, Download, Plus, Trash2 } from "lucide-react";
+import { Calculator, Download, Plus, Trash2 } from "lucide-react";
 import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -299,18 +299,7 @@ const ZakatCalculator: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-muted">
-            <ArrowLeft className="w-5 h-5 text-foreground" />
-          </button>
-          <div>
-            <h1 className="text-lg font-bold text-foreground">Zakat Calculator</h1>
-            <p className="text-xs text-muted-foreground">زکوٰۃ کیلکولیٹر</p>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-background pt-20 pb-24">
 
       <div className="px-4 py-6 space-y-6">
         {/* Chennai Rates */}

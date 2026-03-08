@@ -24,6 +24,8 @@ const T: Translations = {
   "tool.qibla": { en: "Qibla", ur: "قبلہ", hi: "क़िबला" },
   "tool.duas": { en: "Duas", ur: "دعائیں", hi: "दुआएं" },
   "tool.hadith": { en: "Hadith", ur: "حدیث", hi: "हदीस" },
+  "tool.quranAudio": { en: "Quran Audio", ur: "قرآن آڈیو", hi: "क़ुरआन ऑडियो" },
+  "tool.zakatCalculator": { en: "Zakat Calculator", ur: "زکوٰۃ کیلکولیٹر", hi: "ज़कात कैलकुलेटर" },
 
   // Home
   "home.quickTools": { en: "Quick Tools", ur: "فوری ٹولز", hi: "त्वरित उपकरण" },
@@ -73,6 +75,7 @@ const T: Translations = {
   "page.donate": { en: "Support Us", ur: "ہماری مدد کریں", hi: "हमारा सहयोग करें" },
   "page.hadith": { en: "Hadith", ur: "حدیث", hi: "हदीस" },
   "page.settings": { en: "Settings", ur: "ترتیبات", hi: "सेटिंग्स" },
+  "page.zakatCalculator": { en: "Zakat Calculator", ur: "زکوٰۃ کیلکولیٹر", hi: "ज़कात कैलकुलेटर" },
 
   // Bookmarks page
   "bookmarks.myBookmarks": { en: "My Bookmarks", ur: "میرے بک مارکس", hi: "मेरे बुकमार्क" },
