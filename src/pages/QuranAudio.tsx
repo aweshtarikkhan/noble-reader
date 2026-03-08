@@ -345,7 +345,7 @@ const QuranAudio: React.FC = () => {
 
         {/* Download Bar */}
         <div className="bg-card rounded-xl border border-border p-3 mb-3 animate-fade-in">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
               <Download className="w-4 h-4 text-primary" />
               <span className="text-xs font-medium text-foreground">
@@ -357,7 +357,7 @@ const QuranAudio: React.FC = () => {
                 <X className="w-3 h-3" /> Stop
               </button>
             ) : downloadedCount >= 114 ? (
-              <span className="flex items-center gap-1 text-xs text-green-500 font-medium">
+              <span className="flex items-center gap-1 text-xs text-primary font-medium">
                 <CheckCircle2 className="w-3.5 h-3.5" /> All saved
               </span>
             ) : (
@@ -366,6 +366,15 @@ const QuranAudio: React.FC = () => {
               </button>
             )}
           </div>
+          {storageUsage > 0 && (
+            <p className="text-[10px] text-muted-foreground mb-2">
+              💾 Storage used: {storageUsage >= 1024 * 1024 * 1024
+                ? `${(storageUsage / (1024 * 1024 * 1024)).toFixed(2)} GB`
+                : storageUsage >= 1024 * 1024
+                  ? `${(storageUsage / (1024 * 1024)).toFixed(1)} MB`
+                  : `${Math.round(storageUsage / 1024)} KB`}
+            </p>
+          )}
           {/* Progress bar */}
           {batchDownloading && (
             <div className="space-y-1">
