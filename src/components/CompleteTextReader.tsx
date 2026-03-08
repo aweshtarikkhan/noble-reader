@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { QuranAPI } from "@/lib/quranApi";
 import { SURAHS } from "@/data/surahs";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { Play, Pause } from "lucide-react";
 
 const BISMILLAH = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
 const SURAHS_PER_BATCH = 3;
