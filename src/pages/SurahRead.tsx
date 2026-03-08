@@ -19,26 +19,48 @@ interface Ayah {
   number: number; // global verse number
 }
 
-const useAyahAudio = () => {
+const useAyahAudio = (ayahs: Ayah[]) => {
   const [playingVerse, setPlayingVerse] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const ayahsRef = useRef(ayahs);
+  ayahsRef.current = ayahs;
 
-  const toggleAudio = useCallback((globalNumber: number) => {
-    if (playingVerse === globalNumber) {
-      audioRef.current?.pause();
-      setPlayingVerse(null);
-      return;
-    }
+  const stopAudio = useCallback(() => {
+    audioRef.current?.pause();
+    audioRef.current = null;
+    setPlayingVerse(null);
+  }, []);
+
+  const playFromVerse = useCallback((globalNumber: number) => {
     if (audioRef.current) {
       audioRef.current.pause();
+      audioRef.current = null;
     }
     const audio = new Audio(`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalNumber}.mp3`);
-    audio.onended = () => setPlayingVerse(null);
-    audio.onerror = () => setPlayingVerse(null);
+    audio.onended = () => {
+      // Find next ayah and auto-play
+      const currentIdx = ayahsRef.current.findIndex(a => a.number === globalNumber);
+      if (currentIdx >= 0 && currentIdx < ayahsRef.current.length - 1) {
+        const nextAyah = ayahsRef.current[currentIdx + 1];
+        playFromVerse(nextAyah.number);
+      } else {
+        setPlayingVerse(null);
+        audioRef.current = null;
+      }
+    };
+    audio.onerror = () => { setPlayingVerse(null); audioRef.current = null; };
     audio.play();
     audioRef.current = audio;
     setPlayingVerse(globalNumber);
-  }, [playingVerse]);
+  }, []);
+
+  const toggleAudio = useCallback((globalNumber: number) => {
+    if (playingVerse === globalNumber) {
+      stopAudio();
+      return;
+    }
+    playFromVerse(globalNumber);
+  }, [playingVerse, stopAudio, playFromVerse]);
 
   useEffect(() => {
     return () => { audioRef.current?.pause(); };
