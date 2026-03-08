@@ -40,8 +40,8 @@ const QuranAudio: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const pendingPlayRef = useRef(false);
 
-  const reciter = RECITERS.find((r) => r.id === selectedReciter)!;
-  const translator = URDU_TRANSLATORS.find((t) => t.id === selectedTranslator)!;
+  const reciter = RECITERS.find((r) => r.id === selectedReciter) || RECITERS[0];
+  const translator = URDU_TRANSLATORS.find((t) => t.id === selectedTranslator) || URDU_TRANSLATORS[0];
   const surah = SURAHS.find((s) => s.number === selectedSurah)!;
   const audioSrc = audioMode === "quran" ? getQuranAudioUrl(reciter.subfolder, selectedSurah) : getTranslationAudioUrl(translator.subfolder, selectedSurah);
 
