@@ -1,7 +1,7 @@
 // 16-line Indo-Pak Mushaf (Taj Company style) data
 // This mushaf has ruku markers and is commonly used in South Asian countries
 
-export const TOTAL_PAGES_INDIAN = 559;
+export const TOTAL_PAGES_INDIAN = 558;
 
 // Primary: Archive.org Taj Company 16-line Quran
 export function getIndianPageImage(pageNum: number): string {
