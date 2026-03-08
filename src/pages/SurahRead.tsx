@@ -47,93 +47,75 @@ const useAyahAudio = () => {
   return { playingVerse, toggleAudio };
 };
 
-const SurahRead: React.FC = () => {
-  const { num } = useParams();
-  const navigate = useNavigate();
-  const surahNum = parseInt(num || "1");
-  const surah = SURAHS.find((s) => s.number === surahNum);
+// Text ayahs with audio buttons
+const TextAyahsView: React.FC<{ ayahs: Ayah[]; surahNum: number }> = ({ ayahs, surahNum }) => {
+  const { playingVerse, toggleAudio } = useAyahAudio();
+  const [playingAll, setPlayingAll] = useState(false);
+  const playAllRef = useRef(false);
+  const audioAllRef = useRef<HTMLAudioElement | null>(null);
 
-  const [readingStyle, setReadingStyle] = useState<ReadingStyle>(
-    () => (localStorage.getItem("read-quran-style-full") as ReadingStyle) || "indopak"
-  );
-  const imageStyle: QuranStyle = readingStyle === "text" ? "indopak" : readingStyle;
-
-  // Text mode state
-  const [ayahs, setAyahs] = useState<Ayah[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const playAllAyahs = useCallback(async () => {
+    if (playingAll) {
+      playAllRef.current = false;
+      audioAllRef.current?.pause();
+      setPlayingAll(false);
+      return;
+    }
+    playAllRef.current = true;
+    setPlayingAll(true);
+    for (const ayah of ayahs) {
+      if (!playAllRef.current) break;
+      await new Promise<void>((resolve) => {
+        const audio = new Audio(`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayah.number}.mp3`);
+        audioAllRef.current = audio;
+        audio.onended = () => resolve();
+        audio.onerror = () => resolve();
+        audio.play().catch(() => resolve());
+      });
+    }
+    setPlayingAll(false);
+    playAllRef.current = false;
+  }, [ayahs, playingAll]);
 
   useEffect(() => {
-    if (readingStyle === "text") {
-      setLoading(true);
-      setError("");
-      QuranAPI.getSurah(surahNum)
-        .then((data) => setAyahs(data.ayahs))
-        .catch(() => setError("Failed to load surah"))
-        .finally(() => setLoading(false));
-    }
-  }, [surahNum, readingStyle]);
-
-  if (!surah) return <div className="p-4 text-center text-muted-foreground">Surah not found</div>;
-
-  const handleStyleChange = (s: ReadingStyle) => {
-    setReadingStyle(s);
-    localStorage.setItem("read-quran-style-full", s);
-  };
-
-  const { startPage, endPage } = getSurahPageRange(surahNum, imageStyle === "indopak" ? "indopak" : "saudi");
-  const pages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
-
-  const getImgUrl = (p: number) => {
-    if (imageStyle === "indopak") return getIndianPageImage(p);
-    return QuranAPI.getMushafPageImage(p);
-  };
+    return () => { playAllRef.current = false; audioAllRef.current?.pause(); };
+  }, []);
 
   return (
-    <div className="px-4 py-4">
-      {/* Header */}
-      <div className="text-center mb-4 animate-fade-in p-4 rounded-2xl bg-card border border-primary/10 shadow-gold">
-        <h2 className="font-arabic text-2xl text-primary">{surah.name}</h2>
-        <p className="text-foreground font-medium mt-1">{surah.englishName}</p>
-        <p className="text-xs text-muted-foreground">{surah.translation} • {surah.ayahs} Ayahs • {surah.type}</p>
+    <div className="animate-fade-in">
+      <div className="flex justify-center mb-4">
+        <button
+          onClick={playAllAyahs}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-smooth text-sm font-medium ${
+            playingAll ? "bg-primary text-primary-foreground border-primary" : "bg-card border-primary/10 text-foreground hover:border-primary/30"
+          }`}
+        >
+          {playingAll ? <Pause className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          {playingAll ? "Stop" : "Play Full Surah"}
+        </button>
       </div>
-
-      {/* Style switcher */}
-      <StyleSwitcher style={readingStyle} onChange={handleStyleChange} />
-
-      {/* Text mode */}
-      {readingStyle === "text" && (
-        <>
-          {loading && <LoadingSpinner />}
-          {error && (
-            <div className="text-center py-8">
-              <p className="text-destructive mb-2">{error}</p>
-              <button onClick={() => window.location.reload()} className="text-primary text-sm underline">Retry</button>
+      {surahNum !== 9 && (
+        <p className="font-arabic text-xl text-primary text-center mb-6 leading-relaxed">{BISMILLAH}</p>
+      )}
+      <div className="space-y-3">
+        {ayahs.map((ayah) => (
+          <div key={ayah.numberInSurah} className="p-4 rounded-xl bg-card/50 border border-primary/5">
+            <div className="flex items-start gap-3" dir="rtl">
+              <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-xs text-primary font-bold mt-1">
+                {ayah.numberInSurah}
+              </span>
+              <p className="font-arabic text-lg leading-[2.2] flex-1 text-foreground">{ayah.text}</p>
+              <button
+                onClick={() => toggleAudio(ayah.number)}
+                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1 transition-smooth ${
+                  playingVerse === ayah.number ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary hover:bg-primary/20"
+                }`}
+              >
+                {playingVerse === ayah.number ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 ml-0.5" />}
+              </button>
             </div>
-          )}
-          {!loading && !error && (
-            <TextAyahsView ayahs={ayahs} surahNum={surahNum} />
-          )}
-        </>
-      )}
-
-      {/* Image mode */}
-      {readingStyle !== "text" && (
-        <SurahPagesLoader pages={pages} style={imageStyle} getImgUrl={getImgUrl} surahNum={surahNum} />
-      )}
-
-      {/* Navigation */}
-      <div className="flex items-center justify-between mt-6 gap-3">
-        {surahNum > 1 && (
-          <button onClick={() => navigate(`/surah-read/${surahNum - 1}`)} className="flex-1 py-3 rounded-xl bg-card border border-primary/10 text-foreground text-sm transition-smooth hover:border-primary/30">
-            ← {SURAHS[surahNum - 2]?.englishName}
-          </button>
-        )}
-        {surahNum < 114 && (
-          <button onClick={() => navigate(`/surah-read/${surahNum + 1}`)} className="flex-1 py-3 rounded-xl bg-card border border-primary/10 text-foreground text-sm transition-smooth hover:border-primary/30">
-            {SURAHS[surahNum]?.englishName} →
-          </button>
-        )}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -250,77 +232,87 @@ const SurahPagesLoader: React.FC<{ pages: number[]; style: QuranStyle; getImgUrl
   );
 };
 
-// Text ayahs with audio buttons
-const TextAyahsView: React.FC<{ ayahs: Ayah[]; surahNum: number }> = ({ ayahs, surahNum }) => {
-  const { playingVerse, toggleAudio } = useAyahAudio();
-  const [playingAll, setPlayingAll] = useState(false);
-  const playAllRef = useRef(false);
-  const audioAllRef = useRef<HTMLAudioElement | null>(null);
+const SurahRead: React.FC = () => {
+  const { num } = useParams();
+  const navigate = useNavigate();
+  const surahNum = parseInt(num || "1");
+  const surah = SURAHS.find((s) => s.number === surahNum);
 
-  const playAllAyahs = useCallback(async () => {
-    if (playingAll) {
-      playAllRef.current = false;
-      audioAllRef.current?.pause();
-      setPlayingAll(false);
-      return;
-    }
-    playAllRef.current = true;
-    setPlayingAll(true);
-    for (const ayah of ayahs) {
-      if (!playAllRef.current) break;
-      await new Promise<void>((resolve) => {
-        const audio = new Audio(`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayah.number}.mp3`);
-        audioAllRef.current = audio;
-        audio.onended = () => resolve();
-        audio.onerror = () => resolve();
-        audio.play().catch(() => resolve());
-      });
-    }
-    setPlayingAll(false);
-    playAllRef.current = false;
-  }, [ayahs, playingAll]);
+  const [readingStyle, setReadingStyle] = useState<ReadingStyle>(
+    () => (localStorage.getItem("read-quran-style-full") as ReadingStyle) || "indopak"
+  );
+  const imageStyle: QuranStyle = readingStyle === "text" ? "indopak" : readingStyle;
+
+  const [ayahs, setAyahs] = useState<Ayah[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    return () => { playAllRef.current = false; audioAllRef.current?.pause(); };
-  }, []);
+    if (readingStyle === "text") {
+      setLoading(true);
+      setError("");
+      QuranAPI.getSurah(surahNum)
+        .then((data) => setAyahs(data.ayahs))
+        .catch(() => setError("Failed to load surah"))
+        .finally(() => setLoading(false));
+    }
+  }, [surahNum, readingStyle]);
+
+  if (!surah) return <div className="p-4 text-center text-muted-foreground">Surah not found</div>;
+
+  const handleStyleChange = (s: ReadingStyle) => {
+    setReadingStyle(s);
+    localStorage.setItem("read-quran-style-full", s);
+  };
+
+  const { startPage, endPage } = getSurahPageRange(surahNum, imageStyle === "indopak" ? "indopak" : "saudi");
+  const pages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+
+  const getImgUrl = (p: number) => {
+    if (imageStyle === "indopak") return getIndianPageImage(p);
+    return QuranAPI.getMushafPageImage(p);
+  };
 
   return (
-    <div className="animate-fade-in">
-      {/* Play all button */}
-      <div className="flex justify-center mb-4">
-        <button
-          onClick={playAllAyahs}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-smooth text-sm font-medium ${
-            playingAll ? "bg-primary text-primary-foreground border-primary" : "bg-card border-primary/10 text-foreground hover:border-primary/30"
-          }`}
-        >
-          {playingAll ? <Pause className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          {playingAll ? "Stop" : "Play Full Surah"}
-        </button>
+    <div className="px-4 py-4">
+      <div className="text-center mb-4 animate-fade-in p-4 rounded-2xl bg-card border border-primary/10 shadow-gold">
+        <h2 className="font-arabic text-2xl text-primary">{surah.name}</h2>
+        <p className="text-foreground font-medium mt-1">{surah.englishName}</p>
+        <p className="text-xs text-muted-foreground">{surah.translation} • {surah.ayahs} Ayahs • {surah.type}</p>
       </div>
 
-      {surahNum !== 9 && (
-        <p className="font-arabic text-xl text-primary text-center mb-6 leading-relaxed">{BISMILLAH}</p>
-      )}
-      <div className="space-y-3">
-        {ayahs.map((ayah) => (
-          <div key={ayah.numberInSurah} className="p-4 rounded-xl bg-card/50 border border-primary/5">
-            <div className="flex items-start gap-3" dir="rtl">
-              <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-xs text-primary font-bold mt-1">
-                {ayah.numberInSurah}
-              </span>
-              <p className="font-arabic text-lg leading-[2.2] flex-1 text-foreground">{ayah.text}</p>
-              <button
-                onClick={() => toggleAudio(ayah.number)}
-                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1 transition-smooth ${
-                  playingVerse === ayah.number ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary hover:bg-primary/20"
-                }`}
-              >
-                {playingVerse === ayah.number ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 ml-0.5" />}
-              </button>
+      <StyleSwitcher style={readingStyle} onChange={handleStyleChange} />
+
+      {readingStyle === "text" && (
+        <>
+          {loading && <LoadingSpinner />}
+          {error && (
+            <div className="text-center py-8">
+              <p className="text-destructive mb-2">{error}</p>
+              <button onClick={() => window.location.reload()} className="text-primary text-sm underline">Retry</button>
             </div>
-          </div>
-        ))}
+          )}
+          {!loading && !error && (
+            <TextAyahsView ayahs={ayahs} surahNum={surahNum} />
+          )}
+        </>
+      )}
+
+      {readingStyle !== "text" && (
+        <SurahPagesLoader pages={pages} style={imageStyle} getImgUrl={getImgUrl} surahNum={surahNum} />
+      )}
+
+      <div className="flex items-center justify-between mt-6 gap-3">
+        {surahNum > 1 && (
+          <button onClick={() => navigate(`/surah-read/${surahNum - 1}`)} className="flex-1 py-3 rounded-xl bg-card border border-primary/10 text-foreground text-sm transition-smooth hover:border-primary/30">
+            ← {SURAHS[surahNum - 2]?.englishName}
+          </button>
+        )}
+        {surahNum < 114 && (
+          <button onClick={() => navigate(`/surah-read/${surahNum + 1}`)} className="flex-1 py-3 rounded-xl bg-card border border-primary/10 text-foreground text-sm transition-smooth hover:border-primary/30">
+            {SURAHS[surahNum]?.englishName} →
+          </button>
+        )}
       </div>
     </div>
   );
