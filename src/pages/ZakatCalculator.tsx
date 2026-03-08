@@ -312,7 +312,7 @@ const ZakatCalculator: React.FC = () => {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">Gold 22K Rate (₹/gm)</Label>
+                <Label className="text-xs">{t("zakat.goldRate")}</Label>
                 <Input
                   type="number"
                   value={manualGold22}
