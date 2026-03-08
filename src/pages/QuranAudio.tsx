@@ -101,10 +101,15 @@ const QuranAudio: React.FC = () => {
 
   const audioSrc = getAudioUrl(selectedSurah);
 
-  // Load cached surah set when mode/id changes
+  // Load cached surah set and storage usage when mode/id changes
+  const refreshStorageUsage = useCallback(() => {
+    getAudioStorageUsage().then(setStorageUsage);
+  }, []);
+
   useEffect(() => {
     getCachedSurahSet(audioMode, currentModeId).then(setCachedSurahs);
-  }, [audioMode, currentModeId]);
+    refreshStorageUsage();
+  }, [audioMode, currentModeId, refreshStorageUsage]);
 
   // Cleanup blob URLs
   useEffect(() => {
