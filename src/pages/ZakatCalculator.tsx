@@ -501,10 +501,10 @@ const ZakatCalculator: React.FC = () => {
               />
             </div>
             <div>
-              <Label className="text-xs">Other Assets (Business, Investments)</Label>
+              <Label className="text-xs">{t("zakat.otherAssets")}</Label>
               <Input
                 type="number"
-                placeholder="Enter amount in ₹"
+                placeholder={t("zakat.enterAmount")}
                 value={otherAssets}
                 onChange={(e) => setOtherAssets(e.target.value)}
                 className="mt-1"
