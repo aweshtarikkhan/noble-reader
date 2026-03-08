@@ -5,7 +5,7 @@ import { QuranAPI } from "@/lib/quranApi";
 import { getIndianPageImage } from "@/data/indianMushaf";
 import { getCachedPage, setCachedPage, downloadImageAsDataUrl } from "@/lib/quranCache";
 import { getIndianPageImageFallback } from "@/data/indianMushaf";
-import { Loader2, CheckCircle2, HardDriveDownload, Play, Pause, Volume2 } from "lucide-react";
+import { Loader2, CheckCircle2, HardDriveDownload, Play, Pause } from "lucide-react";
 import QuranPageView, { type QuranStyle, getCacheKey } from "@/components/QuranPageView";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import StyleSwitcher, { type ReadingStyle } from "@/components/StyleSwitcher";
