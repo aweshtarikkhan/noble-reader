@@ -1,10 +1,16 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { SURAHS } from "@/data/surahs";
-import { Play, Pause, SkipBack, SkipForward, Loader2, Gauge } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Loader2, Gauge, Download, CheckCircle2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { DR_ISRAR_AUDIO_MAP, DR_ISRAR_BASE_URL } from "@/data/drIsrarAudioMap";
 import { FATEH_MUHAMMAD_AUDIO_MAP, FATEH_MUHAMMAD_BASE_URL } from "@/data/fatehMuhammadAudioMap";
+import {
+  isAudioCached,
+  getCachedAudioUrl,
+  downloadAndCacheAudio,
+  getCachedSurahSet,
+} from "@/lib/audioCache";
 
 type AudioMode = "quran" | "translation";
 
@@ -21,7 +27,6 @@ const URDU_TRANSLATORS: TranslationAuthor[] = [
 ];
 
 const PLAYBACK_SPEEDS = [0.75, 1, 1.25, 1.5, 1.75, 2];
-
 const STORAGE_KEY = "quran_audio_state";
 
 const getQuranAudioUrl = (server: string, subfolder: string, surahNum: number) =>
@@ -43,7 +48,6 @@ const QuranAudio: React.FC = () => {
   const { toast } = useToast();
   const { t } = useI18n();
 
-  // Load saved state
   const getSavedState = () => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -71,223 +75,229 @@ const QuranAudio: React.FC = () => {
   const pendingPlayRef = useRef(false);
   const pendingSeekRef = useRef<number | null>(savedState?.time || null);
 
+  // Download state
+  const [cachedSurahs, setCachedSurahs] = useState<Set<number>>(new Set());
+  const [downloadingSurah, setDownloadingSurah] = useState<number | null>(null);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [downloadTotal, setDownloadTotal] = useState(0);
+  const [batchDownloading, setBatchDownloading] = useState(false);
+  const [batchProgress, setBatchProgress] = useState(0);
+  const abortBatchRef = useRef(false);
+  const blobUrlRef = useRef<string | null>(null);
+
   const reciter = RECITERS.find((r) => r.id === selectedReciter) || RECITERS[0];
   const translator = URDU_TRANSLATORS.find((t) => t.id === selectedTranslator) || URDU_TRANSLATORS[0];
   const surah = SURAHS.find((s) => s.number === selectedSurah)!;
-  const audioSrc = audioMode === "quran" ? getQuranAudioUrl(reciter.server, reciter.subfolder, selectedSurah) : getTranslationAudioUrl(translator.id, selectedSurah);
+
+  const currentModeId = audioMode === "quran" ? reciter.id : translator.id;
+
+  const getAudioUrl = useCallback((surahNum: number) => {
+    return audioMode === "quran"
+      ? getQuranAudioUrl(reciter.server, reciter.subfolder, surahNum)
+      : getTranslationAudioUrl(translator.id, surahNum);
+  }, [audioMode, reciter, translator]);
+
+  const audioSrc = getAudioUrl(selectedSurah);
+
+  // Load cached surah set when mode/id changes
+  useEffect(() => {
+    getCachedSurahSet(audioMode, currentModeId).then(setCachedSurahs);
+  }, [audioMode, currentModeId]);
+
+  // Cleanup blob URLs
+  useEffect(() => {
+    return () => {
+      if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+    };
+  }, []);
 
   // Save state periodically
   useEffect(() => {
     const saveState = () => {
       const state = {
-        audioMode,
-        surah: selectedSurah,
-        reciter: selectedReciter,
-        translator: selectedTranslator,
-        time: audioRef.current?.currentTime || 0,
-        speed: playbackSpeed
+        audioMode, surah: selectedSurah, reciter: selectedReciter,
+        translator: selectedTranslator, time: audioRef.current?.currentTime || 0, speed: playbackSpeed,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     };
-
     const interval = setInterval(saveState, 2000);
     window.addEventListener("beforeunload", saveState);
     document.addEventListener("visibilitychange", saveState);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener("beforeunload", saveState);
-      document.removeEventListener("visibilitychange", saveState);
-      saveState();
-    };
+    return () => { clearInterval(interval); window.removeEventListener("beforeunload", saveState); document.removeEventListener("visibilitychange", saveState); saveState(); };
   }, [audioMode, selectedSurah, selectedReciter, selectedTranslator, playbackSpeed]);
 
-  // Setup Media Session for notification controls
+  // Media Session
   useEffect(() => {
     if ("mediaSession" in navigator) {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: surah.englishName,
         artist: audioMode === "quran" ? reciter.name : translator.name,
         album: "Quran",
-        artwork: [{ src: "/favicon.ico", sizes: "192x192", type: "image/png" }]
+        artwork: [{ src: "/favicon.ico", sizes: "192x192", type: "image/png" }],
       });
-
-      navigator.mediaSession.setActionHandler("play", () => {
-        audioRef.current?.play();
-      });
-      navigator.mediaSession.setActionHandler("pause", () => {
-        audioRef.current?.pause();
-      });
-      navigator.mediaSession.setActionHandler("previoustrack", () => {
-        if (selectedSurah > 1) {
-          pendingPlayRef.current = isPlaying;
-          setSelectedSurah(prev => prev - 1);
-        }
-      });
-      navigator.mediaSession.setActionHandler("nexttrack", () => {
-        if (selectedSurah < 114) {
-          pendingPlayRef.current = isPlaying;
-          setSelectedSurah(prev => prev + 1);
-        }
-      });
+      navigator.mediaSession.setActionHandler("play", () => audioRef.current?.play());
+      navigator.mediaSession.setActionHandler("pause", () => audioRef.current?.pause());
+      navigator.mediaSession.setActionHandler("previoustrack", () => { if (selectedSurah > 1) { pendingPlayRef.current = isPlaying; setSelectedSurah((p) => p - 1); } });
+      navigator.mediaSession.setActionHandler("nexttrack", () => { if (selectedSurah < 114) { pendingPlayRef.current = isPlaying; setSelectedSurah((p) => p + 1); } });
     }
   }, [surah, audioMode, reciter, translator, selectedSurah, isPlaying]);
 
-  useEffect(() => { 
-    const audio = new Audio(); 
-    audio.preload = "auto"; 
-    audioRef.current = audio; 
-    return () => { audio.pause(); audio.src = ""; audio.load(); }; 
-  }, []);
+  useEffect(() => { const audio = new Audio(); audio.preload = "auto"; audioRef.current = audio; return () => { audio.pause(); audio.src = ""; audio.load(); }; }, []);
 
+  // Load audio - prefer cached version
   useEffect(() => {
-    const audio = audioRef.current; if (!audio) return;
+    const audio = audioRef.current;
+    if (!audio) return;
     setIsPlaying(false); setIsLoading(true); setProgress(0); setCurrentTime(0); setDuration(0);
-    audio.pause(); audio.src = audioSrc; audio.playbackRate = playbackSpeed; audio.load();
-    
-    const onCanPlay = () => { 
-      setIsLoading(false); 
-      setDuration(audio.duration || 0); 
-      audio.playbackRate = playbackSpeed;
-      
-      // Seek to saved position if available
-      if (pendingSeekRef.current !== null && pendingSeekRef.current > 0) {
-        audio.currentTime = pendingSeekRef.current;
-        pendingSeekRef.current = null;
+    audio.pause();
+
+    // Revoke old blob URL
+    if (blobUrlRef.current) { URL.revokeObjectURL(blobUrlRef.current); blobUrlRef.current = null; }
+
+    const loadAudio = async () => {
+      // Try cached first
+      const cachedUrl = await getCachedAudioUrl(audioMode, currentModeId, selectedSurah);
+      if (cachedUrl) {
+        blobUrlRef.current = cachedUrl;
+        audio.src = cachedUrl;
+      } else {
+        audio.src = audioSrc;
       }
-      
-      if (pendingPlayRef.current) { 
-        pendingPlayRef.current = false; 
-        audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false)); 
-      } 
+      audio.playbackRate = playbackSpeed;
+      audio.load();
+    };
+    loadAudio();
+
+    const onCanPlay = () => {
+      setIsLoading(false); setDuration(audio.duration || 0); audio.playbackRate = playbackSpeed;
+      if (pendingSeekRef.current !== null && pendingSeekRef.current > 0) { audio.currentTime = pendingSeekRef.current; pendingSeekRef.current = null; }
+      if (pendingPlayRef.current) { pendingPlayRef.current = false; audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false)); }
     };
     const onTimeUpdate = () => { setCurrentTime(audio.currentTime); setDuration(audio.duration || 0); setProgress(audio.duration ? (audio.currentTime / audio.duration) * 100 : 0); };
-    const onEnded = () => { setIsPlaying(false); if (selectedSurah < 114) { pendingPlayRef.current = true; setSelectedSurah(prev => prev + 1); } };
+    const onEnded = () => { setIsPlaying(false); if (selectedSurah < 114) { pendingPlayRef.current = true; setSelectedSurah((p) => p + 1); } };
     const onError = () => { setIsLoading(false); setIsPlaying(false); toast({ title: t("common.error"), description: "Could not load audio.", variant: "destructive" }); };
     const onWaiting = () => setIsLoading(true);
     const onPlaying = () => { setIsLoading(false); setIsPlaying(true); };
     const onPause = () => setIsPlaying(false);
     const onLoadedMetadata = () => setDuration(audio.duration || 0);
-    audio.addEventListener("canplay", onCanPlay); audio.addEventListener("timeupdate", onTimeUpdate); audio.addEventListener("ended", onEnded); audio.addEventListener("error", onError); audio.addEventListener("waiting", onWaiting); audio.addEventListener("playing", onPlaying); audio.addEventListener("pause", onPause); audio.addEventListener("loadedmetadata", onLoadedMetadata);
-    return () => { audio.removeEventListener("canplay", onCanPlay); audio.removeEventListener("timeupdate", onTimeUpdate); audio.removeEventListener("ended", onEnded); audio.removeEventListener("error", onError); audio.removeEventListener("waiting", onWaiting); audio.removeEventListener("playing", onPlaying); audio.removeEventListener("pause", onPause); audio.removeEventListener("loadedmetadata", onLoadedMetadata); };
-  }, [audioSrc, selectedSurah, toast, t, playbackSpeed]);
 
-  const togglePlay = useCallback(() => { 
-    const audio = audioRef.current; 
-    if (!audio) return; 
-    if (isPlaying) {
-      audio.pause();
-    } else { 
-      setIsLoading(true); 
-      audio.play().then(() => setIsPlaying(true)).catch(() => { 
-        setIsPlaying(false); 
-        toast({ title: t("common.error"), variant: "destructive" }); 
-      }).finally(() => setIsLoading(false)); 
-    } 
+    audio.addEventListener("canplay", onCanPlay); audio.addEventListener("timeupdate", onTimeUpdate);
+    audio.addEventListener("ended", onEnded); audio.addEventListener("error", onError);
+    audio.addEventListener("waiting", onWaiting); audio.addEventListener("playing", onPlaying);
+    audio.addEventListener("pause", onPause); audio.addEventListener("loadedmetadata", onLoadedMetadata);
+    return () => {
+      audio.removeEventListener("canplay", onCanPlay); audio.removeEventListener("timeupdate", onTimeUpdate);
+      audio.removeEventListener("ended", onEnded); audio.removeEventListener("error", onError);
+      audio.removeEventListener("waiting", onWaiting); audio.removeEventListener("playing", onPlaying);
+      audio.removeEventListener("pause", onPause); audio.removeEventListener("loadedmetadata", onLoadedMetadata);
+    };
+  }, [audioSrc, selectedSurah, audioMode, currentModeId, playbackSpeed, toast, t]);
+
+  const togglePlay = useCallback(() => {
+    const audio = audioRef.current; if (!audio) return;
+    if (isPlaying) { audio.pause(); } else {
+      setIsLoading(true); audio.play().then(() => setIsPlaying(true)).catch(() => { setIsPlaying(false); toast({ title: t("common.error"), variant: "destructive" }); }).finally(() => setIsLoading(false));
+    }
   }, [isPlaying, toast, t]);
 
-  const handleSeek = useCallback((e: React.ChangeEvent<HTMLInputElement>) => { 
-    const audio = audioRef.current; 
-    if (!audio || !audio.duration) return; 
-    const val = parseFloat(e.target.value); 
-    const time = (val / 100) * audio.duration; 
-    audio.currentTime = time; 
-    setProgress(val); 
-    setCurrentTime(time); 
+  const handleSeek = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const audio = audioRef.current; if (!audio || !audio.duration) return;
+    const val = parseFloat(e.target.value); const time = (val / 100) * audio.duration;
+    audio.currentTime = time; setProgress(val); setCurrentTime(time);
   }, []);
 
-  const handlePrev = useCallback(() => { 
-    if (selectedSurah > 1) { 
-      pendingPlayRef.current = isPlaying; 
-      pendingSeekRef.current = null;
-      setSelectedSurah(prev => prev - 1); 
-    } 
-  }, [selectedSurah, isPlaying]);
+  const handlePrev = useCallback(() => { if (selectedSurah > 1) { pendingPlayRef.current = isPlaying; pendingSeekRef.current = null; setSelectedSurah((p) => p - 1); } }, [selectedSurah, isPlaying]);
+  const handleNext = useCallback(() => { if (selectedSurah < 114) { pendingPlayRef.current = isPlaying; pendingSeekRef.current = null; setSelectedSurah((p) => p + 1); } }, [selectedSurah, isPlaying]);
+  const selectSurah = useCallback((num: number) => { pendingPlayRef.current = true; pendingSeekRef.current = null; setSelectedSurah(num); }, []);
+  const changeSpeed = useCallback((speed: number) => { setPlaybackSpeed(speed); if (audioRef.current) audioRef.current.playbackRate = speed; setShowSpeedMenu(false); }, []);
 
-  const handleNext = useCallback(() => { 
-    if (selectedSurah < 114) { 
-      pendingPlayRef.current = isPlaying; 
-      pendingSeekRef.current = null;
-      setSelectedSurah(prev => prev + 1); 
-    } 
-  }, [selectedSurah, isPlaying]);
+  const formatTime = (t: number) => { if (!t || isNaN(t)) return "0:00"; const m = Math.floor(t / 60); const s = Math.floor(t % 60); return `${m}:${s.toString().padStart(2, "0")}`; };
 
-  const selectSurah = useCallback((num: number) => { 
-    pendingPlayRef.current = true; 
-    pendingSeekRef.current = null;
-    setSelectedSurah(num); 
-  }, []);
+  // Download single surah
+  const downloadSurah = useCallback(async (surahNum: number) => {
+    const url = getAudioUrl(surahNum);
+    if (!url) return;
+    setDownloadingSurah(surahNum);
+    setDownloadProgress(0); setDownloadTotal(0);
 
-  const changeSpeed = useCallback((speed: number) => {
-    setPlaybackSpeed(speed);
-    if (audioRef.current) {
-      audioRef.current.playbackRate = speed;
+    const success = await downloadAndCacheAudio(url, audioMode, currentModeId, surahNum, (loaded, total) => {
+      setDownloadProgress(loaded); setDownloadTotal(total);
+    });
+
+    if (success) {
+      setCachedSurahs((prev) => new Set([...prev, surahNum]));
+      toast({ title: "✅ Downloaded", description: `Surah ${surahNum} saved offline` });
+    } else {
+      toast({ title: t("common.error"), description: "Download failed", variant: "destructive" });
     }
-    setShowSpeedMenu(false);
-  }, []);
+    setDownloadingSurah(null);
+  }, [audioMode, currentModeId, getAudioUrl, toast, t]);
 
-  const formatTime = (t: number) => { 
-    if (!t || isNaN(t)) return "0:00"; 
-    const m = Math.floor(t / 60); 
-    const s = Math.floor(t % 60); 
-    return `${m}:${s.toString().padStart(2, "0")}`; 
-  };
+  // Download all surahs
+  const downloadAll = useCallback(async () => {
+    setBatchDownloading(true); setBatchProgress(0); abortBatchRef.current = false;
+
+    for (let i = 1; i <= 114; i++) {
+      if (abortBatchRef.current) break;
+      if (cachedSurahs.has(i)) { setBatchProgress(i); continue; }
+
+      const url = getAudioUrl(i);
+      if (!url) { setBatchProgress(i); continue; }
+
+      setDownloadingSurah(i);
+      const success = await downloadAndCacheAudio(url, audioMode, currentModeId, i);
+      if (success) {
+        setCachedSurahs((prev) => new Set([...prev, i]));
+      }
+      setBatchProgress(i);
+      setDownloadingSurah(null);
+
+      // Small delay
+      if (i % 5 === 0) await new Promise((r) => setTimeout(r, 200));
+    }
+
+    setBatchDownloading(false); setDownloadingSurah(null);
+    if (!abortBatchRef.current) {
+      toast({ title: "✅ All downloaded!", description: "All surahs saved offline" });
+    }
+  }, [audioMode, currentModeId, cachedSurahs, getAudioUrl, toast]);
+
+  const stopBatchDownload = useCallback(() => { abortBatchRef.current = true; }, []);
 
   const filteredSurahs = SURAHS.filter((s) => s.englishName.toLowerCase().includes(search.toLowerCase()) || s.name.includes(search) || String(s.number).includes(search));
 
+  const downloadedCount = cachedSurahs.size;
+
   return (
     <div className="flex flex-col h-full">
-      {/* Fixed player - with proper top offset for header */}
+      {/* Fixed player */}
       <div className="fixed left-0 right-0 z-30 bg-background px-4 pt-2 pb-2" style={{ top: "calc(56px + env(safe-area-inset-top, 20px))" }}>
-        {/* Compact Audio Player */}
         <div className="bg-card rounded-xl border border-border p-2 animate-fade-in shadow-lg">
           <div className="flex items-center gap-2">
-            {/* Controls */}
             <div className="flex items-center gap-1">
-              <button onClick={handlePrev} disabled={selectedSurah <= 1} className="p-1 rounded-full hover:bg-muted transition-smooth disabled:opacity-30">
-                <SkipBack className="w-4 h-4 text-foreground" />
-              </button>
+              <button onClick={handlePrev} disabled={selectedSurah <= 1} className="p-1 rounded-full hover:bg-muted transition-smooth disabled:opacity-30"><SkipBack className="w-4 h-4 text-foreground" /></button>
               <button onClick={togglePlay} className="w-9 h-9 rounded-full bg-primary flex items-center justify-center transition-smooth active:scale-95" disabled={isLoading}>
                 {isLoading ? <Loader2 className="w-4 h-4 text-primary-foreground animate-spin" /> : isPlaying ? <Pause className="w-4 h-4 text-primary-foreground" /> : <Play className="w-4 h-4 text-primary-foreground ml-0.5" />}
               </button>
-              <button onClick={handleNext} disabled={selectedSurah >= 114} className="p-1 rounded-full hover:bg-muted transition-smooth disabled:opacity-30">
-                <SkipForward className="w-4 h-4 text-foreground" />
-              </button>
+              <button onClick={handleNext} disabled={selectedSurah >= 114} className="p-1 rounded-full hover:bg-muted transition-smooth disabled:opacity-30"><SkipForward className="w-4 h-4 text-foreground" /></button>
             </div>
-
-            {/* Progress */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <p className="font-arabic text-xs text-primary truncate">{surah.name}</p>
                 <p className="text-[10px] text-foreground truncate">{surah.englishName}</p>
+                {cachedSurahs.has(selectedSurah) && <span className="text-green-500 text-[8px]">●</span>}
               </div>
               <input type="range" min="0" max="100" step="0.1" value={progress} onChange={handleSeek} className="w-full h-1 bg-muted rounded-full appearance-none cursor-pointer accent-primary" />
-              <div className="flex justify-between">
-                <span className="text-[8px] text-muted-foreground">{formatTime(currentTime)}</span>
-                <span className="text-[8px] text-muted-foreground">{formatTime(duration)}</span>
-              </div>
+              <div className="flex justify-between"><span className="text-[8px] text-muted-foreground">{formatTime(currentTime)}</span><span className="text-[8px] text-muted-foreground">{formatTime(duration)}</span></div>
             </div>
-
-            {/* Speed control */}
             <div className="relative">
-              <button 
-                onClick={() => setShowSpeedMenu(!showSpeedMenu)} 
-                className="flex items-center gap-0.5 px-1.5 py-1 rounded-lg bg-muted hover:bg-muted/80 transition-smooth"
-              >
-                <Gauge className="w-3 h-3 text-muted-foreground" />
-                <span className="text-[9px] font-medium text-foreground">{playbackSpeed}x</span>
+              <button onClick={() => setShowSpeedMenu(!showSpeedMenu)} className="flex items-center gap-0.5 px-1.5 py-1 rounded-lg bg-muted hover:bg-muted/80 transition-smooth">
+                <Gauge className="w-3 h-3 text-muted-foreground" /><span className="text-[9px] font-medium text-foreground">{playbackSpeed}x</span>
               </button>
-              
               {showSpeedMenu && (
                 <div className="absolute right-0 bottom-full mb-1 bg-card border border-border rounded-lg shadow-lg p-1 z-50">
                   {PLAYBACK_SPEEDS.map((speed) => (
-                    <button
-                      key={speed}
-                      onClick={() => changeSpeed(speed)}
-                      className={`block w-full px-3 py-1.5 text-xs text-left rounded transition-smooth ${playbackSpeed === speed ? "bg-primary/20 text-primary font-medium" : "text-foreground hover:bg-muted"}`}
-                    >
-                      {speed}x
-                    </button>
+                    <button key={speed} onClick={() => changeSpeed(speed)} className={`block w-full px-3 py-1.5 text-xs text-left rounded transition-smooth ${playbackSpeed === speed ? "bg-primary/20 text-primary font-medium" : "text-foreground hover:bg-muted"}`}>{speed}x</button>
                   ))}
                 </div>
               )}
@@ -296,7 +306,7 @@ const QuranAudio: React.FC = () => {
         </div>
       </div>
 
-      {/* Scrollable content with padding for fixed player */}
+      {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-4 pb-4" style={{ paddingTop: "85px" }}>
         {/* Mode Toggle */}
         <div className="flex bg-card rounded-xl p-1 border border-border mb-3 animate-fade-in">
@@ -304,43 +314,122 @@ const QuranAudio: React.FC = () => {
           <button onClick={() => setAudioMode("translation")} className={`flex-1 py-2 text-xs font-medium rounded-lg transition-smooth ${audioMode === "translation" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{t("audio.urduTranslation")}</button>
         </div>
 
-        {/* Translator Selection - collapsible, only for translation mode */}
+        {/* Translator Selection */}
         {audioMode === "translation" && (
           <div className="bg-card rounded-xl border border-border mb-3 animate-fade-in overflow-hidden">
-            <button 
-              onClick={() => setShowTranslatorList(!showTranslatorList)} 
-              className="w-full flex items-center justify-between p-3"
-            >
+            <button onClick={() => setShowTranslatorList(!showTranslatorList)} className="w-full flex items-center justify-between p-3">
               <p className="text-xs font-medium text-foreground">{t("audio.selectTranslator")}</p>
               <span className={`text-muted-foreground text-xs transition-transform ${showTranslatorList ? "rotate-180" : ""}`}>▼</span>
             </button>
             {showTranslatorList && (
               <div className="flex flex-col gap-1.5 px-3 pb-3">
-                {URDU_TRANSLATORS.map((t) => (
-                  <button key={t.id} onClick={() => { setSelectedTranslator(t.id); setShowTranslatorList(false); }} className={`text-left px-3 py-2 rounded-lg text-xs transition-smooth ${selectedTranslator === t.id ? "bg-primary/20 text-primary font-medium" : "text-muted-foreground hover:bg-muted"}`}>{t.name} ({t.language})</button>
+                {URDU_TRANSLATORS.map((tr) => (
+                  <button key={tr.id} onClick={() => { setSelectedTranslator(tr.id); setShowTranslatorList(false); }} className={`text-left px-3 py-2 rounded-lg text-xs transition-smooth ${selectedTranslator === tr.id ? "bg-primary/20 text-primary font-medium" : "text-muted-foreground hover:bg-muted"}`}>{tr.name} ({tr.language})</button>
                 ))}
               </div>
             )}
           </div>
         )}
 
-        {/* Search and Surah List */}
+        {/* Download Bar */}
+        <div className="bg-card rounded-xl border border-border p-3 mb-3 animate-fade-in">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Download className="w-4 h-4 text-primary" />
+              <span className="text-xs font-medium text-foreground">
+                📥 {downloadedCount}/114 offline
+              </span>
+            </div>
+            {batchDownloading ? (
+              <button onClick={stopBatchDownload} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-destructive/10 text-destructive text-xs font-medium">
+                <X className="w-3 h-3" /> Stop
+              </button>
+            ) : downloadedCount >= 114 ? (
+              <span className="flex items-center gap-1 text-xs text-green-500 font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5" /> All saved
+              </span>
+            ) : (
+              <button onClick={downloadAll} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium">
+                <Download className="w-3 h-3" /> Download All
+              </button>
+            )}
+          </div>
+          {/* Progress bar */}
+          {batchDownloading && (
+            <div className="space-y-1">
+              <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${(batchProgress / 114) * 100}%` }} />
+              </div>
+              <p className="text-[10px] text-muted-foreground text-center">
+                {batchProgress}/114 • {downloadingSurah ? `Surah ${downloadingSurah}...` : ""}
+              </p>
+            </div>
+          )}
+          {!batchDownloading && downloadingSurah !== null && (
+            <div className="space-y-1">
+              <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-primary rounded-full transition-all animate-pulse" style={{ width: downloadTotal > 0 ? `${(downloadProgress / downloadTotal) * 100}%` : "50%" }} />
+              </div>
+              <p className="text-[10px] text-muted-foreground text-center">
+                Downloading Surah {downloadingSurah}...
+                {downloadTotal > 0 && ` ${Math.round(downloadProgress / 1024)}KB / ${Math.round(downloadTotal / 1024)}KB`}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Search */}
         <input type="text" placeholder={t("audio.searchSurah")} value={search} onChange={(e) => setSearch(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-smooth mb-3 text-sm" />
+
+        {/* Surah List */}
         <div className="flex flex-col gap-1.5">
-          {filteredSurahs.map((s) => (
-            <button key={s.number} onClick={() => selectSurah(s.number)} className={`flex items-center gap-3 p-3 rounded-xl border transition-smooth text-left ${selectedSurah === s.number ? "bg-primary/10 border-primary/30" : "bg-card border-border hover:border-primary/20"}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${selectedSurah === s.number ? "bg-primary text-primary-foreground" : "bg-primary/20"}`}><span className={`text-xs font-bold ${selectedSurah === s.number ? "" : "text-primary"}`}>{s.number}</span></div>
-              <div className="flex-1 min-w-0"><div className="flex items-center justify-between"><span className="font-medium text-sm text-foreground">{s.englishName}</span><span className="font-arabic text-primary text-sm">{s.name}</span></div></div>
-              {selectedSurah === s.number && isPlaying && <div className="flex gap-0.5 items-end h-4"><div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "60%" }} /><div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "100%", animationDelay: "0.2s" }} /><div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "40%", animationDelay: "0.4s" }} /></div>}
-            </button>
-          ))}
+          {filteredSurahs.map((s) => {
+            const isCached = cachedSurahs.has(s.number);
+            const isDownloadingThis = downloadingSurah === s.number;
+
+            return (
+              <div key={s.number} className={`flex items-center gap-2 p-3 rounded-xl border transition-smooth ${selectedSurah === s.number ? "bg-primary/10 border-primary/30" : "bg-card border-border hover:border-primary/20"}`}>
+                <button onClick={() => selectSurah(s.number)} className="flex items-center gap-3 flex-1 min-w-0 text-left">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${selectedSurah === s.number ? "bg-primary text-primary-foreground" : "bg-primary/20"}`}>
+                    <span className={`text-xs font-bold ${selectedSurah === s.number ? "" : "text-primary"}`}>{s.number}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-sm text-foreground">{s.englishName}</span>
+                      <span className="font-arabic text-primary text-sm">{s.name}</span>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Download / cached indicator */}
+                {isCached ? (
+                  <span className="text-green-500 shrink-0"><CheckCircle2 className="w-4 h-4" /></span>
+                ) : isDownloadingThis ? (
+                  <Loader2 className="w-4 h-4 text-primary animate-spin shrink-0" />
+                ) : (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); downloadSurah(s.number); }}
+                    disabled={batchDownloading}
+                    className="p-1 rounded-lg hover:bg-muted transition-smooth shrink-0 disabled:opacity-30"
+                  >
+                    <Download className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                )}
+
+                {selectedSurah === s.number && isPlaying && (
+                  <div className="flex gap-0.5 items-end h-4 shrink-0">
+                    <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "60%" }} />
+                    <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "100%", animationDelay: "0.2s" }} />
+                    <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "40%", animationDelay: "0.4s" }} />
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Click outside to close speed menu */}
-      {showSpeedMenu && (
-        <div className="fixed inset-0 z-20" onClick={() => setShowSpeedMenu(false)} />
-      )}
+      {showSpeedMenu && <div className="fixed inset-0 z-20" onClick={() => setShowSpeedMenu(false)} />}
     </div>
   );
 };

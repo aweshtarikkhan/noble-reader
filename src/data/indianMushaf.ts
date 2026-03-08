@@ -1,7 +1,7 @@
 // 16-line Indo-Pak Mushaf (Taj Company style) data
 // This mushaf has ruku markers and is commonly used in South Asian countries
 
-export const TOTAL_PAGES_INDIAN = 559;
+export const TOTAL_PAGES_INDIAN = 558;
 
 // Primary: Archive.org Taj Company 16-line Quran
 export function getIndianPageImage(pageNum: number): string {
@@ -63,5 +63,5 @@ export const INDIAN_JUZ_DATA: IndianJuzInfo[] = [
   { number: 27, name: "قال فما خطبكم", nameTransliteration: "Qala Fama Khatbukum", startPage: 471, endPage: 488 },
   { number: 28, name: "قد سمع الله", nameTransliteration: "Qad Sami'allahu", startPage: 489, endPage: 508 },
   { number: 29, name: "تبارك الذي", nameTransliteration: "Tabarakalladhi", startPage: 509, endPage: 528 },
-  { number: 30, name: "عم يتساءلون", nameTransliteration: "Amma Yatasa'alun", startPage: 529, endPage: 559 },
+  { number: 30, name: "عم يتساءلون", nameTransliteration: "Amma Yatasa'alun", startPage: 529, endPage: 558 },
 ];
