@@ -487,7 +487,7 @@ const ZakatCalculator: React.FC = () => {
         {/* Cash & Other Assets */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold">💵 Cash & Other Assets</CardTitle>
+            <CardTitle className="text-sm font-semibold">💵 {t("zakat.cashAssets")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
