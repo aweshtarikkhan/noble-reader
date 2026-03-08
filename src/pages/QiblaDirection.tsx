@@ -94,19 +94,19 @@ const QiblaDirection: React.FC = () => {
   const [calibrating, setCalibrating] = useState(true);
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
-  const [useAbsolute, setUseAbsolute] = useState(false);
 
   const smoothHeadingRef = useRef(0);
   const rafRef = useRef<number>();
   const sampleCountRef = useRef(0);
   const latestHeadingRef = useRef(0);
   const headingBufferRef = useRef<number[]>([]);
+  const hasCompassRef = useRef(false);
+  const useAbsoluteRef = useRef(false);
 
   // Get user location
   useEffect(() => {
     let cancelled = false;
     const getLocation = async () => {
-      // Try Capacitor first
       try {
         const { Geolocation } = await import("@capacitor/geolocation");
         const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 15000 });
@@ -118,7 +118,6 @@ const QiblaDirection: React.FC = () => {
         return;
       } catch {}
 
-      // Fallback to browser geolocation
       if (!navigator.geolocation) {
         setLocationError("Geolocation not supported");
         return;
@@ -141,34 +140,26 @@ const QiblaDirection: React.FC = () => {
     return () => { cancelled = true; };
   }, []);
 
-  // Process orientation event - handles both iOS and Android
+  // Stable orientation handler using refs (no dependency issues)
   const handleOrientation = useCallback((e: DeviceOrientationEvent) => {
     if (e.alpha === null && (e as any).webkitCompassHeading === undefined) return;
 
     let heading: number;
 
-    // iOS: webkitCompassHeading gives true north directly
     if ((e as any).webkitCompassHeading !== undefined) {
       heading = (e as any).webkitCompassHeading as number;
-      // iOS also provides accuracy
       if ((e as any).webkitCompassAccuracy !== undefined) {
         setAccuracy((e as any).webkitCompassAccuracy);
       }
-    } else if (e.absolute || useAbsolute) {
-      // Android absolute orientation: alpha is relative to true north
-      // Use tilt-compensated heading for any device angle
-      heading = computeCompassHeading(e.alpha || 0, e.beta || 0, e.gamma || 0);
     } else {
-      // Fallback: non-absolute alpha (magnetic north on some devices)
       heading = computeCompassHeading(e.alpha || 0, e.beta || 0, e.gamma || 0);
     }
 
-    // Buffer for averaging (reduce jitter)
+    // Buffer for circular mean averaging
     const buffer = headingBufferRef.current;
     buffer.push(heading);
     if (buffer.length > 5) buffer.shift();
 
-    // Circular mean of buffer
     let sinSum = 0, cosSum = 0;
     for (const h of buffer) {
       sinSum += Math.sin((h * Math.PI) / 180);
@@ -181,18 +172,22 @@ const QiblaDirection: React.FC = () => {
 
     if (sampleCountRef.current > 15) setCalibrating(false);
 
+    if (!hasCompassRef.current) {
+      hasCompassRef.current = true;
+      setHasCompass(true);
+    }
+    setCompassError(null);
+
     if (!rafRef.current) {
       rafRef.current = requestAnimationFrame(() => {
         smoothHeadingRef.current = smoothAngle(smoothHeadingRef.current, latestHeadingRef.current, 0.25);
         setCompassHeading(smoothHeadingRef.current);
-        setHasCompass(true);
-        setCompassError(null);
         rafRef.current = undefined;
       });
     }
-  }, [useAbsolute]);
+  }, []);
 
-  // Set up orientation listeners
+  // Set up orientation listeners (stable, runs once)
   useEffect(() => {
     // Check if iOS needs permission
     if (typeof (DeviceOrientationEvent as any).requestPermission === "function") {
@@ -200,25 +195,21 @@ const QiblaDirection: React.FC = () => {
       return;
     }
 
-    // Try deviceorientationabsolute first (Android Chrome - gives true north)
     let usingAbsolute = false;
     const absoluteHandler = (e: DeviceOrientationEvent) => {
       if (!usingAbsolute) {
         usingAbsolute = true;
-        setUseAbsolute(true);
-        // Remove fallback listener
+        useAbsoluteRef.current = true;
         window.removeEventListener("deviceorientation", handleOrientation, true);
       }
       handleOrientation(e);
     };
 
     window.addEventListener("deviceorientationabsolute" as any, absoluteHandler, true);
-
-    // Also listen to regular deviceorientation as fallback
     window.addEventListener("deviceorientation", handleOrientation, true);
 
     const timeout = setTimeout(() => {
-      if (!hasCompass) {
+      if (!hasCompassRef.current) {
         setCompassError("Compass sensor not detected. Make sure you're using a mobile device.");
         setCalibrating(false);
       }
@@ -230,7 +221,7 @@ const QiblaDirection: React.FC = () => {
       clearTimeout(timeout);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [handleOrientation, hasCompass]);
+  }, [handleOrientation]);
 
   // Request iOS permission
   const requestIOSPermission = async () => {
