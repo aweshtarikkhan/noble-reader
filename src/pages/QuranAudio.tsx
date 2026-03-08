@@ -14,15 +14,14 @@ const RECITERS: Reciter[] = [
 ];
 
 const URDU_TRANSLATORS: TranslationAuthor[] = [
-  { id: "fatehjalandhry", name: "Fateh Muhammad Jalandhry", language: "Urdu", subfolder: "Fateh_Muhammad_Jalandhari_Urdu" },
-  { id: "mehmoodulhasan", name: "Mehmood ul Hasan", language: "Urdu", subfolder: "Mehmood_ul_Hassan_Urdu" },
+  { id: "fatehjalandhry", name: "Fateh Muhammad Jalandhry", language: "Urdu", subfolder: "fateh" },
 ];
 
 const getQuranAudioUrl = (subfolder: string, surahNum: number) =>
   `https://cdn.islamic.network/quran/audio-surah/128/${subfolder}/${surahNum}.mp3`;
 
 const getTranslationAudioUrl = (subfolder: string, surahNum: number) =>
-  `https://server8.mp3quran.net/${subfolder}/${String(surahNum).padStart(3, "0")}.mp3`;
+  `https://server6.mp3quran.net/${subfolder}/${String(surahNum).padStart(3, "0")}.mp3`;
 
 const QuranAudio: React.FC = () => {
   const { toast } = useToast();
