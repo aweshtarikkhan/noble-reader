@@ -94,9 +94,6 @@ const ZakatCalculator: React.FC = () => {
     const goldRate = getGoldRate();
     const silverRate = rates.silver;
 
-    const goldRate = getGoldRate();
-    const silverRate = rates.silver;
-
     // Calculate gold value in rupees
     let goldInRupees = 0;
     if (goldValue) {
