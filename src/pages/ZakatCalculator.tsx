@@ -41,10 +41,10 @@ const ZakatCalculator: React.FC = () => {
   const { t } = useI18n();
   
   const [rates, setRates] = useState<GoldRates>({
-    gold24ct: 7800,
-    gold22ct: 7150,
-    gold18ct: 5850,
-    silver: 95,
+    gold24ct: 16364,
+    gold22ct: 15000,
+    gold18ct: 12273,
+    silver: 278,
     lastUpdated: "Chennai Rates (Editable)"
   });
   
