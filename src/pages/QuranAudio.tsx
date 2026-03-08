@@ -52,7 +52,7 @@ const QuranAudio: React.FC = () => {
   const surah = SURAHS.find((s) => s.number === selectedSurah)!;
   const audioSrc = audioMode === "quran" ? getQuranAudioUrl(reciter.subfolder, selectedSurah) : getTranslationAudioUrl(translator.subfolder, selectedSurah);
 
-  useEffect(() => { const audio = new Audio(); audio.preload = "auto"; audio.crossOrigin = "anonymous"; audioRef.current = audio; return () => { audio.pause(); audio.src = ""; audio.load(); }; }, []);
+  useEffect(() => { const audio = new Audio(); audio.preload = "auto"; audioRef.current = audio; return () => { audio.pause(); audio.src = ""; audio.load(); }; }, []);
 
   useEffect(() => {
     const audio = audioRef.current; if (!audio) return;
