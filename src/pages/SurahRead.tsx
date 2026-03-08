@@ -71,51 +71,10 @@ const useAyahAudio = (ayahs: Ayah[]) => {
 
 // Text ayahs with audio buttons
 const TextAyahsView: React.FC<{ ayahs: Ayah[]; surahNum: number }> = ({ ayahs, surahNum }) => {
-  const { playingVerse, toggleAudio } = useAyahAudio();
-  const [playingAll, setPlayingAll] = useState(false);
-  const playAllRef = useRef(false);
-  const audioAllRef = useRef<HTMLAudioElement | null>(null);
-
-  const playAllAyahs = useCallback(async () => {
-    if (playingAll) {
-      playAllRef.current = false;
-      audioAllRef.current?.pause();
-      setPlayingAll(false);
-      return;
-    }
-    playAllRef.current = true;
-    setPlayingAll(true);
-    for (const ayah of ayahs) {
-      if (!playAllRef.current) break;
-      await new Promise<void>((resolve) => {
-        const audio = new Audio(`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayah.number}.mp3`);
-        audioAllRef.current = audio;
-        audio.onended = () => resolve();
-        audio.onerror = () => resolve();
-        audio.play().catch(() => resolve());
-      });
-    }
-    setPlayingAll(false);
-    playAllRef.current = false;
-  }, [ayahs, playingAll]);
-
-  useEffect(() => {
-    return () => { playAllRef.current = false; audioAllRef.current?.pause(); };
-  }, []);
+  const { playingVerse, toggleAudio } = useAyahAudio(ayahs);
 
   return (
     <div className="animate-fade-in">
-      <div className="flex justify-center mb-4">
-        <button
-          onClick={playAllAyahs}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-smooth text-sm font-medium ${
-            playingAll ? "bg-primary text-primary-foreground border-primary" : "bg-card border-primary/10 text-foreground hover:border-primary/30"
-          }`}
-        >
-          {playingAll ? <Pause className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          {playingAll ? "Stop" : "Play Full Surah"}
-        </button>
-      </div>
       {surahNum !== 9 && (
         <p className="font-arabic text-xl text-primary text-center mb-6 leading-relaxed">{BISMILLAH}</p>
       )}
