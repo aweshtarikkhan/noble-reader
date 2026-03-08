@@ -307,7 +307,7 @@ const ZakatCalculator: React.FC = () => {
         {/* Chennai Rates */}
         <Card className="border-primary/20">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold">📊 Chennai Gold & Silver Rates</CardTitle>
+            <CardTitle className="text-sm font-semibold">📊 {t("zakat.goldSilverRates")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
