@@ -1,44 +1,58 @@
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, Calculator, Download, Plus, X } from "lucide-react";
+import { ArrowLeft, Calculator, Download } from "lucide-react";
 import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 
-interface GoldEntry {
-  id: string;
-  carat: "22" | "24" | "18";
-  grams: string;
+interface GoldRates {
+  gold22ct: number;
+  gold24ct: number;
+  gold18ct: number;
+  silver: number;
+  lastUpdated: string;
 }
 
-interface SilverEntry {
-  id: string;
-  grams: string;
-}
-
-const NISAB_SILVER_GRAMS = 612.36;
-const ZAKAT_RATE = 0.025;
+const NISAB_GOLD_GRAMS = 87.48; // 7.5 tola
+const NISAB_SILVER_GRAMS = 612.36; // 52.5 tola
+const ZAKAT_RATE = 0.025; // 2.5%
 
 const ZakatCalculator: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
+  const [rates, setRates] = useState<GoldRates>({
+    gold24ct: 7800,
+    gold22ct: 7150,
+    gold18ct: 5850,
+    silver: 95,
+    lastUpdated: "Chennai Rates (Editable)"
+  });
+  const [loadingRates, setLoadingRates] = useState(false);
+  
+  // Manual rate inputs
   const [manualGold22, setManualGold22] = useState("7150");
   const [manualSilver, setManualSilver] = useState("95");
   
-  const [goldEntries, setGoldEntries] = useState<GoldEntry[]>([
-    { id: "1", carat: "22", grams: "" }
-  ]);
-  const [silverEntries, setSilverEntries] = useState<SilverEntry[]>([
-    { id: "1", grams: "" }
-  ]);
+  // Gold inputs
+  const [goldInputType, setGoldInputType] = useState<"grams" | "rupees">("grams");
+  const [goldCarat, setGoldCarat] = useState<"22" | "24" | "18">("22");
+  const [goldValue, setGoldValue] = useState("");
   
+  // Silver inputs
+  const [silverInputType, setSilverInputType] = useState<"grams" | "rupees">("grams");
+  const [silverValue, setSilverValue] = useState("");
+  
+  // Cash & other assets
   const [cashValue, setCashValue] = useState("");
   const [otherAssets, setOtherAssets] = useState("");
   const [liabilities, setLiabilities] = useState("");
   
+  // Results
   const [zakatResult, setZakatResult] = useState<{
     totalAssets: number;
     netAssets: number;
@@ -47,71 +61,68 @@ const ZakatCalculator: React.FC = () => {
     isEligible: boolean;
   } | null>(null);
 
-  const gold22Rate = parseFloat(manualGold22) || 7150;
-  const gold24Rate = Math.round(gold22Rate / 0.916);
-  const gold18Rate = Math.round(gold22Rate * (18/22));
-  const silverRate = parseFloat(manualSilver) || 95;
+  const updateRatesFromManual = () => {
+    const gold22 = parseFloat(manualGold22) || 7150;
+    const silver = parseFloat(manualSilver) || 95;
+    
+    // Calculate 24K and 18K from 22K rate
+    const gold24 = Math.round(gold22 / 0.916);
+    const gold18 = Math.round(gold22 * (18/22));
+    
+    setRates({
+      gold24ct: gold24,
+      gold22ct: gold22,
+      gold18ct: gold18,
+      silver: silver,
+      lastUpdated: "Chennai Rates (Manual)"
+    });
+  };
 
-  const getGoldRate = (carat: string) => {
-    switch (carat) {
-      case "24": return gold24Rate;
-      case "22": return gold22Rate;
-      case "18": return gold18Rate;
-      default: return gold22Rate;
+  useEffect(() => {
+    updateRatesFromManual();
+  }, [manualGold22, manualSilver]);
+
+  const getGoldRate = () => {
+    switch (goldCarat) {
+      case "24": return rates.gold24ct;
+      case "22": return rates.gold22ct;
+      case "18": return rates.gold18ct;
+      default: return rates.gold22ct;
     }
-  };
-
-  const addGoldEntry = () => {
-    setGoldEntries([...goldEntries, { id: Date.now().toString(), carat: "22", grams: "" }]);
-  };
-
-  const removeGoldEntry = (id: string) => {
-    if (goldEntries.length > 1) {
-      setGoldEntries(goldEntries.filter(e => e.id !== id));
-    }
-  };
-
-  const updateGoldEntry = (id: string, field: "carat" | "grams", value: string) => {
-    setGoldEntries(goldEntries.map(e => e.id === id ? { ...e, [field]: value } : e));
-  };
-
-  const addSilverEntry = () => {
-    setSilverEntries([...silverEntries, { id: Date.now().toString(), grams: "" }]);
-  };
-
-  const removeSilverEntry = (id: string) => {
-    if (silverEntries.length > 1) {
-      setSilverEntries(silverEntries.filter(e => e.id !== id));
-    }
-  };
-
-  const updateSilverEntry = (id: string, grams: string) => {
-    setSilverEntries(silverEntries.map(e => e.id === id ? { ...e, grams } : e));
-  };
-
-  const calculateTotalGold = () => {
-    return goldEntries.reduce((sum, entry) => {
-      const grams = parseFloat(entry.grams) || 0;
-      return sum + (grams * getGoldRate(entry.carat));
-    }, 0);
-  };
-
-  const calculateTotalSilver = () => {
-    return silverEntries.reduce((sum, entry) => {
-      const grams = parseFloat(entry.grams) || 0;
-      return sum + (grams * silverRate);
-    }, 0);
   };
 
   const calculateZakat = () => {
-    const goldInRupees = calculateTotalGold();
-    const silverInRupees = calculateTotalSilver();
+    const goldRate = getGoldRate();
+    const silverRate = rates.silver;
+
+    // Calculate gold value in rupees
+    let goldInRupees = 0;
+    if (goldValue) {
+      if (goldInputType === "grams") {
+        goldInRupees = parseFloat(goldValue) * goldRate;
+      } else {
+        goldInRupees = parseFloat(goldValue);
+      }
+    }
+
+    // Calculate silver value in rupees
+    let silverInRupees = 0;
+    if (silverValue) {
+      if (silverInputType === "grams") {
+        silverInRupees = parseFloat(silverValue) * silverRate;
+      } else {
+        silverInRupees = parseFloat(silverValue);
+      }
+    }
+
     const cash = parseFloat(cashValue) || 0;
     const other = parseFloat(otherAssets) || 0;
     const debts = parseFloat(liabilities) || 0;
 
     const totalAssets = goldInRupees + silverInRupees + cash + other;
     const netAssets = totalAssets - debts;
+
+    // Calculate Nisab (using silver as it's lower threshold)
     const nisabValue = NISAB_SILVER_GRAMS * silverRate;
 
     const isEligible = netAssets >= nisabValue;
@@ -127,244 +138,396 @@ const ZakatCalculator: React.FC = () => {
   };
 
   const formatCurrency = (amount: number) => {
-    return `₹${amount.toLocaleString('en-IN')}`;
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(amount);
   };
 
   const exportToPDF = () => {
     if (!zakatResult) {
-      toast({ title: "Calculate first" });
+      toast({ title: "Calculate first", description: "Please calculate zakat before exporting." });
       return;
     }
 
     const doc = new jsPDF();
-    const pw = doc.internal.pageSize.getWidth();
+    const pageWidth = doc.internal.pageSize.getWidth();
     
-    doc.setFontSize(18);
-    doc.setTextColor(6, 78, 59);
-    doc.text("Zakat Calculation", pw / 2, 25, { align: "center" });
+    // Header
+    doc.setFontSize(20);
+    doc.setTextColor(6, 78, 59); // Primary green
+    doc.text("Zakat Calculation Report", pageWidth / 2, 25, { align: "center" });
     
-    doc.setFontSize(9);
-    doc.setTextColor(100);
-    doc.text(new Date().toLocaleDateString('en-IN'), pw / 2, 32, { align: "center" });
-    
-    let y = 50;
     doc.setFontSize(10);
-    doc.setTextColor(0);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}`, pageWidth / 2, 33, { align: "center" });
     
-    doc.text(`Gold 22K: ₹${gold22Rate}/gm | Silver: ₹${silverRate}/gm`, 20, y);
+    // Divider
+    doc.setDrawColor(6, 78, 59);
+    doc.line(20, 40, pageWidth - 20, 40);
+    
+    let y = 55;
+    
+    // Rates Section
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text("Gold & Silver Rates (Chennai)", 20, y);
+    y += 8;
+    
+    doc.setFontSize(10);
+    doc.setTextColor(80);
+    doc.text(`Gold 22K: Rs ${rates.gold22ct}/gm`, 25, y);
+    doc.text(`Gold 24K: Rs ${rates.gold24ct}/gm`, 100, y);
+    y += 6;
+    doc.text(`Gold 18K: Rs ${rates.gold18ct}/gm`, 25, y);
+    doc.text(`Silver: Rs ${rates.silver}/gm`, 100, y);
     y += 15;
     
-    goldEntries.forEach((e, i) => {
-      if (e.grams) {
-        doc.text(`Gold ${e.carat}K: ${e.grams}g = ₹${Math.round(parseFloat(e.grams) * getGoldRate(e.carat)).toLocaleString()}`, 20, y);
-        y += 6;
-      }
-    });
+    // Assets Section
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text("Assets Summary", 20, y);
+    y += 8;
     
-    silverEntries.forEach((e) => {
-      if (e.grams) {
-        doc.text(`Silver: ${e.grams}g = ₹${Math.round(parseFloat(e.grams) * silverRate).toLocaleString()}`, 20, y);
-        y += 6;
-      }
-    });
+    doc.setFontSize(10);
+    doc.setTextColor(80);
     
-    if (cashValue) { doc.text(`Cash: ₹${cashValue}`, 20, y); y += 6; }
-    if (otherAssets) { doc.text(`Other: ₹${otherAssets}`, 20, y); y += 6; }
-    if (liabilities) { doc.text(`Debts: ₹${liabilities}`, 20, y); y += 6; }
+    if (goldValue) {
+      const goldAmount = goldInputType === "grams" 
+        ? `${goldValue}g (${goldCarat}K) = Rs ${Math.round(parseFloat(goldValue) * getGoldRate())}`
+        : `Rs ${goldValue}`;
+      doc.text(`Gold: ${goldAmount}`, 25, y);
+      y += 6;
+    }
+    
+    if (silverValue) {
+      const silverAmount = silverInputType === "grams"
+        ? `${silverValue}g = Rs ${Math.round(parseFloat(silverValue) * rates.silver)}`
+        : `Rs ${silverValue}`;
+      doc.text(`Silver: ${silverAmount}`, 25, y);
+      y += 6;
+    }
+    
+    if (cashValue) {
+      doc.text(`Cash: Rs ${cashValue}`, 25, y);
+      y += 6;
+    }
+    
+    if (otherAssets) {
+      doc.text(`Other Assets: Rs ${otherAssets}`, 25, y);
+      y += 6;
+    }
+    
+    if (liabilities) {
+      doc.text(`Liabilities/Debts: Rs ${liabilities}`, 25, y);
+      y += 6;
+    }
     
     y += 10;
+    
+    // Calculation Section
     doc.setDrawColor(200);
-    doc.line(20, y, pw - 20, y);
+    doc.line(20, y, pageWidth - 20, y);
     y += 10;
     
-    doc.text(`Total: ₹${zakatResult.totalAssets.toLocaleString()}`, 20, y); y += 6;
-    doc.text(`Net: ₹${zakatResult.netAssets.toLocaleString()}`, 20, y); y += 6;
-    doc.text(`Nisab: ₹${zakatResult.nisabValue.toLocaleString()}`, 20, y); y += 12;
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text("Zakat Calculation", 20, y);
+    y += 10;
     
-    doc.setFontSize(14);
+    doc.setFontSize(10);
+    doc.text(`Total Assets:`, 25, y);
+    doc.text(`Rs ${zakatResult.totalAssets.toLocaleString('en-IN')}`, pageWidth - 25, y, { align: "right" });
+    y += 7;
+    
+    doc.text(`Net Assets (after debts):`, 25, y);
+    doc.text(`Rs ${zakatResult.netAssets.toLocaleString('en-IN')}`, pageWidth - 25, y, { align: "right" });
+    y += 7;
+    
+    doc.text(`Nisab Threshold (Silver):`, 25, y);
+    doc.text(`Rs ${zakatResult.nisabValue.toLocaleString('en-IN')}`, pageWidth - 25, y, { align: "right" });
+    y += 12;
+    
+    // Final Result
+    doc.setDrawColor(6, 78, 59);
+    doc.setFillColor(240, 253, 244);
+    doc.roundedRect(20, y, pageWidth - 40, 25, 3, 3, 'FD');
+    
+    doc.setFontSize(12);
     doc.setTextColor(6, 78, 59);
-    doc.text(`Zakat: ₹${zakatResult.zakatDue.toLocaleString()}`, 20, y);
+    doc.text("Zakat Payable (2.5%):", 30, y + 10);
+    doc.setFontSize(16);
+    doc.text(`Rs ${zakatResult.zakatDue.toLocaleString('en-IN')}`, pageWidth - 30, y + 16, { align: "right" });
     
-    doc.save(`Zakat_${new Date().toISOString().split('T')[0]}.pdf`);
-    toast({ title: "PDF saved" });
+    y += 35;
+    
+    // Eligibility Status
+    if (!zakatResult.isEligible) {
+      doc.setFontSize(9);
+      doc.setTextColor(100);
+      doc.text("Note: Net assets are below Nisab threshold. Zakat is not obligatory.", 20, y);
+    }
+    
+    // Footer
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text("Generated by Noble Quran Reader - Zakat Calculator", pageWidth / 2, 280, { align: "center" });
+    
+    // Save
+    doc.save(`Zakat_Calculation_${new Date().toISOString().split('T')[0]}.pdf`);
+    
+    toast({ title: "PDF Downloaded", description: "Zakat calculation saved successfully." });
   };
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-muted">
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
-          <h1 className="text-lg font-bold">Zakat Calculator</h1>
+          <div>
+            <h1 className="text-lg font-bold text-foreground">Zakat Calculator</h1>
+            <p className="text-xs text-muted-foreground">زکوٰۃ کیلکولیٹر</p>
+          </div>
         </div>
       </div>
 
-      <div className="px-4 py-4 space-y-4">
-        {/* Rates */}
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <p className="text-[10px] text-muted-foreground mb-1">Gold 22K ₹/gm</p>
-            <Input
-              type="number"
-              value={manualGold22}
-              onChange={(e) => setManualGold22(e.target.value)}
-              className="h-9"
-            />
-          </div>
-          <div className="flex-1">
-            <p className="text-[10px] text-muted-foreground mb-1">Silver ₹/gm</p>
-            <Input
-              type="number"
-              value={manualSilver}
-              onChange={(e) => setManualSilver(e.target.value)}
-              className="h-9"
-            />
-          </div>
-        </div>
-        
-        <div className="flex gap-2 text-[10px] text-muted-foreground">
-          <span className="px-2 py-1 bg-muted rounded">24K: ₹{gold24Rate}</span>
-          <span className="px-2 py-1 bg-muted rounded">22K: ₹{gold22Rate}</span>
-          <span className="px-2 py-1 bg-muted rounded">18K: ₹{gold18Rate}</span>
-        </div>
+      <div className="px-4 py-6 space-y-6">
+        {/* Chennai Rates - Manual Entry */}
+        <Card className="border-primary/20">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold">📊 Chennai Gold & Silver Rates (Enter Today's Rate)</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Gold 22K Rate (₹/gm)</Label>
+                <Input
+                  type="number"
+                  value={manualGold22}
+                  onChange={(e) => setManualGold22(e.target.value)}
+                  placeholder="7150"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Silver Rate (₹/gm)</Label>
+                <Input
+                  type="number"
+                  value={manualSilver}
+                  onChange={(e) => setManualSilver(e.target.value)}
+                  placeholder="95"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-xs">
+              <div className="p-2 rounded-lg bg-primary/10 text-center">
+                <p className="text-muted-foreground">24K</p>
+                <p className="font-bold text-foreground">₹{rates.gold24ct}/gm</p>
+              </div>
+              <div className="p-2 rounded-lg bg-primary/10 text-center">
+                <p className="text-muted-foreground">22K</p>
+                <p className="font-bold text-foreground">₹{rates.gold22ct}/gm</p>
+              </div>
+              <div className="p-2 rounded-lg bg-primary/10 text-center">
+                <p className="text-muted-foreground">18K</p>
+                <p className="font-bold text-foreground">₹{rates.gold18ct}/gm</p>
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground">💡 Enter today's Chennai gold rate (22K) and silver rate. Other carat rates will be calculated automatically.</p>
+          </CardContent>
+        </Card>
 
-        {/* Gold */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold">🥇 Gold</p>
-            <button onClick={addGoldEntry} className="text-xs text-primary flex items-center gap-1">
-              <Plus className="w-3 h-3" /> Add
-            </button>
-          </div>
-          {goldEntries.map((entry, i) => (
-            <div key={entry.id} className="flex gap-2 items-center">
-              <Select value={entry.carat} onValueChange={(v) => updateGoldEntry(entry.id, "carat", v)}>
-                <SelectTrigger className="w-20 h-9">
+        {/* Gold Input */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              🥇 Gold (سونا)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Input Type</Label>
+                <Select value={goldInputType} onValueChange={(v) => setGoldInputType(v as "grams" | "rupees")}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="grams">Grams (گرام)</SelectItem>
+                    <SelectItem value="rupees">Rupees (₹)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs">Carat (قیراط)</Label>
+                <Select value={goldCarat} onValueChange={(v) => setGoldCarat(v as "22" | "24" | "18")}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="22">22K (Default)</SelectItem>
+                    <SelectItem value="24">24K</SelectItem>
+                    <SelectItem value="18">18K</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs">Gold Value ({goldInputType === "grams" ? "grams" : "₹"})</Label>
+              <Input
+                type="number"
+                placeholder={goldInputType === "grams" ? "Enter weight in grams" : "Enter value in rupees"}
+                value={goldValue}
+                onChange={(e) => setGoldValue(e.target.value)}
+                className="mt-1"
+              />
+              {goldInputType === "grams" && goldValue && rates && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  ≈ {formatCurrency(parseFloat(goldValue) * getGoldRate())}
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Silver Input */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              🥈 Silver (چاندی)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label className="text-xs">Input Type</Label>
+              <Select value={silverInputType} onValueChange={(v) => setSilverInputType(v as "grams" | "rupees")}>
+                <SelectTrigger className="mt-1">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="22">22K</SelectItem>
-                  <SelectItem value="24">24K</SelectItem>
-                  <SelectItem value="18">18K</SelectItem>
+                  <SelectItem value="grams">Grams (گرام)</SelectItem>
+                  <SelectItem value="rupees">Rupees (₹)</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Silver Value ({silverInputType === "grams" ? "grams" : "₹"})</Label>
               <Input
                 type="number"
-                placeholder="grams"
-                value={entry.grams}
-                onChange={(e) => updateGoldEntry(entry.id, "grams", e.target.value)}
-                className="flex-1 h-9"
+                placeholder={silverInputType === "grams" ? "Enter weight in grams" : "Enter value in rupees"}
+                value={silverValue}
+                onChange={(e) => setSilverValue(e.target.value)}
+                className="mt-1"
               />
-              {entry.grams && (
-                <span className="text-xs text-muted-foreground w-20 text-right">
-                  {formatCurrency(parseFloat(entry.grams) * getGoldRate(entry.carat))}
-                </span>
-              )}
-              {goldEntries.length > 1 && (
-                <button onClick={() => removeGoldEntry(entry.id)} className="p-1 text-muted-foreground hover:text-destructive">
-                  <X className="w-4 h-4" />
-                </button>
+              {silverInputType === "grams" && silverValue && rates && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  ≈ {formatCurrency(parseFloat(silverValue) * rates.silver)}
+                </p>
               )}
             </div>
-          ))}
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Silver */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold">🥈 Silver</p>
-            <button onClick={addSilverEntry} className="text-xs text-primary flex items-center gap-1">
-              <Plus className="w-3 h-3" /> Add
-            </button>
-          </div>
-          {silverEntries.map((entry) => (
-            <div key={entry.id} className="flex gap-2 items-center">
+        {/* Cash & Other Assets */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold">💵 Cash & Other Assets</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label className="text-xs">Cash in Hand/Bank (نقد رقم)</Label>
               <Input
                 type="number"
-                placeholder="grams"
-                value={entry.grams}
-                onChange={(e) => updateSilverEntry(entry.id, e.target.value)}
-                className="flex-1 h-9"
+                placeholder="Enter amount in ₹"
+                value={cashValue}
+                onChange={(e) => setCashValue(e.target.value)}
+                className="mt-1"
               />
-              {entry.grams && (
-                <span className="text-xs text-muted-foreground w-20 text-right">
-                  {formatCurrency(parseFloat(entry.grams) * silverRate)}
-                </span>
-              )}
-              {silverEntries.length > 1 && (
-                <button onClick={() => removeSilverEntry(entry.id)} className="p-1 text-muted-foreground hover:text-destructive">
-                  <X className="w-4 h-4" />
-                </button>
-              )}
             </div>
-          ))}
-        </div>
+            <div>
+              <Label className="text-xs">Other Assets (Business, Investments, etc.)</Label>
+              <Input
+                type="number"
+                placeholder="Enter amount in ₹"
+                value={otherAssets}
+                onChange={(e) => setOtherAssets(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Liabilities/Debts (قرض)</Label>
+              <Input
+                type="number"
+                placeholder="Enter amount in ₹"
+                value={liabilities}
+                onChange={(e) => setLiabilities(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Cash & Others */}
-        <div className="space-y-2">
-          <p className="text-sm font-semibold">💵 Cash & Assets</p>
-          <div className="grid grid-cols-2 gap-2">
-            <Input
-              type="number"
-              placeholder="Cash ₹"
-              value={cashValue}
-              onChange={(e) => setCashValue(e.target.value)}
-              className="h-9"
-            />
-            <Input
-              type="number"
-              placeholder="Other Assets ₹"
-              value={otherAssets}
-              onChange={(e) => setOtherAssets(e.target.value)}
-              className="h-9"
-            />
-          </div>
-          <Input
-            type="number"
-            placeholder="Debts/Liabilities ₹"
-            value={liabilities}
-            onChange={(e) => setLiabilities(e.target.value)}
-            className="h-9"
-          />
-        </div>
-
-        <Button onClick={calculateZakat} className="w-full h-11">
-          <Calculator className="w-4 h-4 mr-2" />
+        {/* Calculate Button */}
+        <Button onClick={calculateZakat} className="w-full h-12 text-base font-semibold" disabled={loadingRates}>
+          <Calculator className="w-5 h-5 mr-2" />
           Calculate Zakat
         </Button>
 
-        {/* Result */}
+        {/* Results */}
         {zakatResult && (
-          <div className={`rounded-xl p-4 space-y-3 ${zakatResult.isEligible ? "bg-primary/10 border border-primary/30" : "bg-muted"}`}>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Total</span>
-                <span>{formatCurrency(zakatResult.totalAssets)}</span>
+          <Card className={`border-2 ${zakatResult.isEligible ? "border-primary bg-primary/5" : "border-muted"}`}>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-bold text-center">
+                {zakatResult.isEligible ? "💰 Zakat Due" : "ℹ️ Below Nisab"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Total Assets</span>
+                <span className="font-medium">{formatCurrency(zakatResult.totalAssets)}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Net</span>
-                <span>{formatCurrency(zakatResult.netAssets)}</span>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Net Assets (after debts)</span>
+                <span className="font-medium">{formatCurrency(zakatResult.netAssets)}</span>
               </div>
-            </div>
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Nisab</span>
-              <span>{formatCurrency(zakatResult.nisabValue)}</span>
-            </div>
-            <div className="border-t border-border pt-3 flex justify-between items-center">
-              <span className="font-semibold">Zakat (2.5%)</span>
-              <span className="text-xl font-bold text-primary">{formatCurrency(zakatResult.zakatDue)}</span>
-            </div>
-            <Button onClick={exportToPDF} variant="outline" size="sm" className="w-full">
-              <Download className="w-4 h-4 mr-2" /> Download PDF
-            </Button>
-          </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Nisab Threshold</span>
+                <span className="font-medium">{formatCurrency(zakatResult.nisabValue)}</span>
+              </div>
+              <div className="border-t border-border pt-3">
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold">Zakat Payable (2.5%)</span>
+                  <span className="text-xl font-bold text-primary">
+                    {formatCurrency(zakatResult.zakatDue)}
+                  </span>
+                </div>
+              </div>
+              {!zakatResult.isEligible && (
+                <p className="text-xs text-muted-foreground text-center pt-2">
+                  Your net assets are below the Nisab threshold. Zakat is not obligatory.
+                </p>
+              )}
+              <Button onClick={exportToPDF} variant="outline" className="w-full mt-4">
+                <Download className="w-4 h-4 mr-2" />
+                Download PDF Report
+              </Button>
+            </CardContent>
+          </Card>
         )}
 
-        {/* Nisab Info */}
-        <p className="text-[10px] text-muted-foreground text-center">
-          Nisab: 87.48g Gold or 612.36g Silver | Zakat: 2.5%
-        </p>
+        {/* Info */}
+        <div className="text-xs text-muted-foreground space-y-2 p-4 bg-muted/50 rounded-xl">
+          <p className="font-semibold text-foreground">ℹ️ Nisab Information:</p>
+          <p>• Gold Nisab: {NISAB_GOLD_GRAMS}g (7.5 tola)</p>
+          <p>• Silver Nisab: {NISAB_SILVER_GRAMS}g (52.5 tola)</p>
+          <p>• Zakat Rate: 2.5% of total zakatable wealth</p>
+          <p className="pt-2 text-[10px]">Note: We use Silver Nisab as it results in lower threshold, benefiting more eligible recipients.</p>
+        </div>
       </div>
     </div>
   );
