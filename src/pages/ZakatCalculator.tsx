@@ -30,9 +30,9 @@ interface SilverEntry {
   value: string;
 }
 
-const NISAB_GOLD_GRAMS = 87.48; // 7.5 tola
-const NISAB_SILVER_GRAMS = 612.36; // 52.5 tola
-const ZAKAT_RATE = 0.025; // 2.5%
+const NISAB_GOLD_GRAMS = 87.48;
+const NISAB_SILVER_GRAMS = 612.36;
+const ZAKAT_RATE = 0.025;
 
 const ZakatCalculator: React.FC = () => {
   const navigate = useNavigate();
@@ -45,28 +45,22 @@ const ZakatCalculator: React.FC = () => {
     silver: 95,
     lastUpdated: "Chennai Rates (Editable)"
   });
-  const [loadingRates, setLoadingRates] = useState(false);
   
-  // Manual rate inputs
   const [manualGold22, setManualGold22] = useState("7150");
   const [manualSilver, setManualSilver] = useState("95");
   
-  // Multiple Gold entries
   const [goldEntries, setGoldEntries] = useState<GoldEntry[]>([
     { id: "1", inputType: "grams", carat: "22", value: "" }
   ]);
   
-  // Multiple Silver entries
   const [silverEntries, setSilverEntries] = useState<SilverEntry[]>([
     { id: "1", inputType: "grams", value: "" }
   ]);
   
-  // Cash & other assets
   const [cashValue, setCashValue] = useState("");
   const [otherAssets, setOtherAssets] = useState("");
   const [liabilities, setLiabilities] = useState("");
   
-  // Results
   const [zakatResult, setZakatResult] = useState<{
     totalAssets: number;
     netAssets: number;
@@ -78,8 +72,6 @@ const ZakatCalculator: React.FC = () => {
   const updateRatesFromManual = () => {
     const gold22 = parseFloat(manualGold22) || 7150;
     const silver = parseFloat(manualSilver) || 95;
-    
-    // Calculate 24K and 18K from 22K rate
     const gold24 = Math.round(gold22 / 0.916);
     const gold18 = Math.round(gold22 * (18/22));
     
@@ -96,8 +88,8 @@ const ZakatCalculator: React.FC = () => {
     updateRatesFromManual();
   }, [manualGold22, manualSilver]);
 
-  const getGoldRate = () => {
-    switch (goldCarat) {
+  const getGoldRateByCarat = (carat: "22" | "24" | "18") => {
+    switch (carat) {
       case "24": return rates.gold24ct;
       case "22": return rates.gold22ct;
       case "18": return rates.gold18ct;
@@ -105,40 +97,65 @@ const ZakatCalculator: React.FC = () => {
     }
   };
 
+  const addGoldEntry = () => {
+    setGoldEntries([...goldEntries, { id: Date.now().toString(), inputType: "grams", carat: "22", value: "" }]);
+  };
+
+  const removeGoldEntry = (id: string) => {
+    if (goldEntries.length > 1) {
+      setGoldEntries(goldEntries.filter(e => e.id !== id));
+    }
+  };
+
+  const updateGoldEntry = (id: string, field: keyof GoldEntry, value: string) => {
+    setGoldEntries(goldEntries.map(e => e.id === id ? { ...e, [field]: value } : e));
+  };
+
+  const addSilverEntry = () => {
+    setSilverEntries([...silverEntries, { id: Date.now().toString(), inputType: "grams", value: "" }]);
+  };
+
+  const removeSilverEntry = (id: string) => {
+    if (silverEntries.length > 1) {
+      setSilverEntries(silverEntries.filter(e => e.id !== id));
+    }
+  };
+
+  const updateSilverEntry = (id: string, field: keyof SilverEntry, value: string) => {
+    setSilverEntries(silverEntries.map(e => e.id === id ? { ...e, [field]: value } : e));
+  };
+
+  const calculateGoldTotal = () => {
+    return goldEntries.reduce((total, entry) => {
+      if (!entry.value) return total;
+      const rate = getGoldRateByCarat(entry.carat);
+      if (entry.inputType === "grams") {
+        return total + (parseFloat(entry.value) * rate);
+      }
+      return total + parseFloat(entry.value);
+    }, 0);
+  };
+
+  const calculateSilverTotal = () => {
+    return silverEntries.reduce((total, entry) => {
+      if (!entry.value) return total;
+      if (entry.inputType === "grams") {
+        return total + (parseFloat(entry.value) * rates.silver);
+      }
+      return total + parseFloat(entry.value);
+    }, 0);
+  };
+
   const calculateZakat = () => {
-    const goldRate = getGoldRate();
-    const silverRate = rates.silver;
-
-    // Calculate gold value in rupees
-    let goldInRupees = 0;
-    if (goldValue) {
-      if (goldInputType === "grams") {
-        goldInRupees = parseFloat(goldValue) * goldRate;
-      } else {
-        goldInRupees = parseFloat(goldValue);
-      }
-    }
-
-    // Calculate silver value in rupees
-    let silverInRupees = 0;
-    if (silverValue) {
-      if (silverInputType === "grams") {
-        silverInRupees = parseFloat(silverValue) * silverRate;
-      } else {
-        silverInRupees = parseFloat(silverValue);
-      }
-    }
-
+    const goldInRupees = calculateGoldTotal();
+    const silverInRupees = calculateSilverTotal();
     const cash = parseFloat(cashValue) || 0;
     const other = parseFloat(otherAssets) || 0;
     const debts = parseFloat(liabilities) || 0;
 
     const totalAssets = goldInRupees + silverInRupees + cash + other;
     const netAssets = totalAssets - debts;
-
-    // Calculate Nisab (using silver as it's lower threshold)
-    const nisabValue = NISAB_SILVER_GRAMS * silverRate;
-
+    const nisabValue = NISAB_SILVER_GRAMS * rates.silver;
     const isEligible = netAssets >= nisabValue;
     const zakatDue = isEligible ? netAssets * ZAKAT_RATE : 0;
 
@@ -168,22 +185,19 @@ const ZakatCalculator: React.FC = () => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     
-    // Header
     doc.setFontSize(20);
-    doc.setTextColor(6, 78, 59); // Primary green
+    doc.setTextColor(6, 78, 59);
     doc.text("Zakat Calculation Report", pageWidth / 2, 25, { align: "center" });
     
     doc.setFontSize(10);
     doc.setTextColor(100);
     doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}`, pageWidth / 2, 33, { align: "center" });
     
-    // Divider
     doc.setDrawColor(6, 78, 59);
     doc.line(20, 40, pageWidth - 20, 40);
     
     let y = 55;
     
-    // Rates Section
     doc.setFontSize(12);
     doc.setTextColor(0);
     doc.text("Gold & Silver Rates (Chennai)", 20, y);
@@ -198,7 +212,6 @@ const ZakatCalculator: React.FC = () => {
     doc.text(`Silver: Rs ${rates.silver}/gm`, 100, y);
     y += 15;
     
-    // Assets Section
     doc.setFontSize(12);
     doc.setTextColor(0);
     doc.text("Assets Summary", 20, y);
@@ -207,19 +220,15 @@ const ZakatCalculator: React.FC = () => {
     doc.setFontSize(10);
     doc.setTextColor(80);
     
-    if (goldValue) {
-      const goldAmount = goldInputType === "grams" 
-        ? `${goldValue}g (${goldCarat}K) = Rs ${Math.round(parseFloat(goldValue) * getGoldRate())}`
-        : `Rs ${goldValue}`;
-      doc.text(`Gold: ${goldAmount}`, 25, y);
+    const goldTotal = calculateGoldTotal();
+    if (goldTotal > 0) {
+      doc.text(`Gold (${goldEntries.length} items): Rs ${Math.round(goldTotal).toLocaleString('en-IN')}`, 25, y);
       y += 6;
     }
     
-    if (silverValue) {
-      const silverAmount = silverInputType === "grams"
-        ? `${silverValue}g = Rs ${Math.round(parseFloat(silverValue) * rates.silver)}`
-        : `Rs ${silverValue}`;
-      doc.text(`Silver: ${silverAmount}`, 25, y);
+    const silverTotal = calculateSilverTotal();
+    if (silverTotal > 0) {
+      doc.text(`Silver (${silverEntries.length} items): Rs ${Math.round(silverTotal).toLocaleString('en-IN')}`, 25, y);
       y += 6;
     }
     
@@ -240,7 +249,6 @@ const ZakatCalculator: React.FC = () => {
     
     y += 10;
     
-    // Calculation Section
     doc.setDrawColor(200);
     doc.line(20, y, pageWidth - 20, y);
     y += 10;
@@ -263,7 +271,6 @@ const ZakatCalculator: React.FC = () => {
     doc.text(`Rs ${zakatResult.nisabValue.toLocaleString('en-IN')}`, pageWidth - 25, y, { align: "right" });
     y += 12;
     
-    // Final Result
     doc.setDrawColor(6, 78, 59);
     doc.setFillColor(240, 253, 244);
     doc.roundedRect(20, y, pageWidth - 40, 25, 3, 3, 'FD');
@@ -276,19 +283,16 @@ const ZakatCalculator: React.FC = () => {
     
     y += 35;
     
-    // Eligibility Status
     if (!zakatResult.isEligible) {
       doc.setFontSize(9);
       doc.setTextColor(100);
       doc.text("Note: Net assets are below Nisab threshold. Zakat is not obligatory.", 20, y);
     }
     
-    // Footer
     doc.setFontSize(8);
     doc.setTextColor(150);
     doc.text("Generated by Noble Quran Reader - Zakat Calculator", pageWidth / 2, 280, { align: "center" });
     
-    // Save
     doc.save(`Zakat_Calculation_${new Date().toISOString().split('T')[0]}.pdf`);
     
     toast({ title: "PDF Downloaded", description: "Zakat calculation saved successfully." });
@@ -296,7 +300,6 @@ const ZakatCalculator: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-muted">
@@ -310,10 +313,10 @@ const ZakatCalculator: React.FC = () => {
       </div>
 
       <div className="px-4 py-6 space-y-6">
-        {/* Chennai Rates - Manual Entry */}
+        {/* Chennai Rates */}
         <Card className="border-primary/20">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold">📊 Chennai Gold & Silver Rates (Enter Today's Rate)</CardTitle>
+            <CardTitle className="text-sm font-semibold">📊 Chennai Gold & Silver Rates</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
@@ -352,98 +355,141 @@ const ZakatCalculator: React.FC = () => {
                 <p className="font-bold text-foreground">₹{rates.gold18ct}/gm</p>
               </div>
             </div>
-            <p className="text-[10px] text-muted-foreground">💡 Enter today's Chennai gold rate (22K) and silver rate. Other carat rates will be calculated automatically.</p>
           </CardContent>
         </Card>
 
-        {/* Gold Input */}
+        {/* Gold Input - Multiple Entries */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              🥇 Gold (سونا)
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                🥇 Gold (سونا)
+              </CardTitle>
+              <Button variant="outline" size="sm" onClick={addGoldEntry} className="h-8">
+                <Plus className="w-4 h-4 mr-1" /> Add
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs">Input Type</Label>
-                <Select value={goldInputType} onValueChange={(v) => setGoldInputType(v as "grams" | "rupees")}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="grams">Grams (گرام)</SelectItem>
-                    <SelectItem value="rupees">Rupees (₹)</SelectItem>
-                  </SelectContent>
-                </Select>
+            {goldEntries.map((entry, index) => (
+              <div key={entry.id} className="p-3 rounded-lg bg-muted/50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground">Item {index + 1}</span>
+                  {goldEntries.length > 1 && (
+                    <button onClick={() => removeGoldEntry(entry.id)} className="text-destructive hover:bg-destructive/10 p-1 rounded">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs">Input Type</Label>
+                    <Select value={entry.inputType} onValueChange={(v) => updateGoldEntry(entry.id, "inputType", v)}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="grams">Grams</SelectItem>
+                        <SelectItem value="rupees">Rupees (₹)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs">Carat</Label>
+                    <Select value={entry.carat} onValueChange={(v) => updateGoldEntry(entry.id, "carat", v)}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="22">22K</SelectItem>
+                        <SelectItem value="24">24K</SelectItem>
+                        <SelectItem value="18">18K</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs">Value ({entry.inputType === "grams" ? "grams" : "₹"})</Label>
+                  <Input
+                    type="number"
+                    placeholder={entry.inputType === "grams" ? "Enter weight" : "Enter value"}
+                    value={entry.value}
+                    onChange={(e) => updateGoldEntry(entry.id, "value", e.target.value)}
+                    className="mt-1"
+                  />
+                  {entry.inputType === "grams" && entry.value && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      ≈ {formatCurrency(parseFloat(entry.value) * getGoldRateByCarat(entry.carat))}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div>
-                <Label className="text-xs">Carat (قیراط)</Label>
-                <Select value={goldCarat} onValueChange={(v) => setGoldCarat(v as "22" | "24" | "18")}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="22">22K (Default)</SelectItem>
-                    <SelectItem value="24">24K</SelectItem>
-                    <SelectItem value="18">18K</SelectItem>
-                  </SelectContent>
-                </Select>
+            ))}
+            {goldEntries.some(e => e.value) && (
+              <div className="text-sm font-medium text-right">
+                Total Gold: {formatCurrency(calculateGoldTotal())}
               </div>
-            </div>
-            <div>
-              <Label className="text-xs">Gold Value ({goldInputType === "grams" ? "grams" : "₹"})</Label>
-              <Input
-                type="number"
-                placeholder={goldInputType === "grams" ? "Enter weight in grams" : "Enter value in rupees"}
-                value={goldValue}
-                onChange={(e) => setGoldValue(e.target.value)}
-                className="mt-1"
-              />
-              {goldInputType === "grams" && goldValue && rates && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  ≈ {formatCurrency(parseFloat(goldValue) * getGoldRate())}
-                </p>
-              )}
-            </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Silver Input */}
+        {/* Silver Input - Multiple Entries */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              🥈 Silver (چاندی)
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                🥈 Silver (چاندی)
+              </CardTitle>
+              <Button variant="outline" size="sm" onClick={addSilverEntry} className="h-8">
+                <Plus className="w-4 h-4 mr-1" /> Add
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Label className="text-xs">Input Type</Label>
-              <Select value={silverInputType} onValueChange={(v) => setSilverInputType(v as "grams" | "rupees")}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="grams">Grams (گرام)</SelectItem>
-                  <SelectItem value="rupees">Rupees (₹)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-xs">Silver Value ({silverInputType === "grams" ? "grams" : "₹"})</Label>
-              <Input
-                type="number"
-                placeholder={silverInputType === "grams" ? "Enter weight in grams" : "Enter value in rupees"}
-                value={silverValue}
-                onChange={(e) => setSilverValue(e.target.value)}
-                className="mt-1"
-              />
-              {silverInputType === "grams" && silverValue && rates && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  ≈ {formatCurrency(parseFloat(silverValue) * rates.silver)}
-                </p>
-              )}
-            </div>
+            {silverEntries.map((entry, index) => (
+              <div key={entry.id} className="p-3 rounded-lg bg-muted/50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground">Item {index + 1}</span>
+                  {silverEntries.length > 1 && (
+                    <button onClick={() => removeSilverEntry(entry.id)} className="text-destructive hover:bg-destructive/10 p-1 rounded">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+                <div>
+                  <Label className="text-xs">Input Type</Label>
+                  <Select value={entry.inputType} onValueChange={(v) => updateSilverEntry(entry.id, "inputType", v)}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="grams">Grams</SelectItem>
+                      <SelectItem value="rupees">Rupees (₹)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">Value ({entry.inputType === "grams" ? "grams" : "₹"})</Label>
+                  <Input
+                    type="number"
+                    placeholder={entry.inputType === "grams" ? "Enter weight" : "Enter value"}
+                    value={entry.value}
+                    onChange={(e) => updateSilverEntry(entry.id, "value", e.target.value)}
+                    className="mt-1"
+                  />
+                  {entry.inputType === "grams" && entry.value && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      ≈ {formatCurrency(parseFloat(entry.value) * rates.silver)}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+            {silverEntries.some(e => e.value) && (
+              <div className="text-sm font-medium text-right">
+                Total Silver: {formatCurrency(calculateSilverTotal())}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -464,7 +510,7 @@ const ZakatCalculator: React.FC = () => {
               />
             </div>
             <div>
-              <Label className="text-xs">Other Assets (Business, Investments, etc.)</Label>
+              <Label className="text-xs">Other Assets (Business, Investments)</Label>
               <Input
                 type="number"
                 placeholder="Enter amount in ₹"
@@ -487,7 +533,7 @@ const ZakatCalculator: React.FC = () => {
         </Card>
 
         {/* Calculate Button */}
-        <Button onClick={calculateZakat} className="w-full h-12 text-base font-semibold" disabled={loadingRates}>
+        <Button onClick={calculateZakat} className="w-full h-12 text-base font-semibold">
           <Calculator className="w-5 h-5 mr-2" />
           Calculate Zakat
         </Button>
@@ -540,7 +586,7 @@ const ZakatCalculator: React.FC = () => {
           <p>• Gold Nisab: {NISAB_GOLD_GRAMS}g (7.5 tola)</p>
           <p>• Silver Nisab: {NISAB_SILVER_GRAMS}g (52.5 tola)</p>
           <p>• Zakat Rate: 2.5% of total zakatable wealth</p>
-          <p className="pt-2 text-[10px]">Note: We use Silver Nisab as it results in lower threshold, benefiting more eligible recipients.</p>
+          <p className="pt-2 text-[10px]">Note: We use Silver Nisab as it results in lower threshold.</p>
         </div>
       </div>
     </div>
