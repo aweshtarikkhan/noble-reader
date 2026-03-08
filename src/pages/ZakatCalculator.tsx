@@ -526,7 +526,7 @@ const ZakatCalculator: React.FC = () => {
         {/* Calculate Button */}
         <Button onClick={calculateZakat} className="w-full h-12 text-base font-semibold">
           <Calculator className="w-5 h-5 mr-2" />
-          Calculate Zakat
+          {t("zakat.calculate")}
         </Button>
 
         {/* Results */}
