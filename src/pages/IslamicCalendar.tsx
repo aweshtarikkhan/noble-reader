@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { ChevronLeft, ChevronRight, MapPin, Moon, Star, Globe, Calendar, Sun } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Moon, Star, Globe } from "lucide-react";
 import { useSharedLocation } from "@/hooks/useSharedLocation";
 import { useI18n } from "@/lib/i18n";
 import { QuranAPI } from "@/lib/quranApi";
