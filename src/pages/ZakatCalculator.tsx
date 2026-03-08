@@ -60,52 +60,28 @@ const ZakatCalculator: React.FC = () => {
     isEligible: boolean;
   } | null>(null);
 
-  const fetchGoldRates = async () => {
-    setLoadingRates(true);
-    try {
-      // Using a free gold rate API - GoldAPI.io alternative
-      // Fallback to approximate Chennai rates if API fails
-      const response = await fetch("https://api.metalpriceapi.com/v1/latest?api_key=demo&base=INR&currencies=XAU,XAG");
-      
-      if (response.ok) {
-        const data = await response.json();
-        // Convert from troy ounce to gram (1 troy oz = 31.1035 grams)
-        const goldPerGram24ct = 1 / (data.rates.XAU * 31.1035);
-        const silverPerGram = 1 / (data.rates.XAG * 31.1035);
-        
-        setRates({
-          gold24ct: Math.round(goldPerGram24ct),
-          gold22ct: Math.round(goldPerGram24ct * 0.916), // 22/24 purity
-          gold18ct: Math.round(goldPerGram24ct * 0.75),  // 18/24 purity
-          silver: Math.round(silverPerGram),
-          lastUpdated: new Date().toLocaleString('en-IN')
-        });
-      } else {
-        throw new Error("API failed");
-      }
-    } catch (error) {
-      // Fallback to approximate Chennai rates (March 2024)
-      setRates({
-        gold24ct: 7200,
-        gold22ct: 6600,
-        gold18ct: 5400,
-        silver: 85,
-        lastUpdated: "Approximate rates"
-      });
-      toast({
-        title: "Using approximate rates",
-        description: "Live rates unavailable. Using approximate Chennai rates.",
-      });
-    }
-    setLoadingRates(false);
+  const updateRatesFromManual = () => {
+    const gold22 = parseFloat(manualGold22) || 7150;
+    const silver = parseFloat(manualSilver) || 95;
+    
+    // Calculate 24K and 18K from 22K rate
+    const gold24 = Math.round(gold22 / 0.916);
+    const gold18 = Math.round(gold22 * (18/22));
+    
+    setRates({
+      gold24ct: gold24,
+      gold22ct: gold22,
+      gold18ct: gold18,
+      silver: silver,
+      lastUpdated: "Chennai Rates (Manual)"
+    });
   };
 
   useEffect(() => {
-    fetchGoldRates();
-  }, []);
+    updateRatesFromManual();
+  }, [manualGold22, manualSilver]);
 
   const getGoldRate = () => {
-    if (!rates) return 0;
     switch (goldCarat) {
       case "24": return rates.gold24ct;
       case "22": return rates.gold22ct;
@@ -115,10 +91,8 @@ const ZakatCalculator: React.FC = () => {
   };
 
   const calculateZakat = () => {
-    if (!rates) {
-      toast({ title: "Please wait", description: "Rates are loading..." });
-      return;
-    }
+    const goldRate = getGoldRate();
+    const silverRate = rates.silver;
 
     const goldRate = getGoldRate();
     const silverRate = rates.silver;
