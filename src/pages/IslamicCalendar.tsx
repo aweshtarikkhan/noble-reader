@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, MapPin, Moon, Star, Globe, Calendar, Sun } f
 import { useSharedLocation } from "@/hooks/useSharedLocation";
 import { useI18n } from "@/lib/i18n";
 import { QuranAPI } from "@/lib/quranApi";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+
 
 const HIJRI_MONTHS = [
   "Muharram", "Safar", "Rabi al-Awwal", "Rabi al-Thani",
