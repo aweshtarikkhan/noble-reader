@@ -112,23 +112,7 @@ const SurahRead: React.FC = () => {
             </div>
           )}
           {!loading && !error && (
-            <div className="animate-fade-in">
-              {surahNum !== 9 && (
-                <p className="font-arabic text-xl text-primary text-center mb-6 leading-relaxed">{BISMILLAH}</p>
-              )}
-              <div className="space-y-3">
-                {ayahs.map((ayah) => (
-                  <div key={ayah.numberInSurah} className="p-4 rounded-xl bg-card/50 border border-primary/5">
-                    <div className="flex items-start gap-3" dir="rtl">
-                      <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-xs text-primary font-bold mt-1">
-                        {ayah.numberInSurah}
-                      </span>
-                      <p className="font-arabic text-lg leading-[2.2] flex-1 text-foreground">{ayah.text}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <TextAyahsView ayahs={ayahs} surahNum={surahNum} />
           )}
         </>
       )}
