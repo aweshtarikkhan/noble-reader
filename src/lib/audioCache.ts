@@ -80,7 +80,7 @@ export async function downloadAndCacheAudio(
       onProgress?.(loaded, total);
     }
 
-    const blob = new Blob(chunks, { type: "audio/mpeg" });
+    const blob = new Blob(chunks as BlobPart[], { type: "audio/mpeg" });
     await audioStore.setItem(key, blob);
     return true;
   } catch {
