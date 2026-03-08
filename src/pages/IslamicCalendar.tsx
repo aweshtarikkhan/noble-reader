@@ -347,174 +347,96 @@ const IslamicCalendar: React.FC = () => {
         </div>
       )}
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full grid grid-cols-2">
-          <TabsTrigger value="islamic" className="gap-1.5 text-xs">
-            <Moon className="w-3.5 h-3.5" />
-            {lang === "ur" ? "اسلامی تقویم" : lang === "hi" ? "इस्लामी कैलेंडर" : "Islamic"}
-          </TabsTrigger>
-          <TabsTrigger value="gregorian" className="gap-1.5 text-xs">
-            <Sun className="w-3.5 h-3.5" />
-            {lang === "ur" ? "عیسوی تقویم" : lang === "hi" ? "ग्रेगोरियन कैलेंडर" : "Gregorian"}
-          </TabsTrigger>
-        </TabsList>
+      {/* Month Navigation */}
+      <div className="flex items-center justify-between bg-card rounded-xl border border-border p-3">
+        <button onClick={prevGMonth} className="p-2 rounded-lg hover:bg-muted transition-smooth active:scale-95">
+          <ChevronLeft className="w-5 h-5 text-foreground" />
+        </button>
+        <div className="text-center">
+          <p className="text-base font-bold text-foreground">{GREGORIAN_MONTHS[gMonth - 1]} {gYear}</p>
+          {(() => {
+            const firstHijri = hijriForGregorian.get(1);
+            const lastDay = getGregorianDaysInMonth(gMonth, gYear);
+            const lastHijri = hijriForGregorian.get(lastDay);
+            if (firstHijri && lastHijri) {
+              const fName = lang === "ur" || lang === "hi" ? HIJRI_MONTHS_AR[firstHijri.month - 1] : HIJRI_MONTHS[firstHijri.month - 1];
+              const lName = lang === "ur" || lang === "hi" ? HIJRI_MONTHS_AR[lastHijri.month - 1] : HIJRI_MONTHS[lastHijri.month - 1];
+              return <p className="text-[10px] text-muted-foreground">{fName} - {lName}</p>;
+            }
+            return null;
+          })()}
+        </div>
+        <button onClick={nextGMonth} className="p-2 rounded-lg hover:bg-muted transition-smooth active:scale-95">
+          <ChevronRight className="w-5 h-5 text-foreground" />
+        </button>
+      </div>
 
-        {/* Islamic Calendar Tab */}
-        <TabsContent value="islamic" className="space-y-4 mt-4">
-          {/* Month Navigation */}
-          <div className="flex items-center justify-between bg-card rounded-xl border border-border p-3">
-            <button onClick={prevMonth} className="p-2 rounded-lg hover:bg-muted transition-smooth active:scale-95">
-              <ChevronLeft className="w-5 h-5 text-foreground" />
-            </button>
-            <div className="text-center">
-              <p className="text-base font-bold text-foreground">{monthName}</p>
-              <p className="text-[10px] text-muted-foreground">{viewYear} {t("calendar.ah")}</p>
-            </div>
-            <button onClick={nextMonth} className="p-2 rounded-lg hover:bg-muted transition-smooth active:scale-95">
-              <ChevronRight className="w-5 h-5 text-foreground" />
-            </button>
-          </div>
-
-          {/* Calendar Grid */}
-          <div className="bg-card rounded-2xl border border-border p-3">
-            <div className="grid grid-cols-7 gap-1 mb-2">
-              {weekdays.map((d) => (
-                <div key={d} className="text-center text-[10px] font-bold text-muted-foreground py-1">{d}</div>
-              ))}
-            </div>
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      {/* Unified Calendar Grid */}
+      <div className="bg-card rounded-2xl border border-border p-3">
+        <div className="grid grid-cols-7 gap-1 mb-2">
+          {weekdays.map((d) => (
+            <div key={d} className="text-center text-[10px] font-bold text-muted-foreground py-1">{d}</div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-1">
+          {gCalendarGrid.map((day, i) => {
+            if (day === null) return <div key={`gempty-${i}`} />;
+            const isToday = day === gTodayDay;
+            const isImportant = allImportantDays.has(day);
+            const isFriday = (i % 7) === 5;
+            const hijri = hijriForGregorian.get(day);
+            return (
+              <div
+                key={`gday-${day}`}
+                className={`relative flex flex-col items-center justify-center h-14 rounded-lg transition-smooth ${
+                  isToday
+                    ? "bg-primary text-primary-foreground font-bold"
+                    : isImportant
+                    ? "bg-primary/15 text-primary font-semibold"
+                    : isFriday
+                    ? "text-primary/70"
+                    : "text-foreground"
+                }`}
+              >
+                <span className="text-sm font-medium leading-tight">{day}</span>
+                {hijri && (
+                  <span className={`text-[7px] leading-tight ${isToday ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                    {hijri.day}
+                  </span>
+                )}
+                {isImportant && !isToday && (
+                  <Star className="w-2 h-2 text-primary absolute top-0.5 right-0.5 fill-primary" />
+                )}
               </div>
-            ) : (
-              <div className="grid grid-cols-7 gap-1">
-                {calendarGrid.map((day, i) => {
-                  if (day === null) return <div key={`empty-${i}`} />;
-                  const isToday = day === todayDay;
-                  const isImportant = importantDays.has(day);
-                  const isFriday = (i % 7) === 5;
-                  return (
-                    <div
-                      key={`day-${day}`}
-                      className={`relative flex flex-col items-center justify-center h-12 rounded-lg transition-smooth ${
-                        isToday
-                          ? "bg-primary text-primary-foreground font-bold"
-                          : isImportant
-                          ? "bg-primary/15 text-primary font-semibold"
-                          : isFriday
-                          ? "text-primary/70"
-                          : "text-foreground"
-                      }`}
-                    >
-                      <span className="text-sm font-medium leading-tight">{day}</span>
-                      <span className={`text-[7px] leading-tight ${isToday ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                        {gregorianMap.get(day)?.split(" ")[0]}
-                      </span>
-                      {isImportant && !isToday && (
-                        <Star className="w-2 h-2 text-primary absolute top-0.5 right-0.5 fill-primary" />
-                      )}
-                    </div>
-                  );
-                })}
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Combined Important Dates */}
+      {allMonthEvents.length > 0 && (
+        <div className="bg-card rounded-2xl border border-border p-4">
+          <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+            <Star className="w-4 h-4 text-primary fill-primary" />
+            {t("calendar.importantDates")}
+          </h3>
+          <div className="space-y-2">
+            {allMonthEvents.map((ev, idx) => (
+              <div key={`${ev.day}-${idx}`} className="flex items-center gap-3 p-2 rounded-lg bg-primary/5">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${ev.type === "islamic" ? "bg-primary/20" : "bg-muted"}`}>
+                  <span className="text-xs font-bold text-primary">{ev.day}</span>
+                </div>
+                <div className="flex-1">
+                  <span className="text-sm text-foreground">{ev.label}</span>
+                  {ev.type === "islamic" && (
+                    <span className="ml-2 text-[9px] text-primary/60">☪</span>
+                  )}
+                </div>
               </div>
-            )}
+            ))}
           </div>
-
-          {/* Islamic Important Dates */}
-          {monthEvents.length > 0 && (
-            <div className="bg-card rounded-2xl border border-border p-4">
-              <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                <Star className="w-4 h-4 text-primary fill-primary" />
-                {t("calendar.importantDates")}
-              </h3>
-              <div className="space-y-2">
-                {monthEvents.map((ev) => (
-                  <div key={ev.day} className="flex items-center gap-3 p-2 rounded-lg bg-primary/5">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                      <span className="text-xs font-bold text-primary">{ev.day}</span>
-                    </div>
-                    <span className="text-sm text-foreground">{ev.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </TabsContent>
-
-        {/* Gregorian Calendar Tab */}
-        <TabsContent value="gregorian" className="space-y-4 mt-4">
-          {/* Month Navigation */}
-          <div className="flex items-center justify-between bg-card rounded-xl border border-border p-3">
-            <button onClick={prevGMonth} className="p-2 rounded-lg hover:bg-muted transition-smooth active:scale-95">
-              <ChevronLeft className="w-5 h-5 text-foreground" />
-            </button>
-            <div className="text-center">
-              <p className="text-base font-bold text-foreground">{GREGORIAN_MONTHS[gMonth - 1]}</p>
-              <p className="text-[10px] text-muted-foreground">{gYear}</p>
-            </div>
-            <button onClick={nextGMonth} className="p-2 rounded-lg hover:bg-muted transition-smooth active:scale-95">
-              <ChevronRight className="w-5 h-5 text-foreground" />
-            </button>
-          </div>
-
-          {/* Gregorian Calendar Grid */}
-          <div className="bg-card rounded-2xl border border-border p-3">
-            <div className="grid grid-cols-7 gap-1 mb-2">
-              {weekdays.map((d) => (
-                <div key={d} className="text-center text-[10px] font-bold text-muted-foreground py-1">{d}</div>
-              ))}
-            </div>
-            <div className="grid grid-cols-7 gap-1">
-              {gCalendarGrid.map((day, i) => {
-                if (day === null) return <div key={`gempty-${i}`} />;
-                const isToday = day === gTodayDay;
-                const isImportant = gImportantDays.has(day);
-                const isSunday = (i % 7) === 0;
-                return (
-                  <div
-                    key={`gday-${day}`}
-                    className={`relative flex flex-col items-center justify-center h-12 rounded-lg transition-smooth ${
-                      isToday
-                        ? "bg-primary text-primary-foreground font-bold"
-                        : isImportant
-                        ? "bg-primary/15 text-primary font-semibold"
-                        : isSunday
-                        ? "text-destructive/70"
-                        : "text-foreground"
-                    }`}
-                  >
-                    <span className="text-sm font-medium leading-tight">{day}</span>
-                    {isImportant && !isToday && (
-                      <Star className="w-2 h-2 text-primary absolute top-0.5 right-0.5 fill-primary" />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Gregorian Important Dates */}
-          {gMonthEvents.length > 0 && (
-            <div className="bg-card rounded-2xl border border-border p-4">
-              <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-primary" />
-                {lang === "ur" ? "اہم تاریخیں" : lang === "hi" ? "महत्वपूर्ण तिथियाँ" : "Important Dates"}
-              </h3>
-              <div className="space-y-2">
-                {gMonthEvents.map((ev) => (
-                  <div key={ev.day} className="flex items-center gap-3 p-2 rounded-lg bg-primary/5">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                      <span className="text-xs font-bold text-primary">{ev.day}</span>
-                    </div>
-                    <span className="text-sm text-foreground">{ev.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
     </div>
   );
 };
