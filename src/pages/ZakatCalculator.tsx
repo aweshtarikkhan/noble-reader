@@ -24,8 +24,18 @@ const ZakatCalculator: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const [rates, setRates] = useState<GoldRates | null>(null);
-  const [loadingRates, setLoadingRates] = useState(true);
+  const [rates, setRates] = useState<GoldRates>({
+    gold24ct: 7800,
+    gold22ct: 7150,
+    gold18ct: 5850,
+    silver: 95,
+    lastUpdated: "Chennai Rates (Editable)"
+  });
+  const [loadingRates, setLoadingRates] = useState(false);
+  
+  // Manual rate inputs
+  const [manualGold22, setManualGold22] = useState("7150");
+  const [manualSilver, setManualSilver] = useState("95");
   
   // Gold inputs
   const [goldInputType, setGoldInputType] = useState<"grams" | "rupees">("grams");
