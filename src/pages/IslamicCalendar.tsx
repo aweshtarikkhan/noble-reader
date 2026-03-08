@@ -214,8 +214,6 @@ const IslamicCalendar: React.FC = () => {
       const homeStyleToday = getHomeStyleHijriDate();
       if (homeStyleToday) {
         setCurrentHijri(homeStyleToday);
-        setViewMonth(homeStyleToday.month);
-        setViewYear(homeStyleToday.year);
         return;
       }
       const today = await getHijriFromApi(new Date(), config.adjustment);
