@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { QuranAPI } from "@/lib/quranApi";
 import { SURAHS } from "@/data/surahs";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { Play, Pause } from "lucide-react";
 
 const BISMILLAH = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
 const SURAHS_PER_BATCH = 3;
 
 interface SurahData {
   number: number;
-  ayahs: { text: string; numberInSurah: number }[];
+  ayahs: { text: string; numberInSurah: number; number: number }[];
 }
 
 const CompleteTextReader: React.FC = () => {
@@ -17,6 +18,25 @@ const CompleteTextReader: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
+  const [playingVerse, setPlayingVerse] = useState<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const toggleAudio = useCallback((globalNumber: number) => {
+    if (playingVerse === globalNumber) {
+      audioRef.current?.pause();
+      setPlayingVerse(null);
+      return;
+    }
+    if (audioRef.current) audioRef.current.pause();
+    const audio = new Audio(`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalNumber}.mp3`);
+    audio.onended = () => setPlayingVerse(null);
+    audio.onerror = () => setPlayingVerse(null);
+    audio.play();
+    audioRef.current = audio;
+    setPlayingVerse(globalNumber);
+  }, [playingVerse]);
+
+  useEffect(() => { return () => { audioRef.current?.pause(); }; }, []);
 
   // Load bookmark
   useEffect(() => {
@@ -98,6 +118,14 @@ const CompleteTextReader: React.FC = () => {
                       {ayah.numberInSurah}
                     </span>
                     <p className="font-arabic text-lg leading-[2.2] flex-1 text-foreground">{ayah.text}</p>
+                    <button
+                      onClick={() => toggleAudio(ayah.number)}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1 transition-smooth ${
+                        playingVerse === ayah.number ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary hover:bg-primary/20"
+                      }`}
+                    >
+                      {playingVerse === ayah.number ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 ml-0.5" />}
+                    </button>
                   </div>
                 </div>
               ))}
