@@ -3,25 +3,31 @@ import { SURAHS } from "@/data/surahs";
 import { Play, Pause, SkipBack, SkipForward, Volume2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
+import { DR_ISRAR_AUDIO_MAP, DR_ISRAR_BASE_URL } from "@/data/drIsrarAudioMap";
 
 type AudioMode = "quran" | "translation";
 
 interface Reciter { id: string; name: string; server: string; subfolder: string; }
-interface TranslationAuthor { id: string; name: string; language: string; server: string; subfolder: string; }
+interface TranslationAuthor { id: string; name: string; language: string; }
 
 const RECITERS: Reciter[] = [
   { id: "mishary", name: "Mishary Rashid Alafasy", server: "server8", subfolder: "afs" },
 ];
 
 const URDU_TRANSLATORS: TranslationAuthor[] = [
-  { id: "fatehjalandhry", name: "Fateh Muhammad Jalandhry (Shamshad Ali Khan)", language: "Urdu", server: "server6", subfolder: "fateh" },
+  { id: "drisrar", name: "Dr. Israr Ahmad (Bayan ul Quran)", language: "Urdu" },
 ];
 
 const getQuranAudioUrl = (server: string, subfolder: string, surahNum: number) =>
   `https://${server}.mp3quran.net/${subfolder}/${String(surahNum).padStart(3, "0")}.mp3`;
 
-const getTranslationAudioUrl = (server: string, subfolder: string, surahNum: number) =>
-  `https://${server}.mp3quran.net/${subfolder}/${String(surahNum).padStart(3, "0")}.mp3`;
+const getTranslationAudioUrl = (translatorId: string, surahNum: number) => {
+  if (translatorId === "drisrar") {
+    const fileName = DR_ISRAR_AUDIO_MAP[surahNum];
+    return fileName ? `${DR_ISRAR_BASE_URL}${fileName}` : "";
+  }
+  return "";
+};
 
 const QuranAudio: React.FC = () => {
   const { toast } = useToast();
