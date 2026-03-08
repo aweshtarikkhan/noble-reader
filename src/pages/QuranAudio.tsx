@@ -66,6 +66,7 @@ const QuranAudio: React.FC = () => {
   const [search, setSearch] = useState("");
   const [playbackSpeed, setPlaybackSpeed] = useState(savedState?.speed || 1);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+  const [showTranslatorList, setShowTranslatorList] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const pendingPlayRef = useRef(false);
   const pendingSeekRef = useRef<number | null>(savedState?.time || null);
