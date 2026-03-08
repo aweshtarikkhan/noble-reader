@@ -491,10 +491,10 @@ const ZakatCalculator: React.FC = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label className="text-xs">Cash in Hand/Bank (نقد رقم)</Label>
+              <Label className="text-xs">{t("zakat.cashInHand")} (نقد رقم)</Label>
               <Input
                 type="number"
-                placeholder="Enter amount in ₹"
+                placeholder={t("zakat.enterAmount")}
                 value={cashValue}
                 onChange={(e) => setCashValue(e.target.value)}
                 className="mt-1"
