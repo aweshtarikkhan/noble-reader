@@ -68,6 +68,7 @@ const AppContent = () => {
         <Route path="/hadith" element={<Hadith />} />
         <Route path="/sahih-muslim" element={<SahihMuslim />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/zakat-calculator" element={<ZakatCalculator />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>

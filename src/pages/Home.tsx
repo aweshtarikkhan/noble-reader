@@ -72,6 +72,7 @@ const Home: React.FC = () => {
     { icon: HandHeart, title: t("tool.duas"), path: "/duas" },
     { icon: BookMarked, title: t("tool.hadith"), path: "/hadith" },
     { icon: Headphones, title: t("tool.quranAudio") || "Quran Audio", path: "/quran-audio" },
+    { icon: Calculator, title: t("tool.zakatCalculator") || "Zakat Calculator", path: "/zakat-calculator" },
   ];
 
   const toggleSilent = (e: React.MouseEvent) => {
