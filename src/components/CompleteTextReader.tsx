@@ -118,6 +118,14 @@ const CompleteTextReader: React.FC = () => {
                       {ayah.numberInSurah}
                     </span>
                     <p className="font-arabic text-lg leading-[2.2] flex-1 text-foreground">{ayah.text}</p>
+                    <button
+                      onClick={() => toggleAudio(ayah.number)}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1 transition-smooth ${
+                        playingVerse === ayah.number ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary hover:bg-primary/20"
+                      }`}
+                    >
+                      {playingVerse === ayah.number ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 ml-0.5" />}
+                    </button>
                   </div>
                 </div>
               ))}

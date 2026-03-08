@@ -250,4 +250,80 @@ const SurahPagesLoader: React.FC<{ pages: number[]; style: QuranStyle; getImgUrl
   );
 };
 
+// Text ayahs with audio buttons
+const TextAyahsView: React.FC<{ ayahs: Ayah[]; surahNum: number }> = ({ ayahs, surahNum }) => {
+  const { playingVerse, toggleAudio } = useAyahAudio();
+  const [playingAll, setPlayingAll] = useState(false);
+  const playAllRef = useRef(false);
+  const audioAllRef = useRef<HTMLAudioElement | null>(null);
+
+  const playAllAyahs = useCallback(async () => {
+    if (playingAll) {
+      playAllRef.current = false;
+      audioAllRef.current?.pause();
+      setPlayingAll(false);
+      return;
+    }
+    playAllRef.current = true;
+    setPlayingAll(true);
+    for (const ayah of ayahs) {
+      if (!playAllRef.current) break;
+      await new Promise<void>((resolve) => {
+        const audio = new Audio(`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayah.number}.mp3`);
+        audioAllRef.current = audio;
+        audio.onended = () => resolve();
+        audio.onerror = () => resolve();
+        audio.play().catch(() => resolve());
+      });
+    }
+    setPlayingAll(false);
+    playAllRef.current = false;
+  }, [ayahs, playingAll]);
+
+  useEffect(() => {
+    return () => { playAllRef.current = false; audioAllRef.current?.pause(); };
+  }, []);
+
+  return (
+    <div className="animate-fade-in">
+      {/* Play all button */}
+      <div className="flex justify-center mb-4">
+        <button
+          onClick={playAllAyahs}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-smooth text-sm font-medium ${
+            playingAll ? "bg-primary text-primary-foreground border-primary" : "bg-card border-primary/10 text-foreground hover:border-primary/30"
+          }`}
+        >
+          {playingAll ? <Pause className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          {playingAll ? "Stop" : "Play Full Surah"}
+        </button>
+      </div>
+
+      {surahNum !== 9 && (
+        <p className="font-arabic text-xl text-primary text-center mb-6 leading-relaxed">{BISMILLAH}</p>
+      )}
+      <div className="space-y-3">
+        {ayahs.map((ayah) => (
+          <div key={ayah.numberInSurah} className="p-4 rounded-xl bg-card/50 border border-primary/5">
+            <div className="flex items-start gap-3" dir="rtl">
+              <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-xs text-primary font-bold mt-1">
+                {ayah.numberInSurah}
+              </span>
+              <p className="font-arabic text-lg leading-[2.2] flex-1 text-foreground">{ayah.text}</p>
+              <button
+                onClick={() => toggleAudio(ayah.number)}
+                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1 transition-smooth ${
+                  playingVerse === ayah.number ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary hover:bg-primary/20"
+                }`}
+              >
+                {playingVerse === ayah.number ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 ml-0.5" />}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export default SurahRead;
