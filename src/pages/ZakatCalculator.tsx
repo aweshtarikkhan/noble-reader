@@ -72,8 +72,8 @@ const ZakatCalculator: React.FC = () => {
   } | null>(null);
 
   const updateRatesFromManual = () => {
-    const gold22 = parseFloat(manualGold22) || 7150;
-    const silver = parseFloat(manualSilver) || 95;
+    const gold22 = parseFloat(manualGold22) || 15000;
+    const silver = parseFloat(manualSilver) || 278;
     const gold24 = Math.round(gold22 / 0.916);
     const gold18 = Math.round(gold22 * (18/22));
     
