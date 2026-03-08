@@ -552,7 +552,7 @@ const ZakatCalculator: React.FC = () => {
               </div>
               <div className="border-t border-border pt-3">
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold">Zakat Payable (2.5%)</span>
+                  <span className="font-semibold">{t("zakat.zakatPayable")}</span>
                   <span className="text-xl font-bold text-primary">
                     {formatCurrency(zakatResult.zakatDue)}
                   </span>
