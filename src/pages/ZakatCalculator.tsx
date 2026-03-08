@@ -400,10 +400,10 @@ const ZakatCalculator: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <Label className="text-xs">Value ({entry.inputType === "grams" ? "grams" : "₹"})</Label>
+                  <Label className="text-xs">{t("zakat.value")} ({entry.inputType === "grams" ? t("zakat.grams") : "₹"})</Label>
                   <Input
                     type="number"
-                    placeholder={entry.inputType === "grams" ? "Enter weight" : "Enter value"}
+                    placeholder={entry.inputType === "grams" ? t("zakat.enterWeight") : t("zakat.enterValue")}
                     value={entry.value}
                     onChange={(e) => updateGoldEntry(entry.id, "value", e.target.value)}
                     className="mt-1"
