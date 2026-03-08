@@ -11,14 +11,10 @@ interface TranslationAuthor { id: string; name: string; language: string; server
 
 const RECITERS: Reciter[] = [
   { id: "mishary", name: "Mishary Rashid Alafasy", server: "server8", subfolder: "afs" },
-  { id: "sudais", name: "Abdur-Rahman As-Sudais", server: "server11", subfolder: "sds" },
-  { id: "basit", name: "Abdul Basit Abdul Samad", server: "server7", subfolder: "basit" },
-  { id: "shatri", name: "Abu Bakr Al-Shatri", server: "server11", subfolder: "shatri" },
-  { id: "maher", name: "Maher Al-Muaiqly", server: "server12", subfolder: "maher" },
 ];
 
 const URDU_TRANSLATORS: TranslationAuthor[] = [
-  { id: "fatehjalandhry", name: "Fateh Muhammad Jalandhry", language: "Urdu", server: "server6", subfolder: "fateh" },
+  { id: "fatehjalandhry", name: "Fateh Muhammad Jalandhry (Shamshad Ali Khan)", language: "Urdu", server: "server6", subfolder: "fateh" },
 ];
 
 const getQuranAudioUrl = (server: string, subfolder: string, surahNum: number) =>
