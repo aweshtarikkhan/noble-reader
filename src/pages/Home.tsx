@@ -65,14 +65,14 @@ const Home: React.FC = () => {
   const QUICK_TOOLS = [
     { icon: BookOpen, title: t("tool.readQuran"), path: "/read-quran" },
     { icon: Languages, title: t("tool.translation"), path: "/translation" },
+    { icon: Headphones, title: t("tool.quranAudio"), path: "/quran-audio" },
     { icon: Calendar, title: t("tool.islamicCalendar"), path: "/islamic-calendar" },
     { icon: Bookmark, title: t("tool.bookmarks"), path: "/bookmarks" },
     { icon: Clock, title: t("tool.namaz"), path: "/prayer-times" },
     { icon: Compass, title: t("tool.qibla"), path: "/qibla" },
     { icon: HandHeart, title: t("tool.duas"), path: "/duas" },
     { icon: BookMarked, title: t("tool.hadith"), path: "/hadith" },
-    { icon: Headphones, title: t("tool.quranAudio") || "Quran Audio", path: "/quran-audio" },
-    { icon: Calculator, title: t("tool.zakatCalculator") || "Zakat Calculator", path: "/zakat-calculator" },
+    { icon: Calculator, title: t("tool.zakatCalculator"), path: "/zakat-calculator" },
   ];
 
   const toggleSilent = (e: React.MouseEvent) => {
