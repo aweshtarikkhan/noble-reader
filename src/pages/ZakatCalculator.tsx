@@ -512,6 +512,10 @@ const ZakatCalculator: React.FC = () => {
                   Your net assets are below the Nisab threshold. Zakat is not obligatory.
                 </p>
               )}
+              <Button onClick={exportToPDF} variant="outline" className="w-full mt-4">
+                <Download className="w-4 h-4 mr-2" />
+                Download PDF Report
+              </Button>
             </CardContent>
           </Card>
         )}
