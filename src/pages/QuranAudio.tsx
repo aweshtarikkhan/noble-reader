@@ -83,6 +83,7 @@ const QuranAudio: React.FC = () => {
   const [downloadTotal, setDownloadTotal] = useState(0);
   const [batchDownloading, setBatchDownloading] = useState(false);
   const [batchProgress, setBatchProgress] = useState(0);
+  const [storageUsage, setStorageUsage] = useState(0);
   const abortBatchRef = useRef(false);
   const blobUrlRef = useRef<string | null>(null);
 
