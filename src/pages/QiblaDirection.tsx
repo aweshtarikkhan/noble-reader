@@ -392,7 +392,7 @@ const QiblaDirection: React.FC = () => {
             {hasCompass && (
               <p className="text-xs text-muted-foreground/70">
                 {t("qibla.compass")}: {Math.round(compassHeading)}°
-                {useAbsolute && " (True North)"}
+                {useAbsoluteRef.current && " (True North)"}
               </p>
             )}
 
