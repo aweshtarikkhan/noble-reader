@@ -374,7 +374,7 @@ const ZakatCalculator: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs">Input Type</Label>
+                    <Label className="text-xs">{t("zakat.inputType")}</Label>
                     <Select value={entry.inputType} onValueChange={(v) => updateGoldEntry(entry.id, "inputType", v)}>
                       <SelectTrigger className="mt-1">
                         <SelectValue />
