@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Languages, List, BookCopy, MapPin, Share2, Clock, LocateFixed, Compass, Search, Building, BellOff, Bell, Calendar, Bookmark, HandHeart, BookMarked } from "lucide-react";
+import { BookOpen, Languages, List, BookCopy, MapPin, Share2, Clock, LocateFixed, Compass, Search, Building, BellOff, Bell, Calendar, Bookmark, HandHeart, BookMarked, Headphones } from "lucide-react";
 import { useSharedLocation } from "@/hooks/useSharedLocation";
 import CitySearchDialog from "@/components/CitySearchDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -71,6 +71,7 @@ const Home: React.FC = () => {
     { icon: Compass, title: t("tool.qibla"), path: "/qibla" },
     { icon: HandHeart, title: t("tool.duas"), path: "/duas" },
     { icon: BookMarked, title: t("tool.hadith"), path: "/hadith" },
+    { icon: Headphones, title: t("tool.quranAudio") || "Quran Audio", path: "/quran-audio" },
   ];
 
   const toggleSilent = (e: React.MouseEvent) => {
