@@ -110,6 +110,25 @@ export async function getCachedAudioCount(mode: string, id: string): Promise<num
 }
 
 /**
+ * Estimate total storage used by all cached audio (in bytes)
+ */
+export async function getAudioStorageUsage(): Promise<number> {
+  try {
+    const keys = await audioStore.keys();
+    let totalBytes = 0;
+    for (const key of keys) {
+      const blob = await audioStore.getItem<Blob>(key);
+      if (blob && blob.size) {
+        totalBytes += blob.size;
+      }
+    }
+    return totalBytes;
+  } catch {
+    return 0;
+  }
+}
+
+/**
  * Get set of cached surah numbers for a mode/id
  */
 export async function getCachedSurahSet(mode: string, id: string): Promise<Set<number>> {

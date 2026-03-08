@@ -10,6 +10,7 @@ import {
   getCachedAudioUrl,
   downloadAndCacheAudio,
   getCachedSurahSet,
+  getAudioStorageUsage,
 } from "@/lib/audioCache";
 
 type AudioMode = "quran" | "translation";
@@ -82,6 +83,7 @@ const QuranAudio: React.FC = () => {
   const [downloadTotal, setDownloadTotal] = useState(0);
   const [batchDownloading, setBatchDownloading] = useState(false);
   const [batchProgress, setBatchProgress] = useState(0);
+  const [storageUsage, setStorageUsage] = useState(0);
   const abortBatchRef = useRef(false);
   const blobUrlRef = useRef<string | null>(null);
 
@@ -99,10 +101,15 @@ const QuranAudio: React.FC = () => {
 
   const audioSrc = getAudioUrl(selectedSurah);
 
-  // Load cached surah set when mode/id changes
+  // Load cached surah set and storage usage when mode/id changes
+  const refreshStorageUsage = useCallback(() => {
+    getAudioStorageUsage().then(setStorageUsage);
+  }, []);
+
   useEffect(() => {
     getCachedSurahSet(audioMode, currentModeId).then(setCachedSurahs);
-  }, [audioMode, currentModeId]);
+    refreshStorageUsage();
+  }, [audioMode, currentModeId, refreshStorageUsage]);
 
   // Cleanup blob URLs
   useEffect(() => {
@@ -226,12 +233,13 @@ const QuranAudio: React.FC = () => {
 
     if (success) {
       setCachedSurahs((prev) => new Set([...prev, surahNum]));
+      refreshStorageUsage();
       toast({ title: "✅ Downloaded", description: `Surah ${surahNum} saved offline` });
     } else {
       toast({ title: t("common.error"), description: "Download failed", variant: "destructive" });
     }
     setDownloadingSurah(null);
-  }, [audioMode, currentModeId, getAudioUrl, toast, t]);
+  }, [audioMode, currentModeId, getAudioUrl, toast, t, refreshStorageUsage]);
 
   // Download all surahs
   const downloadAll = useCallback(async () => {
@@ -252,15 +260,19 @@ const QuranAudio: React.FC = () => {
       setBatchProgress(i);
       setDownloadingSurah(null);
 
+      // Refresh storage every 10 surahs
+      if (i % 10 === 0) refreshStorageUsage();
+
       // Small delay
       if (i % 5 === 0) await new Promise((r) => setTimeout(r, 200));
     }
 
     setBatchDownloading(false); setDownloadingSurah(null);
+    refreshStorageUsage();
     if (!abortBatchRef.current) {
       toast({ title: "✅ All downloaded!", description: "All surahs saved offline" });
     }
-  }, [audioMode, currentModeId, cachedSurahs, getAudioUrl, toast]);
+  }, [audioMode, currentModeId, cachedSurahs, getAudioUrl, toast, refreshStorageUsage]);
 
   const stopBatchDownload = useCallback(() => { abortBatchRef.current = true; }, []);
 
@@ -333,7 +345,7 @@ const QuranAudio: React.FC = () => {
 
         {/* Download Bar */}
         <div className="bg-card rounded-xl border border-border p-3 mb-3 animate-fade-in">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
               <Download className="w-4 h-4 text-primary" />
               <span className="text-xs font-medium text-foreground">
@@ -345,7 +357,7 @@ const QuranAudio: React.FC = () => {
                 <X className="w-3 h-3" /> Stop
               </button>
             ) : downloadedCount >= 114 ? (
-              <span className="flex items-center gap-1 text-xs text-green-500 font-medium">
+              <span className="flex items-center gap-1 text-xs text-primary font-medium">
                 <CheckCircle2 className="w-3.5 h-3.5" /> All saved
               </span>
             ) : (
@@ -354,6 +366,15 @@ const QuranAudio: React.FC = () => {
               </button>
             )}
           </div>
+          {storageUsage > 0 && (
+            <p className="text-[10px] text-muted-foreground mb-2">
+              💾 Storage used: {storageUsage >= 1024 * 1024 * 1024
+                ? `${(storageUsage / (1024 * 1024 * 1024)).toFixed(2)} GB`
+                : storageUsage >= 1024 * 1024
+                  ? `${(storageUsage / (1024 * 1024)).toFixed(1)} MB`
+                  : `${Math.round(storageUsage / 1024)} KB`}
+            </p>
+          )}
           {/* Progress bar */}
           {batchDownloading && (
             <div className="space-y-1">
