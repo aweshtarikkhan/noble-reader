@@ -185,17 +185,36 @@ const IslamicCalendar: React.FC = () => {
     detectCountry();
   }, [location?.lat, location?.lng]);
 
-  // Get today's hijri date from Aladhan API
+  // Get today's hijri date (sunset-based: Hijri day changes at Maghrib)
   useEffect(() => {
     if (detecting) return;
+
     const fetchToday = async () => {
-      const today = await getHijriFromApi(new Date(), config.adjustment);
-      if (today) {
-        setCurrentHijri(today);
+      const now = new Date();
+      let baseDate = now;
+
+      // If we have Maghrib time, treat Hijri day boundary at Maghrib (not midnight)
+      const maghribStr = location?.timings?.Maghrib;
+      if (maghribStr) {
+        const clean = maghribStr.split(" ")[0];
+        const [h, m] = clean.split(":").map((n) => Number(n));
+        if (!Number.isNaN(h) && !Number.isNaN(m)) {
+          const maghrib = new Date();
+          maghrib.setHours(h, m, 0, 0);
+
+          // Before Maghrib, still previous Hijri date
+          if (now < maghrib) {
+            baseDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+          }
+        }
       }
+
+      const hijri = await getHijriFromApi(baseDate, config.adjustment);
+      if (hijri) setCurrentHijri(hijri);
     };
+
     fetchToday();
-  }, [detecting, config.adjustment]);
+  }, [detecting, config.adjustment, location?.timings?.Maghrib]);
 
   // Fetch hijri dates for each day of the gregorian month
   useEffect(() => {
