@@ -372,10 +372,7 @@ const IslamicCalendar: React.FC = () => {
             const isToday = day === gTodayDay;
             const isImportant = allImportantDays.has(day);
             const isFriday = (i % 7) === 5;
-             const hijriRaw = hijriForGregorian.get(day);
-             const hijri = isToday && currentHijri
-               ? { day: currentHijri.day, month: currentHijri.month }
-               : hijriRaw;
+            const hijri = hijriForGregorian.get(day);
             return (
               <div
                 key={`gday-${day}`}
