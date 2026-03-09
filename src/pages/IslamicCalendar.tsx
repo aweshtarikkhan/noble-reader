@@ -117,26 +117,6 @@ const getHijriMonth = async (month: number, year: number, adjustment: number): P
   return [];
 };
 
-const getHomeStyleHijriDate = (): HijriDate | null => {
-  try {
-    const now = new Date();
-    const adjusted = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-    const formatter = new Intl.DateTimeFormat("en-u-ca-islamic-civil", {
-      day: "numeric",
-      month: "numeric",
-      year: "numeric",
-    });
-    const parts = formatter.formatToParts(adjusted);
-    const day = parseInt(parts.find((p) => p.type === "day")?.value || "0", 10);
-    const month = parseInt(parts.find((p) => p.type === "month")?.value || "0", 10);
-    const year = parseInt(parts.find((p) => p.type === "year")?.value || "0", 10);
-
-    if (!day || !month || !year) return null;
-    return { day, month, year, monthName: HIJRI_MONTHS[month - 1] || "" };
-  } catch {
-    return null;
-  }
-};
 
 // Gregorian calendar helpers
 function getGregorianDaysInMonth(month: number, year: number): number {
@@ -205,15 +185,10 @@ const IslamicCalendar: React.FC = () => {
     detectCountry();
   }, [location?.lat, location?.lng]);
 
-  // Get today's hijri date
+  // Get today's hijri date from Aladhan API
   useEffect(() => {
     if (detecting) return;
     const fetchToday = async () => {
-      const homeStyleToday = getHomeStyleHijriDate();
-      if (homeStyleToday) {
-        setCurrentHijri(homeStyleToday);
-        return;
-      }
       const today = await getHijriFromApi(new Date(), config.adjustment);
       if (today) {
         setCurrentHijri(today);
