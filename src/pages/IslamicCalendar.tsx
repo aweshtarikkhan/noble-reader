@@ -185,53 +185,55 @@ const IslamicCalendar: React.FC = () => {
     detectCountry();
   }, [location?.lat, location?.lng]);
 
-  // Get today's hijri date (sunset-based: Hijri day changes at Maghrib)
+  // Get today's hijri date using same logic as Prayer Times page
+  // Islamic day starts at sunset (Maghrib), so before Maghrib we use previous day
   useEffect(() => {
     if (detecting) return;
-
     const fetchToday = async () => {
       const now = new Date();
-      let baseDate = now;
-
-      // If we have Maghrib time, treat Hijri day boundary at Maghrib (not midnight)
-      const maghribStr = location?.timings?.Maghrib;
-      if (maghribStr) {
-        const clean = maghribStr.split(" ")[0];
-        const [h, m] = clean.split(":").map((n) => Number(n));
-        if (!Number.isNaN(h) && !Number.isNaN(m)) {
-          const maghrib = new Date();
-          maghrib.setHours(h, m, 0, 0);
-
-          // Before Maghrib, still previous Hijri date
-          if (now < maghrib) {
-            baseDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-          }
-        }
-      }
-
-      const hijri = await getHijriFromApi(baseDate, config.adjustment);
+      const prevDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+      const hijri = await getHijriFromApi(prevDay, config.adjustment);
       if (hijri) setCurrentHijri(hijri);
     };
-
     fetchToday();
-  }, [detecting, config.adjustment, location?.timings?.Maghrib]);
+  }, [detecting, config.adjustment]);
 
   // Fetch hijri dates for each day of the gregorian month
+  // Shift by 1 day: each gregorian day shows the hijri date from the previous day's API data
+  // This matches the sunset-boundary logic used in Prayer Times
   useEffect(() => {
     const fetchHijriForMonth = async () => {
       const daysInMonth = getGregorianDaysInMonth(gMonth, gYear);
       const map = new Map<number, { day: number; month: number }>();
       try {
-        const mm = String(gMonth).padStart(2, "0");
         const res = await fetch(`https://api.aladhan.com/v1/gToHCalendar/${gMonth}/${gYear}?adjustment=${config.adjustment}`);
         const data = await res.json();
         if (data.code === 200) {
-          data.data.forEach((item: any) => {
-            const gDay = parseInt(item.gregorian.day);
-            const hDay = parseInt(item.hijri.day);
-            const hMonth = parseInt(item.hijri.month.number);
-            map.set(gDay, { day: hDay, month: hMonth });
-          });
+          const items = data.data;
+          // Shift: each day's hijri goes to the NEXT gregorian day
+          for (let idx = 0; idx < items.length; idx++) {
+            const hDay = parseInt(items[idx].hijri.day);
+            const hMonth = parseInt(items[idx].hijri.month.number);
+            const nextGDay = parseInt(items[idx].gregorian.day) + 1;
+            if (nextGDay <= daysInMonth) {
+              map.set(nextGDay, { day: hDay, month: hMonth });
+            }
+          }
+          // For day 1: get hijri from last day of previous month
+          try {
+            const prevDate = new Date(gYear, gMonth - 1, 0); // last day of prev month
+            const dd = String(prevDate.getDate()).padStart(2, "0");
+            const mm = String(prevDate.getMonth() + 1).padStart(2, "0");
+            const yyyy = prevDate.getFullYear();
+            const prevRes = await fetch(`https://api.aladhan.com/v1/gToH/${dd}-${mm}-${yyyy}?adjustment=${config.adjustment}`);
+            const prevData = await prevRes.json();
+            if (prevData.code === 200) {
+              map.set(1, {
+                day: parseInt(prevData.data.hijri.day),
+                month: parseInt(prevData.data.hijri.month.number),
+              });
+            }
+          } catch {}
         }
       } catch {}
       setHijriForGregorian(map);
@@ -370,10 +372,7 @@ const IslamicCalendar: React.FC = () => {
             const isToday = day === gTodayDay;
             const isImportant = allImportantDays.has(day);
             const isFriday = (i % 7) === 5;
-             const hijriRaw = hijriForGregorian.get(day);
-             const hijri = isToday && currentHijri
-               ? { day: currentHijri.day, month: currentHijri.month }
-               : hijriRaw;
+            const hijri = hijriForGregorian.get(day);
             return (
               <div
                 key={`gday-${day}`}
