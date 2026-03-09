@@ -185,15 +185,10 @@ const IslamicCalendar: React.FC = () => {
     detectCountry();
   }, [location?.lat, location?.lng]);
 
-  // Get today's hijri date
+  // Get today's hijri date from Aladhan API
   useEffect(() => {
     if (detecting) return;
     const fetchToday = async () => {
-      const homeStyleToday = getHomeStyleHijriDate();
-      if (homeStyleToday) {
-        setCurrentHijri(homeStyleToday);
-        return;
-      }
       const today = await getHijriFromApi(new Date(), config.adjustment);
       if (today) {
         setCurrentHijri(today);
