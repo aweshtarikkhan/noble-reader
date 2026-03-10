@@ -17,13 +17,12 @@ const Hadith: React.FC = () => {
   
   const { toast } = useToast();
   const { t } = useI18n();
-  const [lang, setLang] = useState<"english" | "urdu" | "romanUrdu">(() => {
+  const [lang, setLang] = useState<"english" | "urdu">(() => {
     const stored = localStorage.getItem("hadith_book_lang") as any;
-    if (stored === "hindi") return "romanUrdu";
-    if (stored) return stored;
+    if (stored === "urdu") return "urdu";
+    if (stored === "english") return "english";
     const appLang = localStorage.getItem("app_lang") || "en";
     if (appLang === "ur") return "urdu";
-    if (appLang === "hi") return "romanUrdu";
     return "english";
   });
   const [view, setView] = useState<ViewState>({ type: "books" });
