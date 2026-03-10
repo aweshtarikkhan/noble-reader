@@ -39,7 +39,7 @@ const Hadith: React.FC = () => {
     try {
       const offline = await getHadithBookOffline(book.id);
       if (offline) {
-        const src = (lang === "urdu" || lang === "hindi") ? offline.urdu : offline.english;
+        const src = (lang === "urdu" || lang === "romanUrdu") ? offline.urdu : offline.english;
         const sections = src.metadata.section || (src.metadata as any).sections || {};
         const sectionDetail = src.metadata.section_detail || (src.metadata as any).section_details || {};
         setView({ type: "sections", book, sections, sectionDetail });
