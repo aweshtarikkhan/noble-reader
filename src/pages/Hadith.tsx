@@ -17,13 +17,12 @@ const Hadith: React.FC = () => {
   
   const { toast } = useToast();
   const { t } = useI18n();
-  const [lang, setLang] = useState<"english" | "urdu" | "romanUrdu">(() => {
+  const [lang, setLang] = useState<"english" | "urdu">(() => {
     const stored = localStorage.getItem("hadith_book_lang") as any;
-    if (stored === "hindi") return "romanUrdu";
-    if (stored) return stored;
+    if (stored === "urdu") return "urdu";
+    if (stored === "english") return "english";
     const appLang = localStorage.getItem("app_lang") || "en";
     if (appLang === "ur") return "urdu";
-    if (appLang === "hi") return "romanUrdu";
     return "english";
   });
   const [view, setView] = useState<ViewState>({ type: "books" });
@@ -39,12 +38,12 @@ const Hadith: React.FC = () => {
     try {
       const offline = await getHadithBookOffline(book.id);
       if (offline) {
-        const src = (lang === "urdu" || lang === "romanUrdu") ? offline.urdu : offline.english;
+        const src = lang === "urdu" ? offline.urdu : offline.english;
         const sections = src.metadata.section || (src.metadata as any).sections || {};
         const sectionDetail = src.metadata.section_detail || (src.metadata as any).section_details || {};
         setView({ type: "sections", book, sections, sectionDetail });
       } else {
-        const edition = (lang === "urdu" || lang === "romanUrdu") ? book.urduEdition : book.englishEdition;
+        const edition = lang === "urdu" ? book.urduEdition : book.englishEdition;
         const data = await fetchBookSections(edition);
         setView({ type: "sections", book, sections: data.metadata.section, sectionDetail: data.metadata.section_detail });
       }
@@ -131,8 +130,8 @@ const Hadith: React.FC = () => {
             )}
             {view.type !== "books" && !showDownloadManager && (
               <div className="flex gap-1">
-                {(["english", "urdu", "romanUrdu"] as const).map((l) => (
-                  <button key={l} onClick={() => { setLang(l); localStorage.setItem("hadith_book_lang", l); }} className={`text-[9px] px-2 py-0.5 rounded-full font-medium transition-smooth ${lang === l ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{l === "english" ? "EN" : l === "urdu" ? "UR" : "RU"}</button>
+                {(["english", "urdu"] as const).map((l) => (
+                  <button key={l} onClick={() => { setLang(l); localStorage.setItem("hadith_book_lang", l); }} className={`text-[9px] px-2 py-0.5 rounded-full font-medium transition-smooth ${lang === l ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{l === "english" ? "EN" : "UR"}</button>
                 ))}
               </div>
             )}
@@ -209,7 +208,7 @@ const Hadith: React.FC = () => {
                   </div>
                 </div>
                 {ara && <div className="px-4 pt-3 pb-2"><p className="font-arabic text-lg leading-[2.2] text-foreground text-right" dir="rtl">{ara.text}</p></div>}
-                <div className="px-4 pb-3">{lang === "urdu" && urd ? <p className="text-sm text-muted-foreground leading-relaxed text-right font-urdu" dir="rtl">{urd.text}</p> : lang === "romanUrdu" && urd ? <p className="text-sm text-muted-foreground leading-relaxed">{urd.text}</p> : <p className="text-sm text-muted-foreground leading-relaxed">{h.text}</p>}</div>
+                <div className="px-4 pb-3">{lang === "urdu" && urd ? <p className="text-sm text-muted-foreground leading-relaxed text-right font-urdu" dir="rtl">{urd.text}</p> : <p className="text-sm text-muted-foreground leading-relaxed">{h.text}</p>}</div>
                 {h.grades && h.grades.length > 0 && <div className="px-4 pb-3 flex flex-wrap gap-1">{h.grades.map((g, gi) => <span key={gi} className="text-[9px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full">{g.name}: {g.grade}</span>)}</div>}
               </div>
             );
