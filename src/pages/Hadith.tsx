@@ -43,7 +43,7 @@ const Hadith: React.FC = () => {
         const sectionDetail = src.metadata.section_detail || (src.metadata as any).section_details || {};
         setView({ type: "sections", book, sections, sectionDetail });
       } else {
-        const edition = (lang === "urdu" || lang === "romanUrdu") ? book.urduEdition : book.englishEdition;
+        const edition = lang === "urdu" ? book.urduEdition : book.englishEdition;
         const data = await fetchBookSections(edition);
         setView({ type: "sections", book, sections: data.metadata.section, sectionDetail: data.metadata.section_detail });
       }
