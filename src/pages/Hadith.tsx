@@ -130,8 +130,8 @@ const Hadith: React.FC = () => {
             )}
             {view.type !== "books" && !showDownloadManager && (
               <div className="flex gap-1">
-                {(["english", "urdu", "romanUrdu"] as const).map((l) => (
-                  <button key={l} onClick={() => { setLang(l); localStorage.setItem("hadith_book_lang", l); }} className={`text-[9px] px-2 py-0.5 rounded-full font-medium transition-smooth ${lang === l ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{l === "english" ? "EN" : l === "urdu" ? "UR" : "RU"}</button>
+                {(["english", "urdu"] as const).map((l) => (
+                  <button key={l} onClick={() => { setLang(l); localStorage.setItem("hadith_book_lang", l); }} className={`text-[9px] px-2 py-0.5 rounded-full font-medium transition-smooth ${lang === l ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{l === "english" ? "EN" : "UR"}</button>
                 ))}
               </div>
             )}
