@@ -208,7 +208,7 @@ const Hadith: React.FC = () => {
                   </div>
                 </div>
                 {ara && <div className="px-4 pt-3 pb-2"><p className="font-arabic text-lg leading-[2.2] text-foreground text-right" dir="rtl">{ara.text}</p></div>}
-                <div className="px-4 pb-3">{lang === "urdu" && urd ? <p className="text-sm text-muted-foreground leading-relaxed text-right font-urdu" dir="rtl">{urd.text}</p> : lang === "romanUrdu" && urd ? <p className="text-sm text-muted-foreground leading-relaxed">{urd.text}</p> : <p className="text-sm text-muted-foreground leading-relaxed">{h.text}</p>}</div>
+                <div className="px-4 pb-3">{lang === "urdu" && urd ? <p className="text-sm text-muted-foreground leading-relaxed text-right font-urdu" dir="rtl">{urd.text}</p> : <p className="text-sm text-muted-foreground leading-relaxed">{h.text}</p>}</div>
                 {h.grades && h.grades.length > 0 && <div className="px-4 pb-3 flex flex-wrap gap-1">{h.grades.map((g, gi) => <span key={gi} className="text-[9px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full">{g.name}: {g.grade}</span>)}</div>}
               </div>
             );
