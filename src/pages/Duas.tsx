@@ -156,7 +156,7 @@ const Duas: React.FC = () => {
       {/* Special pinned categories */}
       {!search.trim() && (
         <div className="grid grid-cols-2 gap-3">
-          {allCategories.filter(c => c.id === "40-rabbana-duas" || c.id === "ramadan-duas").map(cat => (
+          {allCategories.filter(c => c.id === "40-rabbana-duas" || c.id === "ramadan-duas" || c.id === "namaaz-duas").map(cat => (
             <button
               key={cat.id}
               onClick={() => openCategory(cat)}
