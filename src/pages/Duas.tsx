@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-import { Search, Settings } from "lucide-react";
+import { Search } from "lucide-react";
+import { icons } from "lucide-react";
 import { DUA_CATEGORIES, DuaTranslation, DuaCategory } from "@/data/duas";
 import { RABBANA_DUAS } from "@/data/rabbanaDuas";
 import { DUA_CATEGORY_TRANSLATIONS } from "@/data/duaCategoryTranslations";
