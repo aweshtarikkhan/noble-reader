@@ -56,14 +56,15 @@ const Duas: React.FC = () => {
 
   const allCategories = useMemo(() => {
     const rabbanaCategory: DuaCategory = { id: "40-rabbana-duas", name: "40 Rabbana Duas", duas: RABBANA_DUAS };
+    const namaazCategory: DuaCategory = { id: "namaaz-duas", name: "Duas in Namaaz", duas: NAMAAZ_DUAS };
     const ramadanIsNow = isRamadanMonth();
     const ramadanIdx = DUA_CATEGORIES.findIndex(c => c.id === "ramadan-duas");
     const categories = [...DUA_CATEGORIES];
     if (ramadanIdx >= 0) {
       const [ramadan] = categories.splice(ramadanIdx, 1);
-      if (ramadanIsNow) { categories.unshift(rabbanaCategory); categories.unshift(ramadan); }
-      else { categories.splice(1, 0, rabbanaCategory); categories.push(ramadan); }
-    } else { categories.splice(1, 0, rabbanaCategory); }
+      if (ramadanIsNow) { categories.unshift(namaazCategory); categories.unshift(rabbanaCategory); categories.unshift(ramadan); }
+      else { categories.splice(1, 0, rabbanaCategory); categories.splice(2, 0, namaazCategory); categories.push(ramadan); }
+    } else { categories.splice(1, 0, rabbanaCategory); categories.splice(2, 0, namaazCategory); }
     return categories;
   }, []);
 
