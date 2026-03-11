@@ -179,6 +179,7 @@ export const DUA_CATEGORY_EMOJIS: Record<string, string> = {
   // Special
   "ramadan-duas": "🌙",
   "40-rabbana-duas": "📿",
+  "namaaz-duas": "🕌",
 };
 
 // Group categories for visual sections
