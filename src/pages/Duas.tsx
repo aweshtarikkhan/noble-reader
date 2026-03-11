@@ -1,8 +1,10 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-import { Search, Settings } from "lucide-react";
+import { Search } from "lucide-react";
+import { icons } from "lucide-react";
 import { DUA_CATEGORIES, DuaTranslation, DuaCategory } from "@/data/duas";
 import { RABBANA_DUAS } from "@/data/rabbanaDuas";
 import { DUA_CATEGORY_TRANSLATIONS } from "@/data/duaCategoryTranslations";
+import { DUA_CATEGORY_ICONS } from "@/data/duaCategoryIcons";
 import { useI18n } from "@/lib/i18n";
 import DuaCategoryGrid from "@/components/DuaCategoryGrid";
 import DuaCategoryView from "@/components/DuaCategoryView";
@@ -159,7 +161,11 @@ const Duas: React.FC = () => {
               className="flex flex-col items-center gap-3 py-5 px-4 rounded-2xl bg-card border border-primary/15 active:scale-[0.97] transition-all"
             >
               <div className="w-16 h-16 rounded-2xl border-2 border-primary/30 bg-primary/5 flex items-center justify-center">
-                <span className="text-3xl">{cat.id === "ramadan-duas" ? "🌙" : "📿"}</span>
+                {(() => {
+                  const iconName = DUA_CATEGORY_ICONS[cat.id] || "BookOpen";
+                  const Icon = (icons as any)[iconName] || (icons as any)["BookOpen"];
+                  return <Icon className="w-8 h-8 text-primary" />;
+                })()}
               </div>
               <span className={`text-sm font-bold text-foreground text-center ${appLang === "ur" ? "font-urdu" : ""}`}>
                 {getCatName(cat, appLang)}
