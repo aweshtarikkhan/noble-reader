@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import { icons } from "lucide-react";
 import { DUA_CATEGORIES, DuaTranslation, DuaCategory } from "@/data/duas";
 import { RABBANA_DUAS } from "@/data/rabbanaDuas";
+import { NAMAAZ_DUAS } from "@/data/namaazDuas";
 import { DUA_CATEGORY_TRANSLATIONS } from "@/data/duaCategoryTranslations";
 import { DUA_CATEGORY_ICONS } from "@/data/duaCategoryIcons";
 import { useI18n } from "@/lib/i18n";
@@ -55,14 +56,15 @@ const Duas: React.FC = () => {
 
   const allCategories = useMemo(() => {
     const rabbanaCategory: DuaCategory = { id: "40-rabbana-duas", name: "40 Rabbana Duas", duas: RABBANA_DUAS };
+    const namaazCategory: DuaCategory = { id: "namaaz-duas", name: "Duas in Namaaz", duas: NAMAAZ_DUAS };
     const ramadanIsNow = isRamadanMonth();
     const ramadanIdx = DUA_CATEGORIES.findIndex(c => c.id === "ramadan-duas");
     const categories = [...DUA_CATEGORIES];
     if (ramadanIdx >= 0) {
       const [ramadan] = categories.splice(ramadanIdx, 1);
-      if (ramadanIsNow) { categories.unshift(rabbanaCategory); categories.unshift(ramadan); }
-      else { categories.splice(1, 0, rabbanaCategory); categories.push(ramadan); }
-    } else { categories.splice(1, 0, rabbanaCategory); }
+      if (ramadanIsNow) { categories.unshift(namaazCategory); categories.unshift(rabbanaCategory); categories.unshift(ramadan); }
+      else { categories.splice(1, 0, rabbanaCategory); categories.splice(2, 0, namaazCategory); categories.push(ramadan); }
+    } else { categories.splice(1, 0, rabbanaCategory); categories.splice(2, 0, namaazCategory); }
     return categories;
   }, []);
 
@@ -154,7 +156,7 @@ const Duas: React.FC = () => {
       {/* Special pinned categories */}
       {!search.trim() && (
         <div className="grid grid-cols-2 gap-3">
-          {allCategories.filter(c => c.id === "40-rabbana-duas" || c.id === "ramadan-duas").map(cat => (
+          {allCategories.filter(c => c.id === "40-rabbana-duas" || c.id === "ramadan-duas" || c.id === "namaaz-duas").map(cat => (
             <button
               key={cat.id}
               onClick={() => openCategory(cat)}
@@ -181,7 +183,7 @@ const Duas: React.FC = () => {
       </p>
 
       <DuaCategoryGrid
-        categories={filtered.filter(c => c.id !== "40-rabbana-duas" && c.id !== "ramadan-duas")}
+        categories={filtered.filter(c => c.id !== "40-rabbana-duas" && c.id !== "ramadan-duas" && c.id !== "namaaz-duas")}
         appLang={appLang}
         onSelectCategory={openCategory}
         search={search}

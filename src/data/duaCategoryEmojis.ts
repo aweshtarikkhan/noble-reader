@@ -179,6 +179,7 @@ export const DUA_CATEGORY_EMOJIS: Record<string, string> = {
   // Special
   "ramadan-duas": "🌙",
   "40-rabbana-duas": "📿",
+  "namaaz-duas": "🕌",
 };
 
 // Group categories for visual sections
@@ -193,7 +194,7 @@ export const DUA_CATEGORY_GROUPS: { label: string; labelUr: string; labelHi: str
     label: "🕌 Prayer",
     labelUr: "🕌 نماز",
     labelHi: "🕌 नमाज़",
-    ids: ["after-takbeer", "during-ruku", "when-prostrating", "between-two-sujood", "tashahhud", "darood-ibrahimi", "dua-qunoot", "after-salah-tasbeeh", "remembrance-after-prayer", "hearing-adhan"]
+    ids: ["namaaz-duas", "after-takbeer", "during-ruku", "when-prostrating", "between-two-sujood", "tashahhud", "darood-ibrahimi", "dua-qunoot", "after-salah-tasbeeh", "remembrance-after-prayer", "hearing-adhan"]
   },
   {
     label: "🏠 Home & Daily",

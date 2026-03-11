@@ -179,4 +179,5 @@ export const DUA_CATEGORY_ICONS: Record<string, string> = {
   // Special
   "ramadan-duas": "MoonStar",
   "40-rabbana-duas": "BookOpen",
+  "namaaz-duas": "Landmark",
 };

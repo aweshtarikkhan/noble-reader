@@ -138,4 +138,5 @@ export const DUA_CATEGORY_TRANSLATIONS: Record<string, { ur: string; hi: string 
   "40-rabbana-duas": { ur: "۴۰ ربنا دعائیں", hi: "40 रब्बना दुआएं" },
   "seek-protection-culprits": { ur: "مجرموں سے حفاظت", hi: "मुजरिमों से हिफ़ाज़त" },
   "asking-forgiveness-house": { ur: "اپنے اور گھر والوں کی مغفرت", hi: "अपने और घर वालों की मग़फ़िरत" },
+  "namaaz-duas": { ur: "نماز میں پڑھی جانے والی دعائیں", hi: "नमाज़ में पढ़ी जाने वाली दुआएं" },
 };
