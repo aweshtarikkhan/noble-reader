@@ -183,7 +183,7 @@ const Duas: React.FC = () => {
       </p>
 
       <DuaCategoryGrid
-        categories={filtered.filter(c => c.id !== "40-rabbana-duas" && c.id !== "ramadan-duas")}
+        categories={filtered.filter(c => c.id !== "40-rabbana-duas" && c.id !== "ramadan-duas" && c.id !== "namaaz-duas")}
         appLang={appLang}
         onSelectCategory={openCategory}
         search={search}
