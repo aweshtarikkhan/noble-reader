@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import { icons } from "lucide-react";
 import { DUA_CATEGORIES, DuaTranslation, DuaCategory } from "@/data/duas";
 import { RABBANA_DUAS } from "@/data/rabbanaDuas";
+import { NAMAAZ_DUAS } from "@/data/namaazDuas";
 import { DUA_CATEGORY_TRANSLATIONS } from "@/data/duaCategoryTranslations";
 import { DUA_CATEGORY_ICONS } from "@/data/duaCategoryIcons";
 import { useI18n } from "@/lib/i18n";
