@@ -259,5 +259,26 @@ export const RABBANA_DUAS: DuaTranslation[] = [
     urdu: "اے ہمارے رب! ہم پر وہ بوجھ نہ ڈال جس کی ہم میں طاقت نہ ہو اور ہمیں معاف کر دے اور بخش دے اور ہم پر رحم فرما تو ہمارا مولا ہے۔",
     romanUrdu: "Aye hamare Rab! Hum par woh bojh na daal jis ki hum mein taaqat na ho aur hamein maaf kar de aur bakhsh de aur hum par reham farma tu hamara maula hai.",
     reference: "Quran 2:286"
+  },
+  {
+    arabic: "رَبِّ أَعُوذُ بِكَ مِنْ هَمَزَاتِ الشَّيَاطِينِ وَأَعُوذُ بِكَ رَبِّ أَنْ يَحْضُرُونِ",
+    english: "My Lord, I seek refuge in You from the incitements of the devils, and I seek refuge in You, my Lord, lest they be present with me.",
+    urdu: "اے میرے رب! میں شیطانوں کے وسوسوں سے تیری پناہ مانگتا ہوں اور اے میرے رب! میں تیری پناہ مانگتا ہوں کہ وہ میرے پاس آئیں۔",
+    romanUrdu: "Aye mere Rab! Main shaitanon ke waswason se teri panaah maangta hoon aur aye mere Rab! Main teri panaah maangta hoon ke woh mere paas aayein.",
+    reference: "Quran 23:97-98"
+  },
+  {
+    arabic: "رَبِّ اغْفِرْ وَارْحَمْ وَأَنْتَ خَيْرُ الرَّاحِمِينَ",
+    english: "My Lord, forgive and have mercy, and You are the best of the merciful.",
+    urdu: "اے میرے رب! بخش دے اور رحم فرما اور تو سب سے بہتر رحم کرنے والا ہے۔",
+    romanUrdu: "Aye mere Rab! Bakhsh de aur reham farma aur tu sab se behtar reham karne wala hai.",
+    reference: "Quran 23:118"
+  },
+  {
+    arabic: "رَبِّ أَوْزِعْنِي أَنْ أَشْكُرَ نِعْمَتَكَ الَّتِي أَنْعَمْتَ عَلَيَّ وَعَلَى وَالِدَيَّ وَأَنْ أَعْمَلَ صَالِحًا تَرْضَاهُ وَأَصْلِحْ لِي فِي ذُرِّيَّتِي إِنِّي تُبْتُ إِلَيْكَ وَإِنِّي مِنَ الْمُسْلِمِينَ",
+    english: "My Lord, enable me to be grateful for Your favor which You have bestowed upon me and upon my parents, and to do righteousness of which You approve. And make righteous for me my offspring. Indeed, I have repented to You, and indeed, I am of the Muslims.",
+    urdu: "اے میرے رب! مجھے توفیق دے کہ میں تیری اس نعمت کا شکر ادا کروں جو تو نے مجھ پر اور میرے والدین پر کی ہے اور یہ کہ میں نیک عمل کروں جو تجھے پسند ہو اور میری اولاد کو نیک بنا دے۔ میں تیری طرف رجوع کرتا ہوں اور میں مسلمانوں میں سے ہوں۔",
+    romanUrdu: "Aye mere Rab! Mujhe taufeeq de ke main teri us nemat ka shukar ada karoon jo tu ne mujh par aur mere walidain par ki hai aur yeh ke main nek amal karoon jo tujhe pasand ho aur meri aulaad ko nek bana de. Main teri taraf rujoo karta hoon aur main Musalmano mein se hoon.",
+    reference: "Quran 46:15"
   }
 ];

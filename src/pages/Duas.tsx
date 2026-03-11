@@ -156,13 +156,11 @@ const Duas: React.FC = () => {
             <button
               key={cat.id}
               onClick={() => openCategory(cat)}
-              className={`flex flex-col items-center gap-2 p-5 rounded-2xl border active:scale-[0.97] transition-all ${
-                cat.id === "ramadan-duas"
-                  ? "bg-primary/8 border-primary/25"
-                  : "bg-amber-500/8 border-amber-500/25"
-              }`}
+              className="flex flex-col items-center gap-3 py-5 px-4 rounded-2xl bg-card border border-primary/15 active:scale-[0.97] transition-all"
             >
-              <span className="text-4xl">{cat.id === "ramadan-duas" ? "🌙" : "📿"}</span>
+              <div className="w-16 h-16 rounded-2xl border-2 border-primary/30 bg-primary/5 flex items-center justify-center">
+                <span className="text-3xl">{cat.id === "ramadan-duas" ? "🌙" : "📿"}</span>
+              </div>
               <span className={`text-sm font-bold text-foreground text-center ${appLang === "ur" ? "font-urdu" : ""}`}>
                 {getCatName(cat, appLang)}
               </span>
