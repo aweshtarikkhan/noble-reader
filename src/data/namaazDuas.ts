@@ -78,7 +78,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "اللَّهُمَّ صَلِّ عَلَىٰ مُحَمَّدٍ وَعَلَىٰ آلِ مُحَمَّدٍ كَمَا صَلَّيْتَ عَلَىٰ إِبْرَاهِيمَ وَعَلَىٰ آلِ إِبْرَاهِيمَ إِنَّكَ حَمِيدٌ مَجِيدٌ",
     english: "O Allah, send prayers upon Muhammad and upon the family of Muhammad, as You sent prayers upon Ibrahim and upon the family of Ibrahim. Indeed, You are Praiseworthy and Glorious.",
     urdu: "اے اللہ! محمد ﷺ پر اور محمد ﷺ کی آل پر رحمت نازل فرما جیسے تو نے ابراہیم علیہ السلام اور ابراہیم علیہ السلام کی آل پر رحمت نازل فرمائی۔ بے شک تو تعریف والا بزرگی والا ہے۔",
-    romanUrdu: "Allahumma salli ala Muhammadin wa ala aali Muhammadin kama sallaita ala Ibrahima wa ala aali Ibrahima innaka Hameedun Majeed.",
+    romanUrdu: "Aye Allah! Muhammad ﷺ par aur Muhammad ﷺ ki aal par rehmat nazil farma jaise tu ne Ibrahim (AS) aur Ibrahim (AS) ki aal par rehmat nazil farmai. Beshak tu tareef wala buzurgi wala hai.",
     reference: "Sahih Bukhari, Sahih Muslim"
   },
 
