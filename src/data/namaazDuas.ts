@@ -6,7 +6,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "سُبْحَانَكَ اللَّهُمَّ وَبِحَمْدِكَ وَتَبَارَكَ اسْمُكَ وَتَعَالَىٰ جَدُّكَ وَلَا إِلٰهَ غَيْرُكَ",
     english: "Glory be to You, O Allah, and all praises are due unto You. Blessed is Your name, and high is Your majesty and none is worthy of worship but You.",
     urdu: "اے اللہ! تو پاک ہے اور تیری تعریف کے ساتھ، تیرا نام بابرکت ہے اور تیری شان بلند ہے اور تیرے سوا کوئی معبود نہیں۔",
-    romanUrdu: "Subhanaka Allahumma wa bihamdika wa tabarakasmuka wa ta'ala jadduka wa la ilaha ghairuk.",
+    romanUrdu: "Aye Allah! Tu paak hai aur teri tareef ke saath, tera naam ba-barkat hai aur teri shaan buland hai aur tere siwa koi mabood nahi.",
     reference: "Abu Dawud, Tirmidhi, Nasai"
   },
 
@@ -15,7 +15,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ ۝ بِسْمِ اللَّهِ الرَّحْمٰنِ الرَّحِيمِ",
     english: "I seek refuge with Allah from Satan the accursed. In the name of Allah, the Most Gracious, the Most Merciful.",
     urdu: "میں شیطان مردود سے اللہ کی پناہ مانگتا ہوں۔ اللہ کے نام سے جو بڑا مہربان نہایت رحم والا ہے۔",
-    romanUrdu: "A'udhu billahi minash shaitanir rajeem. Bismillahir Rahmanir Raheem.",
+    romanUrdu: "Mein shaitaan mardood se Allah ki panah maangta hoon. Allah ke naam se jo bara meharbaan nihayat reham wala hai.",
     reference: "Quran 16:98"
   },
 
@@ -24,7 +24,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "سُبْحَانَ رَبِّيَ الْعَظِيمِ",
     english: "Glory be to my Lord, the Most Great. (Recited 3 times in Ruku)",
     urdu: "میرا رب بزرگ و برتر پاک ہے۔ (رکوع میں ۳ مرتبہ پڑھیں)",
-    romanUrdu: "Subhana Rabbiyal Azeem. (3 baar padhein Ruku mein)",
+    romanUrdu: "Mera Rab buzurg o bartar paak hai. (Ruku mein 3 martaba padhein)",
     reference: "Abu Dawud, Tirmidhi"
   },
 
@@ -33,7 +33,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "سَمِعَ اللَّهُ لِمَنْ حَمِدَهُ",
     english: "Allah hears the one who praises Him. (Said while rising from Ruku)",
     urdu: "اللہ نے اس کی سُن لی جس نے اس کی حمد بیان کی۔ (رکوع سے اٹھتے وقت)",
-    romanUrdu: "Sami'Allahu liman hamidah. (Ruku se uthte waqt)",
+    romanUrdu: "Allah ne us ki sun li jis ne us ki hamd bayaan ki. (Ruku se uthte waqt)",
     reference: "Sahih Bukhari, Sahih Muslim"
   },
 
@@ -42,7 +42,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "رَبَّنَا وَلَكَ الْحَمْدُ حَمْدًا كَثِيرًا طَيِّبًا مُبَارَكًا فِيهِ",
     english: "Our Lord, and to You belongs all praise — an abundant, good, and blessed praise. (Said after standing from Ruku)",
     urdu: "اے ہمارے رب! تیرے لیے ہی تمام تعریفیں ہیں، بہت زیادہ، پاکیزہ اور بابرکت حمد۔ (رکوع سے کھڑے ہونے کے بعد)",
-    romanUrdu: "Rabbana wa lakal hamd, hamdan katheeran tayyiban mubarakan feeh. (Khade hokar)",
+    romanUrdu: "Aye hamare Rab! Tere liye hi tamam tareefen hain, bohat zyada, paakeeza aur ba-barkat hamd. (Khade hokar)",
     reference: "Sahih Bukhari"
   },
 
@@ -51,7 +51,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "سُبْحَانَ رَبِّيَ الْأَعْلَىٰ",
     english: "Glory be to my Lord, the Most High. (Recited 3 times in Sajdah)",
     urdu: "میرا رب سب سے بلند پاک ہے۔ (سجدے میں ۳ مرتبہ پڑھیں)",
-    romanUrdu: "Subhana Rabbiyal A'la. (3 baar padhein Sajde mein)",
+    romanUrdu: "Mera Rab sab se buland paak hai. (Sajde mein 3 martaba padhein)",
     reference: "Abu Dawud, Tirmidhi"
   },
 
@@ -60,7 +60,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "رَبِّ اغْفِرْ لِي رَبِّ اغْفِرْ لِي",
     english: "O my Lord, forgive me! O my Lord, forgive me! (Recited while sitting between two Sajdas)",
     urdu: "اے میرے رب مجھے معاف فرما! اے میرے رب مجھے معاف فرما! (دو سجدوں کے درمیان بیٹھ کر)",
-    romanUrdu: "Rabbighfir li, Rabbighfir li. (Do sajdon ke darmiyan)",
+    romanUrdu: "Aye mere Rab mujhe maaf farma! Aye mere Rab mujhe maaf farma! (Do sajdon ke darmiyan baith kar)",
     reference: "Abu Dawud, Ibn Majah"
   },
 
@@ -69,7 +69,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "التَّحِيَّاتُ لِلَّهِ وَالصَّلَوَاتُ وَالطَّيِّبَاتُ ۝ السَّلَامُ عَلَيْكَ أَيُّهَا النَّبِيُّ وَرَحْمَةُ اللَّهِ وَبَرَكَاتُهُ ۝ السَّلَامُ عَلَيْنَا وَعَلَىٰ عِبَادِ اللَّهِ الصَّالِحِينَ ۝ أَشْهَدُ أَنْ لَا إِلٰهَ إِلَّا اللَّهُ وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ",
     english: "All greetings, prayers, and good things are for Allah. Peace be upon you, O Prophet, and the mercy of Allah and His blessings. Peace be upon us and on the righteous servants of Allah. I bear witness that none is worthy of worship except Allah, and I bear witness that Muhammad is His servant and messenger.",
     urdu: "تمام قولی، بدنی اور مالی عبادتیں اللہ کے لیے ہیں۔ اے نبی! آپ پر سلام ہو اور اللہ کی رحمت اور برکتیں ہوں۔ ہم پر اور اللہ کے نیک بندوں پر سلام ہو۔ میں گواہی دیتا ہوں کہ اللہ کے سوا کوئی معبود نہیں اور میں گواہی دیتا ہوں کہ محمد ﷺ اس کے بندے اور رسول ہیں۔",
-    romanUrdu: "Attahiyyatu lillahi was salawatu wat tayyibatu. Assalamu alaika ayyuhan Nabiyyu wa rahmatullahi wa barakatuh. Assalamu alaina wa ala ibadillahis saliheen. Ash-hadu alla ilaha illallahu wa ash-hadu anna Muhammadan abduhu wa rasuluh.",
+    romanUrdu: "Tamam qauli, badani aur maali ibadatein Allah ke liye hain. Aye Nabi! Aap par salaam ho aur Allah ki rehmat aur barkatein hon. Hum par aur Allah ke naik bandon par salaam ho. Mein gawahi deta hoon ke Allah ke siwa koi mabood nahi aur mein gawahi deta hoon ke Muhammad ﷺ us ke bande aur rasool hain.",
     reference: "Sahih Bukhari, Sahih Muslim"
   },
 
@@ -78,7 +78,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "اللَّهُمَّ صَلِّ عَلَىٰ مُحَمَّدٍ وَعَلَىٰ آلِ مُحَمَّدٍ كَمَا صَلَّيْتَ عَلَىٰ إِبْرَاهِيمَ وَعَلَىٰ آلِ إِبْرَاهِيمَ إِنَّكَ حَمِيدٌ مَجِيدٌ",
     english: "O Allah, send prayers upon Muhammad and upon the family of Muhammad, as You sent prayers upon Ibrahim and upon the family of Ibrahim. Indeed, You are Praiseworthy and Glorious.",
     urdu: "اے اللہ! محمد ﷺ پر اور محمد ﷺ کی آل پر رحمت نازل فرما جیسے تو نے ابراہیم علیہ السلام اور ابراہیم علیہ السلام کی آل پر رحمت نازل فرمائی۔ بے شک تو تعریف والا بزرگی والا ہے۔",
-    romanUrdu: "Allahumma salli ala Muhammadin wa ala aali Muhammadin kama sallaita ala Ibrahima wa ala aali Ibrahima innaka Hameedun Majeed.",
+    romanUrdu: "Aye Allah! Muhammad ﷺ par aur Muhammad ﷺ ki aal par rehmat nazil farma jaise tu ne Ibrahim (AS) aur Ibrahim (AS) ki aal par rehmat nazil farmai. Beshak tu tareef wala buzurgi wala hai.",
     reference: "Sahih Bukhari, Sahih Muslim"
   },
 
@@ -87,7 +87,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "اللَّهُمَّ بَارِكْ عَلَىٰ مُحَمَّدٍ وَعَلَىٰ آلِ مُحَمَّدٍ كَمَا بَارَكْتَ عَلَىٰ إِبْرَاهِيمَ وَعَلَىٰ آلِ إِبْرَاهِيمَ إِنَّكَ حَمِيدٌ مَجِيدٌ",
     english: "O Allah, send blessings upon Muhammad and upon the family of Muhammad, as You sent blessings upon Ibrahim and upon the family of Ibrahim. Indeed, You are Praiseworthy and Glorious.",
     urdu: "اے اللہ! محمد ﷺ پر اور محمد ﷺ کی آل پر برکت نازل فرما جیسے تو نے ابراہیم علیہ السلام اور ابراہیم علیہ السلام کی آل پر برکت نازل فرمائی۔ بے شک تو تعریف والا بزرگی والا ہے۔",
-    romanUrdu: "Allahumma barik ala Muhammadin wa ala aali Muhammadin kama barakta ala Ibrahima wa ala aali Ibrahima innaka Hameedun Majeed.",
+    romanUrdu: "Aye Allah! Muhammad ﷺ par aur Muhammad ﷺ ki aal par barkat nazil farma jaise tu ne Ibrahim (AS) aur Ibrahim (AS) ki aal par barkat nazil farmai. Beshak tu tareef wala buzurgi wala hai.",
     reference: "Sahih Bukhari, Sahih Muslim"
   },
 
@@ -96,7 +96,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "اللَّهُمَّ إِنِّي ظَلَمْتُ نَفْسِي ظُلْمًا كَثِيرًا وَلَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ فَاغْفِرْ لِي مَغْفِرَةً مِنْ عِنْدِكَ وَارْحَمْنِي إِنَّكَ أَنْتَ الْغَفُورُ الرَّحِيمُ",
     english: "O Allah, I have greatly wronged myself and no one forgives sins but You. So, grant me forgiveness from You and have mercy on me. Surely, You are the Most Forgiving, Most Merciful.",
     urdu: "اے اللہ! میں نے اپنی جان پر بہت ظلم کیا اور گناہوں کو تیرے سوا کوئی نہیں بخشتا۔ پس مجھے اپنی بخشش سے معاف فرما اور مجھ پر رحم فرما۔ بے شک تو بہت بخشنے والا مہربان ہے۔",
-    romanUrdu: "Allahumma inni zalamtu nafsi zulman katheeran wa la yaghfirudh dhunuba illa anta faghfir li maghfiratan min indika warhamni innaka antal Ghafoorur Raheem.",
+    romanUrdu: "Aye Allah! Mein ne apni jaan par bohat zulm kiya aur gunahon ko tere siwa koi nahi bakhshta. Pas mujhe apni bakhshish se maaf farma aur mujh par reham farma. Beshak tu bohat bakhshne wala meharbaan hai.",
     reference: "Sahih Bukhari, Sahih Muslim"
   },
 
@@ -105,7 +105,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ",
     english: "Our Lord, give us in this world that which is good and in the Hereafter that which is good, and protect us from the punishment of the Fire.",
     urdu: "اے ہمارے رب! ہمیں دنیا میں بھلائی دے اور آخرت میں بھلائی دے اور ہمیں آگ کے عذاب سے بچا۔",
-    romanUrdu: "Rabbana atina fid dunya hasanatan wa fil akhirati hasanatan wa qina adhaban Naar.",
+    romanUrdu: "Aye hamare Rab! Humein duniya mein bhalai de aur aakhirat mein bhalai de aur humein aag ke azaab se bacha.",
     reference: "Quran 2:201"
   },
 
@@ -114,7 +114,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "رَبِّ هَبْ لِي مِنَ الصَّالِحِينَ",
     english: "My Lord, grant me (offspring) from the righteous.",
     urdu: "اے میرے رب! مجھے نیک اولاد عطا فرما۔",
-    romanUrdu: "Rabbi hab li minas saliheen.",
+    romanUrdu: "Aye mere Rab! Mujhe naik aulaad ata farma.",
     reference: "Quran 37:100"
   },
 
@@ -123,7 +123,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "رَبِّ اجْعَلْنِي مُقِيمَ الصَّلَاةِ وَمِنْ ذُرِّيَّتِي رَبَّنَا وَتَقَبَّلْ دُعَاءِ",
     english: "My Lord, make me an establisher of prayer, and from my descendants. Our Lord, and accept my supplication.",
     urdu: "اے میرے رب! مجھے نماز قائم کرنے والا بنا اور میری اولاد کو بھی۔ اے ہمارے رب! میری دعا قبول فرما۔",
-    romanUrdu: "Rabbij'alni muqeemas salati wa min dhurriyyati Rabbana wa taqabbal du'a.",
+    romanUrdu: "Aye mere Rab! Mujhe namaaz qaim karne wala bana aur meri aulaad ko bhi. Aye hamare Rab! Meri dua qubool farma.",
     reference: "Quran 14:40"
   },
 
@@ -132,7 +132,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "اللَّهُمَّ إِنَّا نَسْتَعِينُكَ وَنَسْتَغْفِرُكَ وَنُؤْمِنُ بِكَ وَنَتَوَكَّلُ عَلَيْكَ وَنُثْنِي عَلَيْكَ الْخَيْرَ وَنَشْكُرُكَ وَلَا نَكْفُرُكَ وَنَخْلَعُ وَنَتْرُكُ مَنْ يَفْجُرُكَ ۝ اللَّهُمَّ إِيَّاكَ نَعْبُدُ وَلَكَ نُصَلِّي وَنَسْجُدُ وَإِلَيْكَ نَسْعَىٰ وَنَحْفِدُ وَنَرْجُو رَحْمَتَكَ وَنَخْشَىٰ عَذَابَكَ إِنَّ عَذَابَكَ بِالْكُفَّارِ مُلْحِقٌ",
     english: "O Allah, we seek Your help and ask Your forgiveness, and we believe in You and rely on You. We praise You with all good and we are grateful to You and we do not deny You. We renounce and forsake anyone who disobeys You. O Allah, You alone we worship and to You we pray and prostrate. To You we hasten and we serve You. We hope for Your mercy and fear Your punishment. Indeed, Your punishment overtakes the disbelievers.",
     urdu: "اے اللہ! ہم تجھ سے مدد مانگتے ہیں اور تجھ سے بخشش مانگتے ہیں اور تجھ پر ایمان رکھتے ہیں اور تجھ پر بھروسہ کرتے ہیں اور تیری خوب خوب تعریف کرتے ہیں اور تیرا شکر کرتے ہیں اور تیری ناشکری نہیں کرتے اور جو تیری نافرمانی کرے اس سے علیحدہ ہوتے ہیں اور اسے چھوڑتے ہیں۔ اے اللہ! ہم تیری ہی عبادت کرتے ہیں اور تیرے لیے ہی نماز پڑھتے ہیں اور سجدہ کرتے ہیں اور تیری ہی طرف دوڑتے ہیں اور تیری ہی خدمت کرتے ہیں اور تیری رحمت کی امید رکھتے ہیں اور تیرے عذاب سے ڈرتے ہیں۔ بے شک تیرا عذاب کافروں کو پہنچنے والا ہے۔",
-    romanUrdu: "Allahumma inna nasta'eenuka wa nastaghfiruka wa nu'minu bika wa natawakkalu alaika wa nuthni alaikal khair. Wa nashkuruka wa la nakfuruka wa nakhla'u wa natruku man yafjuruk. Allahumma iyyaka na'budu wa laka nusalli wa nasjudu wa ilaika nas'a wa nahfidu wa narju rahmataka wa nakhsha adhabaka inna adhabaka bil kuffari mulhiq.",
+    romanUrdu: "Aye Allah! Hum tujh se madad maangte hain aur tujh se bakhshish maangte hain aur tujh par imaan rakhte hain aur tujh par bharosa karte hain aur teri khoob khoob tareef karte hain aur tera shukar karte hain aur teri na-shukri nahi karte aur jo teri na-farmani kare us se alag hote hain aur use chhodte hain. Aye Allah! Hum teri hi ibadat karte hain aur tere liye hi namaaz padhte hain aur sajda karte hain aur teri hi taraf daudte hain aur teri hi khidmat karte hain aur teri rehmat ki umeed rakhte hain aur tere azaab se darte hain. Beshak tera azaab kafiron ko pahunchne wala hai.",
     reference: "Baihaqi, narrated by Umar (RA)"
   },
 ];
