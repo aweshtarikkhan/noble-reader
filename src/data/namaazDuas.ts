@@ -6,7 +6,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "سُبْحَانَكَ اللَّهُمَّ وَبِحَمْدِكَ وَتَبَارَكَ اسْمُكَ وَتَعَالَىٰ جَدُّكَ وَلَا إِلٰهَ غَيْرُكَ",
     english: "Glory be to You, O Allah, and all praises are due unto You. Blessed is Your name, and high is Your majesty and none is worthy of worship but You.",
     urdu: "اے اللہ! تو پاک ہے اور تیری تعریف کے ساتھ، تیرا نام بابرکت ہے اور تیری شان بلند ہے اور تیرے سوا کوئی معبود نہیں۔",
-    romanUrdu: "Subhanaka Allahumma wa bihamdika wa tabarakasmuka wa ta'ala jadduka wa la ilaha ghairuk.",
+    romanUrdu: "Aye Allah! Tu paak hai aur teri tareef ke saath, tera naam ba-barkat hai aur teri shaan buland hai aur tere siwa koi mabood nahi.",
     reference: "Abu Dawud, Tirmidhi, Nasai"
   },
 
