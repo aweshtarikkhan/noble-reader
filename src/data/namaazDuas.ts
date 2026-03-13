@@ -60,7 +60,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "رَبِّ اغْفِرْ لِي رَبِّ اغْفِرْ لِي",
     english: "O my Lord, forgive me! O my Lord, forgive me! (Recited while sitting between two Sajdas)",
     urdu: "اے میرے رب مجھے معاف فرما! اے میرے رب مجھے معاف فرما! (دو سجدوں کے درمیان بیٹھ کر)",
-    romanUrdu: "Rabbighfir li, Rabbighfir li. (Do sajdon ke darmiyan)",
+    romanUrdu: "Aye mere Rab mujhe maaf farma! Aye mere Rab mujhe maaf farma! (Do sajdon ke darmiyan baith kar)",
     reference: "Abu Dawud, Ibn Majah"
   },
 
