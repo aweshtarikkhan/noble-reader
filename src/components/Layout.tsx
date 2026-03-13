@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, BookOpen, Languages, Clock, PlayCircle, Settings } from "lucide-react";
+import { Home, BookOpen, Languages, Clock, PlayCircle, Globe } from "lucide-react";
 import ExitDialog from "./ExitDialog";
 import { useBackHandler } from "@/hooks/useBackHandler";
 import { getBookmarks } from "@/lib/bookmarks";
