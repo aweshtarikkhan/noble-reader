@@ -96,7 +96,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "اللَّهُمَّ إِنِّي ظَلَمْتُ نَفْسِي ظُلْمًا كَثِيرًا وَلَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ فَاغْفِرْ لِي مَغْفِرَةً مِنْ عِنْدِكَ وَارْحَمْنِي إِنَّكَ أَنْتَ الْغَفُورُ الرَّحِيمُ",
     english: "O Allah, I have greatly wronged myself and no one forgives sins but You. So, grant me forgiveness from You and have mercy on me. Surely, You are the Most Forgiving, Most Merciful.",
     urdu: "اے اللہ! میں نے اپنی جان پر بہت ظلم کیا اور گناہوں کو تیرے سوا کوئی نہیں بخشتا۔ پس مجھے اپنی بخشش سے معاف فرما اور مجھ پر رحم فرما۔ بے شک تو بہت بخشنے والا مہربان ہے۔",
-    romanUrdu: "Allahumma inni zalamtu nafsi zulman katheeran wa la yaghfirudh dhunuba illa anta faghfir li maghfiratan min indika warhamni innaka antal Ghafoorur Raheem.",
+    romanUrdu: "Aye Allah! Mein ne apni jaan par bohat zulm kiya aur gunahon ko tere siwa koi nahi bakhshta. Pas mujhe apni bakhshish se maaf farma aur mujh par reham farma. Beshak tu bohat bakhshne wala meharbaan hai.",
     reference: "Sahih Bukhari, Sahih Muslim"
   },
 
