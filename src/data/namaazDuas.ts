@@ -33,7 +33,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "سَمِعَ اللَّهُ لِمَنْ حَمِدَهُ",
     english: "Allah hears the one who praises Him. (Said while rising from Ruku)",
     urdu: "اللہ نے اس کی سُن لی جس نے اس کی حمد بیان کی۔ (رکوع سے اٹھتے وقت)",
-    romanUrdu: "Sami'Allahu liman hamidah. (Ruku se uthte waqt)",
+    romanUrdu: "Allah ne us ki sun li jis ne us ki hamd bayaan ki. (Ruku se uthte waqt)",
     reference: "Sahih Bukhari, Sahih Muslim"
   },
 
