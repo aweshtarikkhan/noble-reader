@@ -42,7 +42,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "رَبَّنَا وَلَكَ الْحَمْدُ حَمْدًا كَثِيرًا طَيِّبًا مُبَارَكًا فِيهِ",
     english: "Our Lord, and to You belongs all praise — an abundant, good, and blessed praise. (Said after standing from Ruku)",
     urdu: "اے ہمارے رب! تیرے لیے ہی تمام تعریفیں ہیں، بہت زیادہ، پاکیزہ اور بابرکت حمد۔ (رکوع سے کھڑے ہونے کے بعد)",
-    romanUrdu: "Rabbana wa lakal hamd, hamdan katheeran tayyiban mubarakan feeh. (Khade hokar)",
+    romanUrdu: "Aye hamare Rab! Tere liye hi tamam tareefen hain, bohat zyada, paakeeza aur ba-barkat hamd. (Khade hokar)",
     reference: "Sahih Bukhari"
   },
 
