@@ -57,6 +57,13 @@ const T: Translations = {
   "settings.saved": { en: "Saved!", ur: "محفوظ!", hi: "सहेजा!" },
   "settings.profileUpdated": { en: "Profile name updated", ur: "پروفائل نام اپ ڈیٹ ہوا", hi: "प्रोफ़ाइल नाम अपडेट हुआ" },
   "settings.photoUpdated": { en: "Profile photo updated", ur: "پروفائل فوٹو اپ ڈیٹ ہوئی", hi: "प्रोफ़ाइल फ़ोटो अपडेट हुई" },
+  "settings.fontSize": { en: "Font Size", ur: "فونٹ سائز", hi: "फ़ॉन्ट साइज़" },
+  "settings.fontSmall": { en: "Small", ur: "چھوٹا", hi: "छोटा" },
+  "settings.fontMedium": { en: "Medium", ur: "درمیانا", hi: "मध्यम" },
+  "settings.fontLarge": { en: "Large", ur: "بڑا", hi: "बड़ा" },
+  "settings.fontXLarge": { en: "X-Large", ur: "بہت بڑا", hi: "बहुत बड़ा" },
+  "settings.fontSizeUpdated": { en: "Font size updated", ur: "فونٹ سائز اپ ڈیٹ ہوا", hi: "फ़ॉन्ट साइज़ अपडेट हुआ" },
+  "settings.fontSizeHint": { en: "Changes text size across the entire app", ur: "پوری ایپ میں ٹیکسٹ کا سائز بدلتا ہے", hi: "पूरे ऐप में टेक्स्ट का साइज़ बदलता है" },
 
   // Pages
   "page.surahReading": { en: "Surah Reading", ur: "سورۃ کی تلاوت", hi: "सूरह पाठ" },

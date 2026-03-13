@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, User, Languages, Sun, Moon, Monitor, Camera, BookOpen, Bookmark, Heart, BookMarked } from "lucide-react";
+import { ArrowLeft, User, Languages, Sun, Moon, Monitor, Camera, BookOpen, Bookmark, Heart, BookMarked, Type } from "lucide-react";
 import { useI18n, type AppLanguage } from "@/lib/i18n";
 import { getBookmarks } from "@/lib/bookmarks";
 import { useToast } from "@/hooks/use-toast";
 
 type ThemeMode = "dark" | "light" | "auto";
+type FontSize = "small" | "medium" | "large" | "xlarge";
+
+const FONT_SIZE_PX: Record<FontSize, string> = { small: "14px", medium: "16px", large: "18px", xlarge: "20px" };
 
 const Settings: React.FC = () => {
   const navigate = useNavigate();
@@ -14,6 +17,7 @@ const Settings: React.FC = () => {
   const [name, setName] = useState(() => localStorage.getItem("user_name") || "");
   const [avatar, setAvatar] = useState(() => localStorage.getItem("user_avatar") || "");
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => (localStorage.getItem("theme_mode") as ThemeMode) || "dark");
+  const [fontSize, setFontSize] = useState<FontSize>(() => (localStorage.getItem("font_size") as FontSize) || "medium");
   const bookmarks = getBookmarks();
   const pinnedDuas = JSON.parse(localStorage.getItem("dua_pins") || "[]").length;
   const savedHadithBooks = JSON.parse(localStorage.getItem("hadith_saved_books") || "[]").length;
@@ -23,6 +27,13 @@ const Settings: React.FC = () => {
     if (mode === "auto") { const hour = new Date().getHours(); isDark = hour < 6 || hour >= 18; } else isDark = mode === "dark";
     if (isDark) { root.classList.add("dark"); root.classList.remove("light"); } else { root.classList.add("light"); root.classList.remove("dark"); }
     localStorage.setItem("theme", isDark ? "dark" : "light"); localStorage.setItem("theme_mode", mode);
+  };
+
+  const applyFontSize = (size: FontSize) => {
+    document.documentElement.style.fontSize = FONT_SIZE_PX[size];
+    localStorage.setItem("font_size", size);
+    setFontSize(size);
+    toast({ title: t("settings.saved"), description: t("settings.fontSizeUpdated") });
   };
 
   useEffect(() => { applyTheme(themeMode); if (themeMode === "auto") { const interval = setInterval(() => applyTheme("auto"), 60000); return () => clearInterval(interval); } }, [themeMode]);
@@ -35,6 +46,12 @@ const Settings: React.FC = () => {
   ];
   const THEMES: { id: ThemeMode; icon: React.ReactNode; label: string }[] = [
     { id: "dark", icon: <Moon className="w-4 h-4" />, label: t("settings.dark") }, { id: "light", icon: <Sun className="w-4 h-4" />, label: t("settings.light") }, { id: "auto", icon: <Monitor className="w-4 h-4" />, label: t("settings.auto") },
+  ];
+  const FONT_SIZES_UI: { id: FontSize; label: string; previewSize: number }[] = [
+    { id: "small", label: t("settings.fontSmall"), previewSize: 12 },
+    { id: "medium", label: t("settings.fontMedium"), previewSize: 16 },
+    { id: "large", label: t("settings.fontLarge"), previewSize: 20 },
+    { id: "xlarge", label: t("settings.fontXLarge"), previewSize: 24 },
   ];
 
   return (
@@ -58,6 +75,20 @@ const Settings: React.FC = () => {
         <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2"><Languages className="w-4 h-4 text-primary" /> {t("settings.language")}</h2>
           <div className="flex gap-2">{LANGUAGES.map((l) => <button key={l.id} onClick={() => setLang(l.id)} className={`flex-1 py-2.5 rounded-xl text-xs font-medium transition-smooth ${lang === l.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}><span className="block">{l.native}</span><span className="block text-[9px] opacity-70">{l.label}</span></button>)}</div>
+        </div>
+        {/* Font Size */}
+        <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2"><Type className="w-4 h-4 text-primary" /> {t("settings.fontSize")}</h2>
+          <div className="flex gap-2">
+            {FONT_SIZES_UI.map((fs) => (
+              <button key={fs.id} onClick={() => applyFontSize(fs.id)}
+                className={`flex-1 py-2.5 rounded-xl font-medium transition-smooth flex flex-col items-center gap-1 ${fontSize === fs.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                <span style={{ fontSize: fs.previewSize }} className="font-bold leading-none">A</span>
+                <span className="text-[9px]">{fs.label}</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-muted-foreground text-center">{t("settings.fontSizeHint")}</p>
         </div>
         <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2"><Sun className="w-4 h-4 text-primary" /> {t("settings.theme")}</h2>
