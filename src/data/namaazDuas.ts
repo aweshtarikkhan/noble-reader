@@ -114,7 +114,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "رَبِّ هَبْ لِي مِنَ الصَّالِحِينَ",
     english: "My Lord, grant me (offspring) from the righteous.",
     urdu: "اے میرے رب! مجھے نیک اولاد عطا فرما۔",
-    romanUrdu: "Rabbi hab li minas saliheen.",
+    romanUrdu: "Aye mere Rab! Mujhe naik aulaad ata farma.",
     reference: "Quran 37:100"
   },
 
