@@ -24,7 +24,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "سُبْحَانَ رَبِّيَ الْعَظِيمِ",
     english: "Glory be to my Lord, the Most Great. (Recited 3 times in Ruku)",
     urdu: "میرا رب بزرگ و برتر پاک ہے۔ (رکوع میں ۳ مرتبہ پڑھیں)",
-    romanUrdu: "Subhana Rabbiyal Azeem. (3 baar padhein Ruku mein)",
+    romanUrdu: "Mera Rab buzurg o bartar paak hai. (Ruku mein 3 martaba padhein)",
     reference: "Abu Dawud, Tirmidhi"
   },
 
