@@ -123,7 +123,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "رَبِّ اجْعَلْنِي مُقِيمَ الصَّلَاةِ وَمِنْ ذُرِّيَّتِي رَبَّنَا وَتَقَبَّلْ دُعَاءِ",
     english: "My Lord, make me an establisher of prayer, and from my descendants. Our Lord, and accept my supplication.",
     urdu: "اے میرے رب! مجھے نماز قائم کرنے والا بنا اور میری اولاد کو بھی۔ اے ہمارے رب! میری دعا قبول فرما۔",
-    romanUrdu: "Rabbij'alni muqeemas salati wa min dhurriyyati Rabbana wa taqabbal du'a.",
+    romanUrdu: "Aye mere Rab! Mujhe namaaz qaim karne wala bana aur meri aulaad ko bhi. Aye hamare Rab! Meri dua qubool farma.",
     reference: "Quran 14:40"
   },
 
