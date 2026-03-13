@@ -69,7 +69,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "التَّحِيَّاتُ لِلَّهِ وَالصَّلَوَاتُ وَالطَّيِّبَاتُ ۝ السَّلَامُ عَلَيْكَ أَيُّهَا النَّبِيُّ وَرَحْمَةُ اللَّهِ وَبَرَكَاتُهُ ۝ السَّلَامُ عَلَيْنَا وَعَلَىٰ عِبَادِ اللَّهِ الصَّالِحِينَ ۝ أَشْهَدُ أَنْ لَا إِلٰهَ إِلَّا اللَّهُ وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ",
     english: "All greetings, prayers, and good things are for Allah. Peace be upon you, O Prophet, and the mercy of Allah and His blessings. Peace be upon us and on the righteous servants of Allah. I bear witness that none is worthy of worship except Allah, and I bear witness that Muhammad is His servant and messenger.",
     urdu: "تمام قولی، بدنی اور مالی عبادتیں اللہ کے لیے ہیں۔ اے نبی! آپ پر سلام ہو اور اللہ کی رحمت اور برکتیں ہوں۔ ہم پر اور اللہ کے نیک بندوں پر سلام ہو۔ میں گواہی دیتا ہوں کہ اللہ کے سوا کوئی معبود نہیں اور میں گواہی دیتا ہوں کہ محمد ﷺ اس کے بندے اور رسول ہیں۔",
-    romanUrdu: "Attahiyyatu lillahi was salawatu wat tayyibatu. Assalamu alaika ayyuhan Nabiyyu wa rahmatullahi wa barakatuh. Assalamu alaina wa ala ibadillahis saliheen. Ash-hadu alla ilaha illallahu wa ash-hadu anna Muhammadan abduhu wa rasuluh.",
+    romanUrdu: "Tamam qauli, badani aur maali ibadatein Allah ke liye hain. Aye Nabi! Aap par salaam ho aur Allah ki rehmat aur barkatein hon. Hum par aur Allah ke naik bandon par salaam ho. Mein gawahi deta hoon ke Allah ke siwa koi mabood nahi aur mein gawahi deta hoon ke Muhammad ﷺ us ke bande aur rasool hain.",
     reference: "Sahih Bukhari, Sahih Muslim"
   },
 
