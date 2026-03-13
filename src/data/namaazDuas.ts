@@ -105,7 +105,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ",
     english: "Our Lord, give us in this world that which is good and in the Hereafter that which is good, and protect us from the punishment of the Fire.",
     urdu: "اے ہمارے رب! ہمیں دنیا میں بھلائی دے اور آخرت میں بھلائی دے اور ہمیں آگ کے عذاب سے بچا۔",
-    romanUrdu: "Rabbana atina fid dunya hasanatan wa fil akhirati hasanatan wa qina adhaban Naar.",
+    romanUrdu: "Aye hamare Rab! Humein duniya mein bhalai de aur aakhirat mein bhalai de aur humein aag ke azaab se bacha.",
     reference: "Quran 2:201"
   },
 
