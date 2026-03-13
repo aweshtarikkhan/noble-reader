@@ -9,7 +9,6 @@ type Lang = "english" | "urdu" | "romanUrdu" | "hindi";
 const LANG_OPTIONS: { key: Lang; label: string }[] = [
   { key: "english", label: "English" },
   { key: "urdu", label: "اردو" },
-  { key: "hindi", label: "हिंदी" },
   { key: "romanUrdu", label: "Roman Urdu" },
 ];
 
