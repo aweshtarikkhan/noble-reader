@@ -15,7 +15,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ ۝ بِسْمِ اللَّهِ الرَّحْمٰنِ الرَّحِيمِ",
     english: "I seek refuge with Allah from Satan the accursed. In the name of Allah, the Most Gracious, the Most Merciful.",
     urdu: "میں شیطان مردود سے اللہ کی پناہ مانگتا ہوں۔ اللہ کے نام سے جو بڑا مہربان نہایت رحم والا ہے۔",
-    romanUrdu: "A'udhu billahi minash shaitanir rajeem. Bismillahir Rahmanir Raheem.",
+    romanUrdu: "Mein shaitaan mardood se Allah ki panah maangta hoon. Allah ke naam se jo bara meharbaan nihayat reham wala hai.",
     reference: "Quran 16:98"
   },
 
