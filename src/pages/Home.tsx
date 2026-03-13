@@ -226,10 +226,11 @@ const Home: React.FC = () => {
         <div className="grid grid-cols-2 gap-4">
           {QUICK_TOOLS.map((tool) => {
             const Icon = tool.icon;
+            const isLight = tool.theme === "light";
             return (
-              <button key={tool.path} onClick={() => navigate(tool.path)} className="flex flex-col items-center gap-4 py-6 px-4 rounded-2xl bg-card border border-primary/10 active:scale-95 transition-smooth shadow-sm">
-                <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center">
-                  <Icon className="w-10 h-10 text-primary" />
+              <button key={tool.path} onClick={() => navigate(tool.path)} className={`flex flex-col items-center gap-4 py-6 px-4 rounded-2xl border active:scale-95 transition-smooth shadow-sm ${isLight ? "bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20" : "bg-card border-primary/10"}`}>
+                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center ${isLight ? "bg-gradient-to-br from-primary/10 to-primary/20" : "bg-primary/10"}`}>
+                  <Icon className={`w-10 h-10 ${isLight ? "text-primary/80" : "text-primary"}`} />
                 </div>
                 <span className="text-base font-bold text-foreground text-center leading-tight">{tool.title}</span>
               </button>
