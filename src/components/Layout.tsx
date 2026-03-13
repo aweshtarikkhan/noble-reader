@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, BookOpen, Languages, Clock, PlayCircle, Settings } from "lucide-react";
+import { Home, BookOpen, Languages, Clock, PlayCircle, Globe } from "lucide-react";
 import ExitDialog from "./ExitDialog";
 import { useBackHandler } from "@/hooks/useBackHandler";
 import { getBookmarks } from "@/lib/bookmarks";
@@ -83,7 +83,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             className="w-9 h-9 flex items-center justify-center rounded-xl bg-card transition-smooth hover:bg-muted active:scale-90"
             aria-label="Settings"
           >
-            <Settings size={18} className="text-primary" />
+            <Globe size={18} className="text-primary" />
           </button>
         </div>
       </header>
