@@ -83,7 +83,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             className="w-9 h-9 flex items-center justify-center rounded-xl bg-card transition-smooth hover:bg-muted active:scale-90"
             aria-label="Settings"
           >
-            <Settings size={18} className="text-primary" />
+            <Globe size={18} className="text-primary" />
           </button>
         </div>
       </header>
