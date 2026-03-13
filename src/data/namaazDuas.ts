@@ -51,7 +51,7 @@ export const NAMAAZ_DUAS: DuaTranslation[] = [
     arabic: "سُبْحَانَ رَبِّيَ الْأَعْلَىٰ",
     english: "Glory be to my Lord, the Most High. (Recited 3 times in Sajdah)",
     urdu: "میرا رب سب سے بلند پاک ہے۔ (سجدے میں ۳ مرتبہ پڑھیں)",
-    romanUrdu: "Subhana Rabbiyal A'la. (3 baar padhein Sajde mein)",
+    romanUrdu: "Mera Rab sab se buland paak hai. (Sajde mein 3 martaba padhein)",
     reference: "Abu Dawud, Tirmidhi"
   },
 
