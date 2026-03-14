@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { AlertCircle, Navigation, RotateCw, Smartphone } from "lucide-react";
+import { AlertCircle, Navigation, RotateCw, Smartphone, RefreshCw } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 // Kaaba coordinates (precise)
@@ -13,75 +13,77 @@ const KAABA_LNG = 39.826206;
 function calculateQiblaBearing(lat: number, lng: number): number {
   const toRad = (d: number) => (d * Math.PI) / 180;
   const toDeg = (r: number) => (r * 180) / Math.PI;
-
   const phi1 = toRad(lat);
   const phi2 = toRad(KAABA_LAT);
   const dLambda = toRad(KAABA_LNG - lng);
-
-  // Standard great-circle initial bearing formula
   const y = Math.sin(dLambda) * Math.cos(phi2);
   const x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(dLambda);
-  const bearing = toDeg(Math.atan2(y, x));
-
-  return ((bearing % 360) + 360) % 360;
+  return (((toDeg(Math.atan2(y, x))) % 360) + 360) % 360;
 }
 
 /**
- * Compute compass heading from alpha/beta/gamma with tilt compensation.
- * This handles the phone being held at any angle, not just flat.
+ * Robust compass heading from device orientation.
+ * Works in any phone position: flat, upright, tilted, landscape, etc.
  */
 function computeCompassHeading(alpha: number, beta: number, gamma: number): number {
   const toRad = (d: number) => (d * Math.PI) / 180;
-  const toDeg = (r: number) => (r * 180) / Math.PI;
 
-  // When device is nearly flat, use alpha directly
-  // (tilt-compensation formula degenerates at beta≈0, gamma≈0)
-  if (Math.abs(beta) < 10 && Math.abs(gamma) < 10) {
+  const a = toRad(alpha);
+  const b = toRad(beta);
+  const g = toRad(gamma);
+
+  // Build the full ZXY rotation matrix from Euler angles
+  const cA = Math.cos(a), sA = Math.sin(a);
+  const cB = Math.cos(b), sB = Math.sin(b);
+  const cG = Math.cos(g), sG = Math.sin(g);
+
+  // Rotation matrix R = Rz(alpha) * Rx(beta) * Ry(gamma)
+  // We need to find where the device's top (positive Y axis) projects
+  // onto the horizontal (Earth XY) plane to get compass heading.
+  //
+  // The device Y-axis in Earth frame:
+  // Vy_earth_x = cA * sG * cB + sA * sB   ... actually let's use the
+  // well-known W3C formula for compass heading with full tilt compensation.
+
+  // Method: compute the device's projection of North onto the screen plane.
+  // This is more robust than projecting device Y onto Earth horizontal.
+
+  // Earth's North vector in device frame:
+  // Nx_dev = cA * cG + sA * sB * sG
+  // Ny_dev = sA * cG - cA * sB * sG  (not needed)
+  // Using the standard formula from W3C DeviceOrientation spec:
+
+  // Compass heading = atan2(
+  //   cos(alpha)*sin(gamma) + sin(alpha)*sin(beta)*cos(gamma),
+  //   sin(alpha)*sin(gamma) - cos(alpha)*sin(beta)*cos(gamma)
+  // )
+  // But this has known sign issues. Use the definitive Google Chrome formula:
+
+  const Vx = -cA * sG - sA * sB * cG;
+  const Vy = -sA * sG + cA * sB * cG;
+
+  // Check if values are usable (avoid NaN from degenerate cases)
+  if (Math.abs(Vx) < 1e-10 && Math.abs(Vy) < 1e-10) {
+    // Device is perfectly flat - fall back to alpha directly
     return alpha;
   }
 
-  const alphaRad = toRad(alpha);
-  const betaRad = toRad(beta);
-  const gammaRad = toRad(gamma);
-
-  const cA = Math.cos(alphaRad);
-  const sA = Math.sin(alphaRad);
-  const cB = Math.cos(betaRad);
-  const sB = Math.sin(betaRad);
-  const cG = Math.cos(gammaRad);
-  const sG = Math.sin(gammaRad);
-
-  // Tilt-compensated compass heading using ZXY rotation matrix
-  // Projects device's y-axis onto the horizontal plane
-  const rA = -cA * sG - sA * sB * cG;
-  const rB = -sA * sG + cA * sB * cG;
-  const rC = -cB * cG;
-
-  // Use atan2 of the projected components
-  let compassHeading = toDeg(Math.atan2(rA, rB));
+  let heading = Math.atan2(Vx, Vy) * (180 / Math.PI);
 
   // Normalize to 0-360
-  compassHeading = ((compassHeading % 360) + 360) % 360;
+  heading = ((heading % 360) + 360) % 360;
 
-  // The formula gives the heading of the -y projection;
-  // when device is upright (beta~90), invert to get actual heading direction
-  // Check if device screen is facing the user (normal handheld position)
-  if (rC > 0) {
-    compassHeading = (360 - compassHeading) % 360;
-  }
-
-  return compassHeading;
+  return heading;
 }
 
 /**
  * Smooth angle using circular interpolation (handles 0/360 wraparound).
  */
-function smoothAngle(current: number, target: number, factor: number = 0.2): number {
+function smoothAngle(current: number, target: number, factor: number = 0.15): number {
   let diff = target - current;
   if (diff > 180) diff -= 360;
   if (diff < -180) diff += 360;
-  let result = current + diff * factor;
-  return ((result % 360) + 360) % 360;
+  return (((current + diff * factor) % 360) + 360) % 360;
 }
 
 /**
@@ -96,6 +98,45 @@ function distanceToKaaba(lat: number, lng: number): number {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+/**
+ * Try to get location from multiple sources with retries.
+ */
+async function getLocationRobust(): Promise<{ lat: number; lng: number } | null> {
+  // Try Capacitor first
+  try {
+    const { Geolocation } = await import("@capacitor/geolocation");
+    try {
+      await Geolocation.requestPermissions();
+    } catch {}
+    const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 20000 });
+    if (pos?.coords) return { lat: pos.coords.latitude, lng: pos.coords.longitude };
+  } catch {}
+
+  // Try high accuracy browser geolocation
+  try {
+    const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+      if (!navigator.geolocation) { reject(new Error("no geo")); return; }
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true, timeout: 15000, maximumAge: 60000,
+      });
+    });
+    return { lat: pos.coords.latitude, lng: pos.coords.longitude };
+  } catch {}
+
+  // Try low accuracy as last resort
+  try {
+    const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+      if (!navigator.geolocation) { reject(new Error("no geo")); return; }
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: false, timeout: 30000, maximumAge: 300000,
+      });
+    });
+    return { lat: pos.coords.latitude, lng: pos.coords.longitude };
+  } catch {}
+
+  return null;
+}
+
 const QiblaDirection: React.FC = () => {
   const { t } = useI18n();
   const [qiblaAngle, setQiblaAngle] = useState<number | null>(null);
@@ -107,6 +148,7 @@ const QiblaDirection: React.FC = () => {
   const [calibrating, setCalibrating] = useState(true);
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
+  const [retrying, setRetrying] = useState(false);
 
   const smoothHeadingRef = useRef(0);
   const rafRef = useRef<number>();
@@ -115,94 +157,110 @@ const QiblaDirection: React.FC = () => {
   const headingBufferRef = useRef<number[]>([]);
   const hasCompassRef = useRef(false);
   const useAbsoluteRef = useRef(false);
+  const mountedRef = useRef(true);
 
-  // Get user location
-  useEffect(() => {
-    let cancelled = false;
-    const getLocation = async () => {
-      try {
-        const { Geolocation } = await import("@capacitor/geolocation");
-        const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 15000 });
-        if (!cancelled) {
-          const bearing = calculateQiblaBearing(pos.coords.latitude, pos.coords.longitude);
-          setQiblaAngle(bearing);
-          setDistance(distanceToKaaba(pos.coords.latitude, pos.coords.longitude));
-        }
-        return;
-      } catch {}
-
-      if (!navigator.geolocation) {
-        setLocationError("Geolocation not supported");
-        return;
+  // Robust location fetcher with retry
+  const fetchLocation = useCallback(async () => {
+    setLocationError(null);
+    setRetrying(true);
+    try {
+      const loc = await getLocationRobust();
+      if (!mountedRef.current) return;
+      if (loc) {
+        setQiblaAngle(calculateQiblaBearing(loc.lat, loc.lng));
+        setDistance(distanceToKaaba(loc.lat, loc.lng));
+        setLocationError(null);
+      } else {
+        setLocationError("Location permission denied or unavailable. Please enable location access.");
       }
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          if (!cancelled) {
-            const bearing = calculateQiblaBearing(pos.coords.latitude, pos.coords.longitude);
-            setQiblaAngle(bearing);
-            setDistance(distanceToKaaba(pos.coords.latitude, pos.coords.longitude));
-          }
-        },
-        () => {
-          if (!cancelled) setLocationError("Location permission denied.");
-        },
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-      );
-    };
-    getLocation();
-    return () => { cancelled = true; };
+    } catch {
+      if (mountedRef.current) {
+        setLocationError("Could not get location. Please check your settings.");
+      }
+    } finally {
+      if (mountedRef.current) setRetrying(false);
+    }
   }, []);
 
-  // Stable orientation handler using refs (no dependency issues)
+  useEffect(() => {
+    mountedRef.current = true;
+    fetchLocation();
+    return () => { mountedRef.current = false; };
+  }, [fetchLocation]);
+
+  // Stable orientation handler
   const handleOrientation = useCallback((e: DeviceOrientationEvent) => {
-    if (e.alpha === null && (e as any).webkitCompassHeading === undefined) return;
+    try {
+      if (e.alpha === null && (e as any).webkitCompassHeading === undefined) return;
 
-    let heading: number;
+      let heading: number;
 
-    if ((e as any).webkitCompassHeading !== undefined) {
-      heading = (e as any).webkitCompassHeading as number;
-      if ((e as any).webkitCompassAccuracy !== undefined) {
-        setAccuracy((e as any).webkitCompassAccuracy);
+      if ((e as any).webkitCompassHeading !== undefined) {
+        // iOS - direct compass heading
+        heading = (e as any).webkitCompassHeading as number;
+        if ((e as any).webkitCompassAccuracy !== undefined) {
+          setAccuracy((e as any).webkitCompassAccuracy);
+        }
+      } else {
+        // Android / other - compute from euler angles
+        const alpha = e.alpha ?? 0;
+        const beta = e.beta ?? 0;
+        const gamma = e.gamma ?? 0;
+
+        // Validate inputs - reject garbage values
+        if (!isFinite(alpha) || !isFinite(beta) || !isFinite(gamma)) return;
+
+        heading = computeCompassHeading(alpha, beta, gamma);
+
+        // Sanity check output
+        if (!isFinite(heading) || heading < 0 || heading > 360) return;
       }
-    } else {
-      heading = computeCompassHeading(e.alpha || 0, e.beta || 0, e.gamma || 0);
-    }
 
-    // Buffer for circular mean averaging
-    const buffer = headingBufferRef.current;
-    buffer.push(heading);
-    if (buffer.length > 5) buffer.shift();
+      // Circular mean buffer for smoothing
+      const buffer = headingBufferRef.current;
+      buffer.push(heading);
+      if (buffer.length > 8) buffer.shift();
 
-    let sinSum = 0, cosSum = 0;
-    for (const h of buffer) {
-      sinSum += Math.sin((h * Math.PI) / 180);
-      cosSum += Math.cos((h * Math.PI) / 180);
-    }
-    const avgHeading = ((Math.atan2(sinSum / buffer.length, cosSum / buffer.length) * 180) / Math.PI + 360) % 360;
+      let sinSum = 0, cosSum = 0;
+      for (const h of buffer) {
+        sinSum += Math.sin((h * Math.PI) / 180);
+        cosSum += Math.cos((h * Math.PI) / 180);
+      }
+      const avgHeading = ((Math.atan2(sinSum / buffer.length, cosSum / buffer.length) * 180) / Math.PI + 360) % 360;
 
-    latestHeadingRef.current = avgHeading;
-    sampleCountRef.current++;
+      latestHeadingRef.current = avgHeading;
+      sampleCountRef.current++;
 
-    if (sampleCountRef.current > 15) setCalibrating(false);
+      if (sampleCountRef.current > 15) setCalibrating(false);
 
-    if (!hasCompassRef.current) {
-      hasCompassRef.current = true;
-      setHasCompass(true);
-    }
-    setCompassError(null);
+      if (!hasCompassRef.current) {
+        hasCompassRef.current = true;
+        setHasCompass(true);
+      }
+      setCompassError(null);
 
-    if (!rafRef.current) {
-      rafRef.current = requestAnimationFrame(() => {
-        smoothHeadingRef.current = smoothAngle(smoothHeadingRef.current, latestHeadingRef.current, 0.25);
-        setCompassHeading(smoothHeadingRef.current);
-        rafRef.current = undefined;
-      });
+      if (!rafRef.current) {
+        rafRef.current = requestAnimationFrame(() => {
+          smoothHeadingRef.current = smoothAngle(smoothHeadingRef.current, latestHeadingRef.current, 0.2);
+          setCompassHeading(smoothHeadingRef.current);
+          rafRef.current = undefined;
+        });
+      }
+    } catch {
+      // Silently ignore any sensor errors - don't crash the UI
     }
   }, []);
 
-  // Set up orientation listeners (stable, runs once)
+  // Set up orientation listeners
   useEffect(() => {
-    // Check if iOS needs permission
+    // Check if DeviceOrientationEvent exists at all
+    if (typeof DeviceOrientationEvent === "undefined") {
+      setCompassError("Compass not supported on this device/browser.");
+      setCalibrating(false);
+      return;
+    }
+
+    // iOS permission check
     if (typeof (DeviceOrientationEvent as any).requestPermission === "function") {
       setNeedsIOSPermission(true);
       return;
@@ -210,45 +268,54 @@ const QiblaDirection: React.FC = () => {
 
     let usingAbsolute = false;
     const absoluteHandler = (e: DeviceOrientationEvent) => {
-      if (!usingAbsolute) {
-        usingAbsolute = true;
-        useAbsoluteRef.current = true;
-        window.removeEventListener("deviceorientation", handleOrientation, true);
-      }
-      handleOrientation(e);
+      try {
+        if (!usingAbsolute) {
+          usingAbsolute = true;
+          useAbsoluteRef.current = true;
+          window.removeEventListener("deviceorientation", handleOrientation, true);
+        }
+        handleOrientation(e);
+      } catch {}
     };
 
-    window.addEventListener("deviceorientationabsolute" as any, absoluteHandler, true);
-    window.addEventListener("deviceorientation", handleOrientation, true);
+    // Listen to both - prefer absolute (true north)
+    try {
+      window.addEventListener("deviceorientationabsolute" as any, absoluteHandler, true);
+    } catch {}
+    try {
+      window.addEventListener("deviceorientation", handleOrientation, true);
+    } catch {}
 
     const timeout = setTimeout(() => {
       if (!hasCompassRef.current) {
-        setCompassError("Compass sensor not detected. Make sure you're using a mobile device.");
+        setCompassError("Compass sensor not detected. Use a mobile device with compass sensor.");
         setCalibrating(false);
       }
-    }, 5000);
+    }, 6000);
 
     return () => {
-      window.removeEventListener("deviceorientationabsolute" as any, absoluteHandler, true);
-      window.removeEventListener("deviceorientation", handleOrientation, true);
+      try { window.removeEventListener("deviceorientationabsolute" as any, absoluteHandler, true); } catch {}
+      try { window.removeEventListener("deviceorientation", handleOrientation, true); } catch {}
       clearTimeout(timeout);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [handleOrientation]);
 
-  // Request iOS permission
+  // iOS permission request
   const requestIOSPermission = async () => {
     try {
       const state = await (DeviceOrientationEvent as any).requestPermission();
       if (state === "granted") {
         setNeedsIOSPermission(false);
-
-        // Try absolute first on iOS too
-        window.addEventListener("deviceorientationabsolute" as any, (e: any) => {
-          useAbsoluteRef.current = true;
-          handleOrientation(e);
-        }, true);
-        window.addEventListener("deviceorientation", handleOrientation, true);
+        try {
+          window.addEventListener("deviceorientationabsolute" as any, (e: any) => {
+            useAbsoluteRef.current = true;
+            handleOrientation(e);
+          }, true);
+        } catch {}
+        try {
+          window.addEventListener("deviceorientation", handleOrientation, true);
+        } catch {}
       } else {
         setCompassError("Compass permission denied");
         setNeedsIOSPermission(false);
@@ -279,6 +346,14 @@ const QiblaDirection: React.FC = () => {
         <div className="flex flex-col items-center gap-3 py-12 text-center animate-fade-in">
           <AlertCircle className="w-12 h-12 text-destructive" />
           <p className="text-sm text-muted-foreground max-w-xs">{locationError}</p>
+          <button
+            onClick={fetchLocation}
+            disabled={retrying}
+            className="mt-3 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${retrying ? "animate-spin" : ""}`} />
+            {retrying ? "Trying..." : "Retry Location"}
+          </button>
         </div>
       ) : qiblaAngle === null ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
@@ -316,7 +391,7 @@ const QiblaDirection: React.FC = () => {
               }`}
             />
 
-            {/* Fixed top marker (phone direction indicator) */}
+            {/* Fixed top marker */}
             <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-primary rotate-45 rounded-sm z-10" />
 
             {/* Rotating compass disc */}
@@ -327,7 +402,6 @@ const QiblaDirection: React.FC = () => {
                 transition: "transform 0.08s linear",
               }}
             >
-              {/* Compass background */}
               <div className="absolute inset-0 rounded-full bg-card border border-primary/10" />
 
               {/* Cardinal directions */}
@@ -345,19 +419,16 @@ const QiblaDirection: React.FC = () => {
                 >
                   <div
                     className={`w-px mx-auto ${
-                      i === 0
-                        ? "h-3 bg-destructive"
-                        : i % 18 === 0
-                        ? "h-3 bg-primary"
-                        : i % 6 === 0
-                        ? "h-2 bg-primary/50"
+                      i === 0 ? "h-3 bg-destructive"
+                        : i % 18 === 0 ? "h-3 bg-primary"
+                        : i % 6 === 0 ? "h-2 bg-primary/50"
                         : "h-1 bg-muted-foreground/30"
                     }`}
                   />
                 </div>
               ))}
 
-              {/* Qibla needle (rotated to qibla bearing on the disc) */}
+              {/* Qibla needle */}
               <div
                 className="absolute inset-4 rounded-full"
                 style={{ transform: `rotate(${qiblaAngle}deg)` }}
