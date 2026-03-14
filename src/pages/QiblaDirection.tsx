@@ -34,11 +34,16 @@ function computeCompassHeading(alpha: number, beta: number, gamma: number): numb
   const toRad = (d: number) => (d * Math.PI) / 180;
   const toDeg = (r: number) => (r * 180) / Math.PI;
 
+  // When device is nearly flat, use alpha directly
+  // (tilt-compensation formula degenerates at beta≈0, gamma≈0)
+  if (Math.abs(beta) < 10 && Math.abs(gamma) < 10) {
+    return alpha;
+  }
+
   const alphaRad = toRad(alpha);
   const betaRad = toRad(beta);
   const gammaRad = toRad(gamma);
 
-  // Rotation matrix components for tilt compensation
   const cA = Math.cos(alphaRad);
   const sA = Math.sin(alphaRad);
   const cB = Math.cos(betaRad);
@@ -46,16 +51,24 @@ function computeCompassHeading(alpha: number, beta: number, gamma: number): numb
   const cG = Math.cos(gammaRad);
   const sG = Math.sin(gammaRad);
 
-  // Compute compass heading with tilt compensation
-  // Project the device's y-axis onto the horizontal plane
+  // Tilt-compensated compass heading using ZXY rotation matrix
+  // Projects device's y-axis onto the horizontal plane
   const rA = -cA * sG - sA * sB * cG;
   const rB = -sA * sG + cA * sB * cG;
+  const rC = -cB * cG;
 
-  // Compass heading in degrees
+  // Use atan2 of the projected components
   let compassHeading = toDeg(Math.atan2(rA, rB));
 
   // Normalize to 0-360
   compassHeading = ((compassHeading % 360) + 360) % 360;
+
+  // The formula gives the heading of the -y projection;
+  // when device is upright (beta~90), invert to get actual heading direction
+  // Check if device screen is facing the user (normal handheld position)
+  if (rC > 0) {
+    compassHeading = (360 - compassHeading) % 360;
+  }
 
   return compassHeading;
 }
