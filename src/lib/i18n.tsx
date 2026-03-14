@@ -248,6 +248,11 @@ const T: Translations = {
   "calendar.today": { en: "Today", ur: "آج", hi: "आज" },
   "calendar.ah": { en: "AH", ur: "ہجری", hi: "हिजरी" },
   "calendar.importantDates": { en: "Important Dates This Month", ur: "اس ماہ کی اہم تاریخیں", hi: "इस माह की महत्वपूर्ण तिथियां" },
+  "calendar.dateAdjust": { en: "Date Adjustment", ur: "تاریخ کی تصحیح", hi: "तिथि समायोजन" },
+  "calendar.dayBehind": { en: "-1 Day", ur: "-۱ دن", hi: "-1 दिन" },
+  "calendar.auto": { en: "Auto", ur: "آٹو", hi: "ऑटो" },
+  "calendar.dayAhead": { en: "+1 Day", ur: "+۱ دن", hi: "+1 दिन" },
+  "calendar.events": { en: "Events", ur: "واقعات", hi: "कार्यक्रम" },
 
   // Prayer names
   "prayerName.Fajr": { en: "Fajr", ur: "فجر", hi: "फ़ज्र" },

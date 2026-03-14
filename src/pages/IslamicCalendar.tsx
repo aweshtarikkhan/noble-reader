@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { ChevronLeft, ChevronRight, MapPin, Moon, Star, Globe } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Moon, Star, Globe, Minus, Plus } from "lucide-react";
 import { useSharedLocation } from "@/hooks/useSharedLocation";
 import { useI18n } from "@/lib/i18n";
 import { QuranAPI } from "@/lib/quranApi";
-
 
 const HIJRI_MONTHS = [
   "Muharram", "Safar", "Rabi al-Awwal", "Rabi al-Thani",
@@ -17,9 +16,26 @@ const HIJRI_MONTHS_AR = [
   "رمضان", "شوال", "ذوالقعدہ", "ذوالحجہ"
 ];
 
+const HIJRI_MONTHS_SHORT = [
+  "Muh", "Saf", "R.Aw", "R.Th",
+  "J.Ul", "J.Th", "Raj", "Sha",
+  "Ram", "Shw", "DhQ", "DhH"
+];
+
+const HIJRI_MONTHS_AR_SHORT = [
+  "محرم", "صفر", "ر.اول", "ر.ثانی",
+  "ج.اولیٰ", "ج.ثانی", "رجب", "شعبان",
+  "رمضان", "شوال", "ذ.قعدہ", "ذ.حجہ"
+];
+
 const GREGORIAN_MONTHS = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
+];
+
+const GREGORIAN_MONTHS_SHORT = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 ];
 
 const WEEKDAYS_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -40,7 +56,6 @@ const IMPORTANT_DATES: Record<string, { en: string; ur: string; hi: string }> = 
   "12-10": { en: "Eid ul-Adha", ur: "عید الاضحی", hi: "ईद-उल-अज़हा" },
 };
 
-// Gregorian important dates: "month-day" format
 const GREGORIAN_IMPORTANT_DATES: Record<string, { en: string; ur: string; hi: string }> = {
   "1-1": { en: "New Year's Day", ur: "نیا سال", hi: "नया साल" },
   "1-26": { en: "Republic Day (India)", ur: "یوم جمہوریہ (بھارت)", hi: "गणतंत्र दिवस (भारत)" },
@@ -82,6 +97,12 @@ interface HijriDate {
   monthName: string;
 }
 
+interface HijriDayInfo {
+  day: number;
+  month: number;
+  year: number;
+}
+
 const getHijriFromApi = async (date: Date, adjustment: number): Promise<HijriDate | null> => {
   try {
     const dd = String(date.getDate()).padStart(2, "0");
@@ -97,28 +118,6 @@ const getHijriFromApi = async (date: Date, adjustment: number): Promise<HijriDat
   return null;
 };
 
-const getHijriMonth = async (month: number, year: number, adjustment: number): Promise<{ gregorian: string; gregorianShort: string; hijriDay: number; weekday: number }[]> => {
-  try {
-    const res = await fetch(`https://api.aladhan.com/v1/hToGCalendar/${month}/${year}?adjustment=${adjustment}`);
-    const data = await res.json();
-    if (data.code === 200) {
-      return data.data.map((item: any) => {
-        const g = item.gregorian;
-        const gDate = new Date(parseInt(g.year), parseInt(g.month.number) - 1, parseInt(g.day));
-        return {
-          gregorian: `${g.day} ${g.month.en} ${g.year}`,
-          gregorianShort: `${g.day} ${g.month.en.substring(0, 3)}`,
-          hijriDay: parseInt(item.hijri.day),
-          weekday: gDate.getDay(),
-        };
-      });
-    }
-  } catch {}
-  return [];
-};
-
-
-// Gregorian calendar helpers
 function getGregorianDaysInMonth(month: number, year: number): number {
   return new Date(year, month, 0).getDate();
 }
@@ -127,19 +126,42 @@ function getGregorianFirstDayOfWeek(month: number, year: number): number {
   return new Date(year, month - 1, 1).getDay();
 }
 
+function getHijriMonthName(month: number, lang: string): string {
+  if (lang === "ur" || lang === "hi") return HIJRI_MONTHS_AR[month - 1] || "";
+  return HIJRI_MONTHS[month - 1] || "";
+}
+
+function getHijriMonthShort(month: number, lang: string): string {
+  if (lang === "ur" || lang === "hi") return HIJRI_MONTHS_AR_SHORT[month - 1] || "";
+  return HIJRI_MONTHS_SHORT[month - 1] || "";
+}
+
 const IslamicCalendar: React.FC = () => {
   const { t, lang } = useI18n();
   const { location } = useSharedLocation();
   const [countryCode, setCountryCode] = useState<string>("");
   const [detecting, setDetecting] = useState(true);
   const [currentHijri, setCurrentHijri] = useState<HijriDate | null>(null);
-  // Gregorian state
   const now = new Date();
-  const [gMonth, setGMonth] = useState(now.getMonth() + 1); // 1-12
+  const [gMonth, setGMonth] = useState(now.getMonth() + 1);
   const [gYear, setGYear] = useState(now.getFullYear());
-  const [hijriForGregorian, setHijriForGregorian] = useState<Map<number, { day: number; month: number }>>(new Map());
+  const [hijriForGregorian, setHijriForGregorian] = useState<Map<number, HijriDayInfo>>(new Map());
+  
+  // User manual adjustment: -1, 0, +1
+  const [userAdjust, setUserAdjust] = useState<number>(() => {
+    const saved = localStorage.getItem("hijri_user_adjust");
+    return saved ? parseInt(saved) : 0;
+  });
 
   const config = useMemo(() => getRegionalConfig(countryCode), [countryCode]);
+  
+  // Total adjustment = regional + user manual
+  const totalAdjustment = config.adjustment + userAdjust;
+
+  const handleUserAdjust = (val: number) => {
+    setUserAdjust(val);
+    localStorage.setItem("hijri_user_adjust", String(val));
+  };
 
   // Auto-detect country from location
   useEffect(() => {
@@ -150,7 +172,6 @@ const IslamicCalendar: React.FC = () => {
         setDetecting(false);
         return;
       }
-
       if (location?.lat && location?.lng) {
         try {
           const result = await QuranAPI.reverseGeocodeWithCountry(location.lat, location.lng);
@@ -162,7 +183,6 @@ const IslamicCalendar: React.FC = () => {
         setDetecting(false);
         return;
       }
-
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           async (pos) => {
@@ -185,52 +205,50 @@ const IslamicCalendar: React.FC = () => {
     detectCountry();
   }, [location?.lat, location?.lng]);
 
-  // Get today's hijri date using same logic as Prayer Times page
-  // Islamic day starts at sunset (Maghrib), so before Maghrib we use previous day
+  // Get today's hijri date
   useEffect(() => {
     if (detecting) return;
     const fetchToday = async () => {
       const now = new Date();
       const prevDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-      const hijri = await getHijriFromApi(prevDay, config.adjustment);
+      const hijri = await getHijriFromApi(prevDay, totalAdjustment);
       if (hijri) setCurrentHijri(hijri);
     };
     fetchToday();
-  }, [detecting, config.adjustment]);
+  }, [detecting, totalAdjustment]);
 
   // Fetch hijri dates for each day of the gregorian month
-  // Shift by 1 day: each gregorian day shows the hijri date from the previous day's API data
-  // This matches the sunset-boundary logic used in Prayer Times
   useEffect(() => {
     const fetchHijriForMonth = async () => {
       const daysInMonth = getGregorianDaysInMonth(gMonth, gYear);
-      const map = new Map<number, { day: number; month: number }>();
+      const map = new Map<number, HijriDayInfo>();
       try {
-        const res = await fetch(`https://api.aladhan.com/v1/gToHCalendar/${gMonth}/${gYear}?adjustment=${config.adjustment}`);
+        const res = await fetch(`https://api.aladhan.com/v1/gToHCalendar/${gMonth}/${gYear}?adjustment=${totalAdjustment}`);
         const data = await res.json();
         if (data.code === 200) {
           const items = data.data;
-          // Shift: each day's hijri goes to the NEXT gregorian day
           for (let idx = 0; idx < items.length; idx++) {
             const hDay = parseInt(items[idx].hijri.day);
             const hMonth = parseInt(items[idx].hijri.month.number);
+            const hYear = parseInt(items[idx].hijri.year);
             const nextGDay = parseInt(items[idx].gregorian.day) + 1;
             if (nextGDay <= daysInMonth) {
-              map.set(nextGDay, { day: hDay, month: hMonth });
+              map.set(nextGDay, { day: hDay, month: hMonth, year: hYear });
             }
           }
           // For day 1: get hijri from last day of previous month
           try {
-            const prevDate = new Date(gYear, gMonth - 1, 0); // last day of prev month
+            const prevDate = new Date(gYear, gMonth - 1, 0);
             const dd = String(prevDate.getDate()).padStart(2, "0");
             const mm = String(prevDate.getMonth() + 1).padStart(2, "0");
             const yyyy = prevDate.getFullYear();
-            const prevRes = await fetch(`https://api.aladhan.com/v1/gToH/${dd}-${mm}-${yyyy}?adjustment=${config.adjustment}`);
+            const prevRes = await fetch(`https://api.aladhan.com/v1/gToH/${dd}-${mm}-${yyyy}?adjustment=${totalAdjustment}`);
             const prevData = await prevRes.json();
             if (prevData.code === 200) {
               map.set(1, {
                 day: parseInt(prevData.data.hijri.day),
                 month: parseInt(prevData.data.hijri.month.number),
+                year: parseInt(prevData.data.hijri.year),
               });
             }
           } catch {}
@@ -239,7 +257,7 @@ const IslamicCalendar: React.FC = () => {
       setHijriForGregorian(map);
     };
     fetchHijriForMonth();
-  }, [gMonth, gYear, config.adjustment]);
+  }, [gMonth, gYear, totalAdjustment]);
 
   const prevGMonth = () => {
     if (gMonth <= 1) { setGMonth(12); setGYear(y => y - 1); }
@@ -253,7 +271,6 @@ const IslamicCalendar: React.FC = () => {
 
   const weekdays = lang === "ur" ? WEEKDAYS_UR : lang === "hi" ? WEEKDAYS_HI : WEEKDAYS_EN;
 
-  // Gregorian calendar grid
   const gCalendarGrid = useMemo(() => {
     const daysInMonth = getGregorianDaysInMonth(gMonth, gYear);
     const firstDay = getGregorianFirstDayOfWeek(gMonth, gYear);
@@ -265,11 +282,10 @@ const IslamicCalendar: React.FC = () => {
 
   const gTodayDay = now.getMonth() + 1 === gMonth && now.getFullYear() === gYear ? now.getDate() : null;
 
-  // Combine both islamic and gregorian important dates for this month
+  // All month events (islamic + gregorian)
   const allMonthEvents = useMemo(() => {
-    const events: { day: number; label: string; type: "islamic" | "gregorian" }[] = [];
+    const events: { day: number; label: string; type: "islamic" | "gregorian"; hijriLabel?: string }[] = [];
     
-    // Gregorian important dates
     for (const [key, val] of Object.entries(GREGORIAN_IMPORTANT_DATES)) {
       const [m, d] = key.split("-").map(Number);
       if (m === gMonth) {
@@ -277,13 +293,12 @@ const IslamicCalendar: React.FC = () => {
       }
     }
 
-    // Islamic important dates mapped to gregorian days
     for (const [key, val] of Object.entries(IMPORTANT_DATES)) {
       const [hm, hd] = key.split("-").map(Number);
-      // Find which gregorian day has this hijri date
       for (const [gDay, hijri] of hijriForGregorian.entries()) {
         if (hijri.month === hm && hijri.day === hd) {
-          events.push({ day: gDay, label: val[lang] || val.en, type: "islamic" });
+          const hijriLabel = `${hd} ${getHijriMonthName(hm, lang)}`;
+          events.push({ day: gDay, label: val[lang] || val.en, type: "islamic", hijriLabel });
         }
       }
     }
@@ -293,6 +308,17 @@ const IslamicCalendar: React.FC = () => {
   }, [gMonth, gYear, lang, hijriForGregorian]);
 
   const allImportantDays = new Set(allMonthEvents.map(e => e.day));
+
+  // Find days where hijri month changes (day 1 of a new hijri month)
+  const hijriMonthChangeDays = useMemo(() => {
+    const changes = new Map<number, number>(); // gDay -> new hijri month
+    for (const [gDay, hijri] of hijriForGregorian.entries()) {
+      if (hijri.day === 1) {
+        changes.set(gDay, hijri.month);
+      }
+    }
+    return changes;
+  }, [hijriForGregorian]);
 
   if (detecting) {
     return (
@@ -304,31 +330,58 @@ const IslamicCalendar: React.FC = () => {
   }
 
   return (
-    <div className="px-4 py-4 space-y-4">
-      {/* Regional Method Badge */}
-      <div className="flex items-center justify-center gap-2 animate-fade-in">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-full">
-          <Globe className="w-3.5 h-3.5 text-primary" />
-          <span className="text-[11px] font-medium text-primary">
+    <div className="px-3 py-3 space-y-3">
+      {/* Regional + Adjustment Row */}
+      <div className="flex items-center justify-between gap-2 animate-fade-in">
+        <div className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 border border-primary/20 rounded-full">
+          <Globe className="w-3 h-3 text-primary" />
+          <span className="text-[10px] font-medium text-primary">
             {config.label}
-            {countryCode && <span className="ml-1 opacity-60">({countryCode})</span>}
+            {countryCode && <span className="ml-0.5 opacity-60">({countryCode})</span>}
           </span>
+        </div>
+        
+        {/* Date Adjustment Buttons */}
+        <div className="flex items-center gap-1 bg-muted rounded-full p-0.5">
+          <button
+            onClick={() => handleUserAdjust(-1)}
+            className={`px-2 py-1 rounded-full text-[10px] font-semibold transition-all ${
+              userAdjust === -1 ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            -1
+          </button>
+          <button
+            onClick={() => handleUserAdjust(0)}
+            className={`px-2 py-1 rounded-full text-[10px] font-semibold transition-all ${
+              userAdjust === 0 ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t("calendar.auto")}
+          </button>
+          <button
+            onClick={() => handleUserAdjust(1)}
+            className={`px-2 py-1 rounded-full text-[10px] font-semibold transition-all ${
+              userAdjust === 1 ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            +1
+          </button>
         </div>
       </div>
 
       {/* Today's Date Card */}
       {currentHijri && (
-        <div className="bg-card rounded-2xl border border-border p-5 text-center animate-fade-in">
-          <Moon className="w-8 h-8 text-primary mx-auto mb-2" />
-          <p className="font-arabic text-2xl text-primary mb-1">
-            {currentHijri.day} {lang === "ur" || lang === "hi" ? HIJRI_MONTHS_AR[currentHijri.month - 1] : HIJRI_MONTHS[currentHijri.month - 1]} {currentHijri.year} {t("calendar.ah")}
+        <div className="bg-card rounded-2xl border border-border p-4 text-center animate-fade-in">
+          <Moon className="w-7 h-7 text-primary mx-auto mb-1.5" />
+          <p className="font-arabic text-xl text-primary mb-0.5">
+            {currentHijri.day} {getHijriMonthName(currentHijri.month, lang)} {currentHijri.year} {t("calendar.ah")}
           </p>
-          <p className="text-xs text-muted-foreground mb-1">
+          <p className="text-[11px] text-muted-foreground">
             {now.getDate()} {GREGORIAN_MONTHS[now.getMonth()]} {now.getFullYear()}
           </p>
-          <p className="text-[10px] text-muted-foreground">{t("calendar.today")} • {config.label}</p>
           {location?.city && (
-            <p className="text-[10px] text-muted-foreground mt-1 flex items-center justify-center gap-1">
+            <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center justify-center gap-1">
               <MapPin className="w-3 h-3" /> {location.city}
             </p>
           )}
@@ -336,47 +389,52 @@ const IslamicCalendar: React.FC = () => {
       )}
 
       {/* Month Navigation */}
-      <div className="flex items-center justify-between bg-card rounded-xl border border-border p-3">
-        <button onClick={prevGMonth} className="p-2 rounded-lg hover:bg-muted transition-smooth active:scale-95">
+      <div className="flex items-center justify-between bg-card rounded-xl border border-border p-2">
+        <button onClick={prevGMonth} className="p-1.5 rounded-lg hover:bg-muted transition-smooth active:scale-95">
           <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
         <div className="text-center">
-          <p className="text-base font-bold text-foreground">{GREGORIAN_MONTHS[gMonth - 1]} {gYear}</p>
+          <p className="text-sm font-bold text-foreground">{GREGORIAN_MONTHS[gMonth - 1]} {gYear}</p>
           {(() => {
             const firstHijri = hijriForGregorian.get(1);
             const lastDay = getGregorianDaysInMonth(gMonth, gYear);
             const lastHijri = hijriForGregorian.get(lastDay);
             if (firstHijri && lastHijri) {
-              const fName = lang === "ur" || lang === "hi" ? HIJRI_MONTHS_AR[firstHijri.month - 1] : HIJRI_MONTHS[firstHijri.month - 1];
-              const lName = lang === "ur" || lang === "hi" ? HIJRI_MONTHS_AR[lastHijri.month - 1] : HIJRI_MONTHS[lastHijri.month - 1];
-              return <p className="text-[10px] text-muted-foreground">{fName} - {lName}</p>;
+              const fName = getHijriMonthName(firstHijri.month, lang);
+              const lName = getHijriMonthName(lastHijri.month, lang);
+              const yearStr = firstHijri.year === lastHijri.year ? `${firstHijri.year}` : `${firstHijri.year}-${lastHijri.year}`;
+              return <p className="text-[10px] text-primary/70 font-medium">{fName} - {lName} {yearStr} {t("calendar.ah")}</p>;
             }
             return null;
           })()}
         </div>
-        <button onClick={nextGMonth} className="p-2 rounded-lg hover:bg-muted transition-smooth active:scale-95">
+        <button onClick={nextGMonth} className="p-1.5 rounded-lg hover:bg-muted transition-smooth active:scale-95">
           <ChevronRight className="w-5 h-5 text-foreground" />
         </button>
       </div>
 
-      {/* Unified Calendar Grid */}
-      <div className="bg-card rounded-2xl border border-border p-3">
-        <div className="grid grid-cols-7 gap-1 mb-2">
+      {/* Calendar Grid - Hijri prominent, Gregorian small */}
+      <div className="bg-card rounded-2xl border border-border p-2">
+        <div className="grid grid-cols-7 gap-0.5 mb-1">
           {weekdays.map((d) => (
-            <div key={d} className="text-center text-[10px] font-bold text-muted-foreground py-1">{d}</div>
+            <div key={d} className="text-center text-[9px] font-bold text-muted-foreground py-1">{d}</div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-0.5">
           {gCalendarGrid.map((day, i) => {
             if (day === null) return <div key={`gempty-${i}`} />;
             const isToday = day === gTodayDay;
             const isImportant = allImportantDays.has(day);
             const isFriday = (i % 7) === 5;
             const hijri = hijriForGregorian.get(day);
+            const isHijriMonthStart = hijriMonthChangeDays.has(day);
+            
             return (
               <div
                 key={`gday-${day}`}
-                className={`relative flex flex-col items-center justify-center h-14 rounded-lg transition-smooth ${
+                className={`relative flex flex-col items-center justify-center rounded-lg transition-smooth ${
+                  isHijriMonthStart ? "h-[4.2rem]" : "h-14"
+                } ${
                   isToday
                     ? "bg-primary text-primary-foreground font-bold"
                     : isImportant
@@ -386,14 +444,30 @@ const IslamicCalendar: React.FC = () => {
                     : "text-foreground"
                 }`}
               >
-                <span className="text-sm font-medium leading-tight">{day}</span>
+                {/* Hijri month name label when month changes */}
+                {isHijriMonthStart && hijri && (
+                  <span className={`text-[6px] leading-none font-bold ${
+                    isToday ? "text-primary-foreground/80" : "text-primary/60"
+                  }`}>
+                    {getHijriMonthShort(hijri.month, lang)}
+                  </span>
+                )}
+                {/* Hijri day - PROMINENT */}
                 {hijri && (
-                  <span className={`text-[7px] leading-tight ${isToday ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                  <span className={`text-sm font-bold leading-tight ${
+                    isToday ? "text-primary-foreground" : ""
+                  }`}>
                     {hijri.day}
                   </span>
                 )}
+                {/* Gregorian day - small */}
+                <span className={`text-[8px] leading-tight ${
+                  isToday ? "text-primary-foreground/60" : "text-muted-foreground"
+                }`}>
+                  {day} {GREGORIAN_MONTHS_SHORT[gMonth - 1]}
+                </span>
                 {isImportant && !isToday && (
-                  <Star className="w-2 h-2 text-primary absolute top-0.5 right-0.5 fill-primary" />
+                  <Star className="w-1.5 h-1.5 text-primary absolute top-0.5 right-0.5 fill-primary" />
                 )}
               </div>
             );
@@ -401,24 +475,28 @@ const IslamicCalendar: React.FC = () => {
         </div>
       </div>
 
-      {/* Combined Important Dates */}
+      {/* Combined Events */}
       {allMonthEvents.length > 0 && (
-        <div className="bg-card rounded-2xl border border-border p-4">
-          <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-            <Star className="w-4 h-4 text-primary fill-primary" />
+        <div className="bg-card rounded-2xl border border-border p-3">
+          <h3 className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5">
+            <Star className="w-3.5 h-3.5 text-primary fill-primary" />
             {t("calendar.importantDates")}
           </h3>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {allMonthEvents.map((ev, idx) => (
-              <div key={`${ev.day}-${idx}`} className="flex items-center gap-3 p-2 rounded-lg bg-primary/5">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${ev.type === "islamic" ? "bg-primary/20" : "bg-muted"}`}>
-                  <span className="text-xs font-bold text-primary">{ev.day}</span>
+              <div key={`${ev.day}-${idx}`} className="flex items-center gap-2 p-1.5 rounded-lg bg-primary/5">
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                  ev.type === "islamic" ? "bg-primary/20" : "bg-muted"
+                }`}>
+                  <span className="text-[10px] font-bold text-primary">{ev.day}</span>
                 </div>
-                <div className="flex-1">
-                  <span className="text-sm text-foreground">{ev.label}</span>
-                  {ev.type === "islamic" && (
-                    <span className="ml-2 text-[9px] text-primary/60">☪</span>
-                  )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-foreground leading-tight truncate">{ev.label}</p>
+                  <p className="text-[9px] text-muted-foreground">
+                    {ev.day} {GREGORIAN_MONTHS_SHORT[gMonth - 1]}
+                    {ev.hijriLabel && <span className="ml-1 text-primary/60">• {ev.hijriLabel}</span>}
+                    {ev.type === "islamic" && <span className="ml-1">☪</span>}
+                  </p>
                 </div>
               </div>
             ))}
