@@ -474,6 +474,29 @@ const IslamicKnowledge: React.FC = () => {
       {subView?.type === "lecture-series" && (
         <div className="px-4 py-4 space-y-2">
           <p className="text-xs text-muted-foreground mb-3">{isUrdu ? subView.series.descriptionUr : subView.series.description}</p>
+
+          <button
+            onClick={() => downloadAllLectures(subView.series)}
+            disabled={downloadingAllSeriesId === subView.series.id}
+            className="w-full mb-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-all duration-150 disabled:opacity-70"
+          >
+            {downloadingAllSeriesId === subView.series.id ? (
+              <>
+                <div className="w-4 h-4 border-2 border-primary-foreground/70 border-t-transparent rounded-full animate-spin" />
+                <span>
+                  {isUrdu
+                    ? `ڈاؤن لوڈ ہو رہا ہے... ${downloadAllProgress.done}/${downloadAllProgress.total}`
+                    : `Downloading... ${downloadAllProgress.done}/${downloadAllProgress.total}`}
+                </span>
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" />
+                <span>{isUrdu ? "تمام ابواب ڈاؤن لوڈ کریں" : "Download all chapters"}</span>
+              </>
+            )}
+          </button>
+
           {subView.series.lectures.map((lecture) => {
             const isCurrent = playingLecture?.id === lecture.id;
             const isDownloaded = downloadedLectures.has(lecture.id);
@@ -487,8 +510,8 @@ const IslamicKnowledge: React.FC = () => {
                   <p className="text-sm font-semibold text-foreground truncate">{isUrdu ? lecture.titleUr : lecture.title}</p>
                   {isCurrent && isPlaying && <p className="text-[10px] text-primary animate-pulse">{isUrdu ? "چل رہا ہے..." : "Playing..."}</p>}
                 </div>
-                <button onClick={() => downloadLecture(lecture)} disabled={isDownloaded || isDownloadingThis} className="p-2 rounded-lg active:scale-90 transition-all duration-150 disabled:opacity-50">
-                  {isDownloaded ? <Check className="w-4 h-4 text-green-500" /> : isDownloadingThis ? (
+                <button onClick={() => downloadLecture(lecture)} disabled={isDownloaded || isDownloadingThis || downloadingAllSeriesId === subView.series.id} className="p-2 rounded-lg active:scale-90 transition-all duration-150 disabled:opacity-50">
+                  {isDownloaded ? <Check className="w-4 h-4 text-primary" /> : isDownloadingThis ? (
                     <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                   ) : <Download className="w-4 h-4 text-muted-foreground" />}
                 </button>
