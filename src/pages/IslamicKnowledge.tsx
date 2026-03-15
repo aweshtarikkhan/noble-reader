@@ -46,10 +46,49 @@ const IslamicKnowledge: React.FC = () => {
   const { toast } = useToast();
   const { t, lang } = useI18n();
   const isUrdu = lang === "ur";
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = useState<Tab>("main");
   const [subView, setSubView] = useState<SubView>(null);
   const [seeratLang, setSeeratLang] = useState<SeeratLang>(() => (localStorage.getItem("seerat_lang") as SeeratLang) || "english");
   const [nameSearch, setNameSearch] = useState("");
+
+  // Handle bookmark navigation via URL params
+  useEffect(() => {
+    const navTab = searchParams.get("tab");
+    if (!navTab) return;
+
+    if (navTab === "seerat") {
+      const chapterId = searchParams.get("chapterId");
+      const navLang = searchParams.get("lang") || "english";
+      setTab("seerat");
+      setSeeratLang(navLang as SeeratLang);
+      if (chapterId) {
+        if (navLang === "roman") {
+          const ch = SEERAT_ROMAN_CHAPTERS.find((c) => c.id === chapterId);
+          if (ch) setSubView({ type: "seerat-roman-chapter", chapter: ch });
+        } else {
+          const ch = SEERAT_CHAPTERS.find((c) => c.id === chapterId);
+          if (ch) setSubView({ type: "seerat-chapter", chapter: ch });
+        }
+      }
+    } else if (navTab === "books") {
+      const bookId = searchParams.get("bookId");
+      setTab("books");
+      if (bookId) {
+        const book = ISLAMIC_BOOKS.find((b) => b.id === bookId);
+        if (book) setSubView(book.type === "pdf" ? { type: "book-pdf", book } : { type: "book-read", book });
+      }
+    } else if (navTab === "lectures") {
+      const seriesId = searchParams.get("seriesId");
+      setTab("lectures");
+      if (seriesId) {
+        const series = LECTURE_SERIES.find((s) => s.id === seriesId);
+        if (series) setSubView({ type: "lecture-series", series });
+      }
+    }
+    // Clear params after navigation
+    setSearchParams({}, { replace: true });
+  }, []);
 
   // Audio player state
   const [playingLecture, setPlayingLecture] = useState<LectureItem | null>(null);
