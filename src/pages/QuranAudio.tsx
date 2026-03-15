@@ -25,6 +25,7 @@ const RECITERS: Reciter[] = [
 const URDU_TRANSLATORS: TranslationAuthor[] = [
   { id: "fateh", name: "Fateh Muhammad Jalandhari", language: "Urdu" },
   { id: "drisrar", name: "Dr. Israr Ahmad (Bayan ul Quran)", language: "Urdu" },
+  { id: "minshawi", name: "Mohammed Al-Minshawi (Urdu Translation)", language: "Urdu" },
 ];
 
 const PLAYBACK_SPEEDS = [0.75, 1, 1.25, 1.5, 1.75, 2];
