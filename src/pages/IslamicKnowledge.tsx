@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { Search, Star, BookOpen, Mic, GraduationCap, ExternalLink, Copy } from "lucide-react";
+import { Search, Star, BookOpen, Mic, GraduationCap, ExternalLink, Copy, ChevronRight } from "lucide-react";
 import { ALLAH_NAMES } from "@/data/allahNames";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
+
+type Tab = "main" | "names" | "seerat" | "books" | "lectures";
 
 const SEERAT_LINKS = [
   { title: "Birth & Early Life", titleUr: "ولادت اور ابتدائی زندگی", url: "https://seerahfoundation.com", icon: "🌙" },
@@ -31,10 +33,18 @@ const LECTURE_LINKS = [
   { title: "Quran Weekly", titleUr: "قرآن ویکلی", url: "https://www.youtube.com/@QuranWeekly", icon: "📺", desc: "Short weekly Quran reflections" },
 ];
 
+const TABS: { id: Tab; icon: React.ReactNode; labelKey: string; emoji: string }[] = [
+  { id: "names", icon: <Star className="w-5 h-5 text-primary" />, labelKey: "knowledge.99names", emoji: "⭐" },
+  { id: "seerat", icon: <GraduationCap className="w-5 h-5 text-primary" />, labelKey: "knowledge.seerat", emoji: "🕌" },
+  { id: "books", icon: <BookOpen className="w-5 h-5 text-primary" />, labelKey: "knowledge.books", emoji: "📚" },
+  { id: "lectures", icon: <Mic className="w-5 h-5 text-primary" />, labelKey: "knowledge.lectures", emoji: "🎙️" },
+];
+
 const IslamicKnowledge: React.FC = () => {
   const { toast } = useToast();
   const { t, lang } = useI18n();
   const isUrdu = lang === "ur";
+  const [tab, setTab] = useState<Tab>("main");
   const [nameSearch, setNameSearch] = useState("");
 
   const filteredNames = ALLAH_NAMES.filter((n) => {
@@ -48,25 +58,66 @@ const IslamicKnowledge: React.FC = () => {
     toast({ title: "📋", description: `${n.transliteration} copied` });
   };
 
+  const openTab = (t: Tab) => {
+    setTab(t);
+    setNameSearch("");
+    window.scrollTo(0, 0);
+    window.history.pushState({ knowledgeTab: t }, "");
+  };
+
+  // Handle back button
+  React.useEffect(() => {
+    const handlePopState = () => {
+      window.scrollTo(0, 0);
+      if (tab !== "main") {
+        setTab("main");
+        setNameSearch("");
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [tab]);
+
+  const getTitle = () => {
+    if (tab === "main") return t("page.islamicKnowledge");
+    const found = TABS.find((t) => t.id === tab);
+    return found ? t(found.labelKey) : t("page.islamicKnowledge");
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="sticky z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3" style={{ top: "calc(56px + env(safe-area-inset-top, 20px))" }}>
-        <h1 className="text-lg font-bold text-foreground">{t("page.islamicKnowledge")}</h1>
-      </div>
-
-      <div className="px-4 py-4 space-y-8">
-        {/* 99 Names of Allah */}
-        <section>
-          <div className="flex items-center gap-2 mb-3">
-            <Star className="w-5 h-5 text-primary" />
-            <h2 className="text-base font-bold text-foreground">{t("knowledge.99names")}</h2>
-          </div>
-          <div className="relative mb-3">
+        <h1 className="text-lg font-bold text-foreground">{getTitle()}</h1>
+        {tab === "names" && (
+          <div className="mt-2 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input type="text" value={nameSearch} onChange={(e) => setNameSearch(e.target.value)} placeholder={isUrdu ? "نام تلاش کریں..." : "Search names..."} className="w-full pl-9 pr-4 py-2 text-sm rounded-xl bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
           </div>
+        )}
+      </div>
+
+      {/* Main menu - 4 tab cards */}
+      {tab === "main" && (
+        <div className="px-4 py-4 space-y-3">
+          {TABS.map((item) => (
+            <button key={item.id} onClick={() => openTab(item.id)} className="w-full text-left px-4 py-4 rounded-2xl bg-card border border-border flex items-center justify-between active:scale-[0.98] transition-smooth">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  {item.icon}
+                </div>
+                <p className="text-sm font-bold text-foreground">{t(item.labelKey)}</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* 99 Names of Allah */}
+      {tab === "names" && (
+        <div className="px-4 py-4">
           <p className="text-[10px] text-muted-foreground mb-2">{filteredNames.length} {isUrdu ? "نام" : "names"}</p>
-          <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+          <div className="space-y-2">
             {filteredNames.map((n) => (
               <div key={n.number} className="rounded-xl bg-card border border-border px-4 py-3 flex items-center gap-3 active:scale-[0.98] transition-smooth" onClick={() => copyName(n)}>
                 <span className="text-[10px] font-bold text-primary bg-primary/10 w-7 h-7 flex items-center justify-center rounded-lg shrink-0">{n.number}</span>
@@ -80,66 +131,54 @@ const IslamicKnowledge: React.FC = () => {
               </div>
             ))}
           </div>
-        </section>
+        </div>
+      )}
 
-        {/* Seerat un Nabi */}
-        <section>
-          <div className="flex items-center gap-2 mb-3">
-            <GraduationCap className="w-5 h-5 text-primary" />
-            <h2 className="text-base font-bold text-foreground">{t("knowledge.seerat")}</h2>
-          </div>
-          <div className="space-y-2">
-            {SEERAT_LINKS.map((link, i) => (
-              <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-card border border-border active:scale-[0.98] transition-smooth">
-                <span className="text-xl">{link.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground">{isUrdu ? link.titleUr : link.title}</p>
-                </div>
-                <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0" />
-              </a>
-            ))}
-          </div>
-        </section>
+      {/* Seerat un Nabi */}
+      {tab === "seerat" && (
+        <div className="px-4 py-4 space-y-2">
+          {SEERAT_LINKS.map((link, i) => (
+            <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-card border border-border active:scale-[0.98] transition-smooth">
+              <span className="text-xl">{link.icon}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">{isUrdu ? link.titleUr : link.title}</p>
+              </div>
+              <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0" />
+            </a>
+          ))}
+        </div>
+      )}
 
-        {/* Islamic Books */}
-        <section>
-          <div className="flex items-center gap-2 mb-3">
-            <BookOpen className="w-5 h-5 text-primary" />
-            <h2 className="text-base font-bold text-foreground">{t("knowledge.books")}</h2>
-          </div>
-          <div className="space-y-2">
-            {BOOK_LINKS.map((link, i) => (
-              <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-card border border-border active:scale-[0.98] transition-smooth">
-                <span className="text-xl">{link.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground">{isUrdu ? link.titleUr : link.title}</p>
-                </div>
-                <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0" />
-              </a>
-            ))}
-          </div>
-        </section>
+      {/* Islamic Books */}
+      {tab === "books" && (
+        <div className="px-4 py-4 space-y-2">
+          {BOOK_LINKS.map((link, i) => (
+            <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-card border border-border active:scale-[0.98] transition-smooth">
+              <span className="text-xl">{link.icon}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">{isUrdu ? link.titleUr : link.title}</p>
+              </div>
+              <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0" />
+            </a>
+          ))}
+        </div>
+      )}
 
-        {/* Lectures / Audio */}
-        <section>
-          <div className="flex items-center gap-2 mb-3">
-            <Mic className="w-5 h-5 text-primary" />
-            <h2 className="text-base font-bold text-foreground">{t("knowledge.lectures")}</h2>
-          </div>
-          <div className="space-y-2">
-            {LECTURE_LINKS.map((link, i) => (
-              <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-card border border-border active:scale-[0.98] transition-smooth">
-                <span className="text-xl">{link.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground">{isUrdu ? link.titleUr : link.title}</p>
-                  <p className="text-[10px] text-muted-foreground">{link.desc}</p>
-                </div>
-                <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0" />
-              </a>
-            ))}
-          </div>
-        </section>
-      </div>
+      {/* Lectures / Audio */}
+      {tab === "lectures" && (
+        <div className="px-4 py-4 space-y-2">
+          {LECTURE_LINKS.map((link, i) => (
+            <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-card border border-border active:scale-[0.98] transition-smooth">
+              <span className="text-xl">{link.icon}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">{isUrdu ? link.titleUr : link.title}</p>
+                <p className="text-[10px] text-muted-foreground">{link.desc}</p>
+              </div>
+              <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0" />
+            </a>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
