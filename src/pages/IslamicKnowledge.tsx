@@ -403,6 +403,14 @@ const IslamicKnowledge: React.FC = () => {
           {subView.chapter.sections.map((sec, i) => (
             <SeeratSectionCard key={i} section={sec} isUrdu={isUrdu} />
           ))}
+          {/* Credits */}
+          <div className="rounded-xl bg-primary/5 border border-primary/20 px-4 py-3 mt-6">
+            <p className="text-[10px] font-bold text-primary mb-1">📚 {isUrdu ? "ماخذ" : "Source"}</p>
+            <p className="text-xs font-semibold text-foreground">{isUrdu ? SEERAT_BOOK_CREDITS.titleUr : SEERAT_BOOK_CREDITS.title}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{isUrdu ? SEERAT_BOOK_CREDITS.authorsUr : SEERAT_BOOK_CREDITS.authors}</p>
+            <p className="text-[10px] text-muted-foreground">{isUrdu ? SEERAT_BOOK_CREDITS.editionUr : SEERAT_BOOK_CREDITS.edition}</p>
+            <p className="text-[10px] text-muted-foreground">{isUrdu ? "نظرثانی:" : "Reviewed by:"} {isUrdu ? SEERAT_BOOK_CREDITS.reviewerUr : SEERAT_BOOK_CREDITS.reviewer}</p>
+          </div>
         </div>
       )}
 
