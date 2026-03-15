@@ -110,7 +110,6 @@ const IslamicCalendar: React.FC = () => {
   });
 
   const config = useMemo(() => getRegionalConfig(countryCode), [countryCode]);
-  const totalAdjustment = config.adjustment + userAdjust;
 
   const handleUserAdjust = (val: number) => {
     setUserAdjust(val);
@@ -168,27 +167,42 @@ const IslamicCalendar: React.FC = () => {
         const dd = String(now.getDate()).padStart(2, "0");
         const mm = String(now.getMonth() + 1).padStart(2, "0");
         const yyyy = now.getFullYear();
-        const res = await fetch(`https://api.aladhan.com/v1/gToH/${dd}-${mm}-${yyyy}?adjustment=${totalAdjustment}`);
+        const res = await fetch(`https://api.aladhan.com/v1/gToH/${dd}-${mm}-${yyyy}`);
         const data = await res.json();
         if (data.code === 200) {
           const h = data.data.hijri;
-          const hd = parseInt(h.day);
+          const hd = parseInt(h.day) + userAdjust;
           const hm = parseInt(h.month.number);
           const hy = parseInt(h.year);
-          setTodayHijriDay(hd);
-          setTodayHijriMonth(hm);
-          setTodayHijriYear(hy);
+          
+          // Handle month overflow/underflow from adjustment
+          const monthDays = h.month.days ? parseInt(h.month.days) : 30;
+          let adjustedDay = hd;
+          let adjustedMonth = hm;
+          let adjustedYear = hy;
+          if (adjustedDay < 1) {
+            adjustedMonth = hm - 1;
+            if (adjustedMonth < 1) { adjustedMonth = 12; adjustedYear = hy - 1; }
+            adjustedDay = 30 + hd; // approximate
+          } else if (adjustedDay > monthDays) {
+            adjustedMonth = hm + 1;
+            if (adjustedMonth > 12) { adjustedMonth = 1; adjustedYear = hy + 1; }
+            adjustedDay = adjustedDay - monthDays;
+          }
+          
+          setTodayHijriDay(adjustedDay);
+          setTodayHijriMonth(adjustedMonth);
+          setTodayHijriYear(adjustedYear);
           setTodayGregorian(`${now.getDate()} ${GREGORIAN_MONTHS[now.getMonth()]} ${now.getFullYear()}`);
-          // Set initial navigation to current hijri month
           if (hMonth === 0) {
-            setHMonth(hm);
-            setHYear(hy);
+            setHMonth(adjustedMonth);
+            setHYear(adjustedYear);
           }
         }
       } catch {}
     };
     fetchToday();
-  }, [detecting, totalAdjustment]);
+  }, [detecting, userAdjust]);
 
   // Fetch calendar for the current Hijri month using hToGCalendar
   useEffect(() => {
@@ -196,7 +210,7 @@ const IslamicCalendar: React.FC = () => {
     const fetchHijriMonth = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`https://api.aladhan.com/v1/hToGCalendar/${hMonth}/${hYear}?adjustment=${totalAdjustment}`);
+        const res = await fetch(`https://api.aladhan.com/v1/hToGCalendar/${hMonth}/${hYear}`);
         const data = await res.json();
         if (data.code === 200) {
           const days: HijriDayData[] = data.data.map((item: any) => {
@@ -219,7 +233,7 @@ const IslamicCalendar: React.FC = () => {
       setLoading(false);
     };
     fetchHijriMonth();
-  }, [hMonth, hYear, totalAdjustment]);
+  }, [hMonth, hYear]);
 
   const prevMonth = () => {
     if (hMonth <= 1) { setHMonth(12); setHYear(y => y - 1); }
@@ -285,12 +299,9 @@ const IslamicCalendar: React.FC = () => {
     return `${fStr} — ${lStr}`;
   }, [calendarDays]);
 
-  // Check if a day is today
+  // Check if a day is today (using adjusted hijri date)
   const isToday = (day: HijriDayData) => {
-    const now = new Date();
-    return day.gregorianDay === now.getDate() &&
-      day.gregorianMonth === now.getMonth() + 1 &&
-      day.gregorianYear === now.getFullYear();
+    return hMonth === todayHijriMonth && hYear === todayHijriYear && day.hijriDay === todayHijriDay;
   };
 
   // Detect gregorian month changes within the hijri month
