@@ -12,6 +12,8 @@ export interface IslamicBook {
   chapters?: BookChapter[];
   description: string;
   descriptionUr: string;
+  sizeWarning?: string;
+  sizeWarningUr?: string;
 }
 
 export interface BookChapter {
