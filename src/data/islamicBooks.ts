@@ -12,6 +12,8 @@ export interface IslamicBook {
   chapters?: BookChapter[];
   description: string;
   descriptionUr: string;
+  sizeWarning?: string;
+  sizeWarningUr?: string;
 }
 
 export interface BookChapter {
@@ -97,15 +99,17 @@ export const ISLAMIC_BOOKS: IslamicBook[] = [
   },
   {
     id: "tafsir-ibn-kathir",
-    title: "Tafsir Ibn Kathir",
-    titleUr: "تفسیر ابن کثیر",
+    title: "Tafsir Ibn Kathir (All 10 Volumes)",
+    titleUr: "تفسیر ابن کثیر (تمام 10 جلدیں)",
     author: "Ibn Kathir",
     authorUr: "ابن کثیر",
     icon: "📖",
     type: "pdf",
-    pdfUrl: "https://archive.org/download/TafseerIbnKathirurdu/Tafseer%20ibn%20Kathir%20urdu.pdf",
-    description: "One of the most respected Tafsir (exegesis) of the Quran",
-    descriptionUr: "قرآن کی سب سے معتبر تفسیروں میں سے ایک"
+    pdfUrl: "https://archive.org/download/TafsirIbnKathir_795/TafsirIbnKathirAll10Volumes.pdf",
+    description: "Complete Tafsir Ibn Kathir - All 10 volumes compiled. Abridged English translation with Arabic verses.",
+    descriptionUr: "مکمل تفسیر ابن کثیر - تمام 10 جلدیں۔ عربی آیات کے ساتھ مختصر انگریزی ترجمہ۔",
+    sizeWarning: "⚠️ This is a large file (~33 MB). Downloading will consume significant data and storage on your device.",
+    sizeWarningUr: "⚠️ یہ ایک بڑی فائل ہے (~33 MB)۔ ڈاؤن لوڈ کرنے سے آپ کے ڈیوائس پر کافی ڈیٹا اور اسٹوریج خرچ ہوگا۔"
   },
   {
     id: "stories-prophets",
