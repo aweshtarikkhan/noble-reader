@@ -220,12 +220,23 @@ const IslamicKnowledge: React.FC = () => {
     });
   };
 
+  // Save audio position periodically
+  const saveAudioPosition = useCallback((lectureId: string, seriesId: string, title: string, titleUr: string) => {
+    if (audioRef.current && audioRef.current.currentTime > 0) {
+      const data: LastPlayed = { lectureId, seriesId, currentTime: audioRef.current.currentTime, title, titleUr };
+      localStorage.setItem("audio_last_played", JSON.stringify(data));
+      setLastPlayed(data);
+    }
+  }, []);
+
   // Audio player functions
-  const playLecture = async (lecture: LectureItem) => {
+  const playLecture = async (lecture: LectureItem, resumeTime?: number) => {
     const requestId = ++playRequestRef.current;
 
     if (playingLecture?.id === lecture.id && isPlaying) {
       audioRef.current?.pause();
+      // Save position on pause
+      if (playingSeriesId) saveAudioPosition(lecture.id, playingSeriesId, lecture.title, lecture.titleUr);
       setIsPlaying(false);
       return;
     }
@@ -246,20 +257,27 @@ const IslamicKnowledge: React.FC = () => {
       audioRef.current.src = "";
     }
 
-    // Keep playback in tap/click context (fixes mobile gesture issues)
     const audio = new Audio();
     audio.preload = "auto";
     audio.playbackRate = playbackRate;
     audioRef.current = audio;
     void audio.play().catch(() => {});
 
+    // Save position every 5 seconds
+    let saveInterval: ReturnType<typeof setInterval> | null = null;
+
     audio.onended = () => {
+      if (saveInterval) clearInterval(saveInterval);
       if (requestId === playRequestRef.current) {
         setIsPlaying(false);
+        // Clear last played on completion
+        localStorage.removeItem("audio_last_played");
+        setLastPlayed(null);
       }
     };
 
     audio.onerror = () => {
+      if (saveInterval) clearInterval(saveInterval);
       if (requestId === playRequestRef.current) {
         setIsPlaying(false);
       }
@@ -290,8 +308,18 @@ const IslamicKnowledge: React.FC = () => {
       try {
         await audio.play();
         if (requestId !== playRequestRef.current) return;
+        // Restore resume position
+        if (resumeTime && resumeTime > 0) {
+          audio.currentTime = resumeTime;
+        }
         setPlayingLecture(lecture);
         setIsPlaying(true);
+        // Start saving position
+        const currentSeriesId = subView?.type === "lecture-series" ? subView.series.id : (playingSeriesId || "");
+        setPlayingSeriesId(currentSeriesId);
+        saveInterval = setInterval(() => {
+          saveAudioPosition(lecture.id, currentSeriesId, lecture.title, lecture.titleUr);
+        }, 5000);
         return;
       } catch (error) {
         lastError = error;
@@ -307,6 +335,41 @@ const IslamicKnowledge: React.FC = () => {
     toast({ title: "⚠️", description: isUrdu ? "آڈیو لوڈ نہیں ہو سکا" : "Could not load audio" });
     setPlayingLecture(null);
     setIsPlaying(false);
+  };
+
+  // Resume last played lecture
+  const resumeLastPlayed = () => {
+    if (!lastPlayed) return;
+    // Find the lecture across all series
+    for (const series of LECTURE_SERIES) {
+      const lecture = series.lectures.find((l) => l.id === lastPlayed.lectureId);
+      if (lecture) {
+        setPlayingSeriesId(series.id);
+        playLecture(lecture, lastPlayed.currentTime);
+        return;
+      }
+    }
+    sonnerToast(isUrdu ? "لیکچر نہیں ملا" : "Lecture not found");
+  };
+
+  // PDF page bookmark helpers
+  const bookmarkPdfPage = (bookId: string, page: number) => {
+    const updated = { ...pdfBookmarkedPages };
+    if (!updated[bookId]) updated[bookId] = [];
+    if (updated[bookId].includes(page)) {
+      updated[bookId] = updated[bookId].filter((p) => p !== page);
+      sonnerToast(isUrdu ? "صفحہ بک مارک ہٹا دیا" : "Page bookmark removed");
+    } else {
+      updated[bookId].push(page);
+      updated[bookId].sort((a, b) => a - b);
+      sonnerToast(isUrdu ? "صفحہ بک مارک ہو گیا" : "Page bookmarked!");
+    }
+    setPdfBookmarkedPages(updated);
+    localStorage.setItem("pdf_bookmarked_pages", JSON.stringify(updated));
+  };
+
+  const jumpToPdfPage = (pdfUrl: string, page: number) => {
+    window.open(`${pdfUrl}#page=${page}`, "_blank", "noopener,noreferrer");
   };
 
   const downloadLecture = async (lecture: LectureItem) => {
