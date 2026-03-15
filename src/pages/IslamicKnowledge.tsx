@@ -520,7 +520,25 @@ const IslamicKnowledge: React.FC = () => {
       {/* Book Text Reader */}
       {subView?.type === "book-read" && subView.book.chapters && (
         <div className="px-4 py-4 space-y-3">
-          <p className="text-xs text-muted-foreground mb-2">{isUrdu ? subView.book.descriptionUr : subView.book.description}</p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs text-muted-foreground">{isUrdu ? subView.book.descriptionUr : subView.book.description}</p>
+            <button
+              onClick={() => {
+                const added = toggleContentBookmark({
+                  type: "book-text",
+                  contentId: subView.book.id,
+                  title: subView.book.title,
+                  titleUr: subView.book.titleUr,
+                  icon: subView.book.icon,
+                  navData: { tab: "books", bookId: subView.book.id },
+                });
+                sonnerToast(added ? (isUrdu ? "بک مارک شامل ہو گیا" : "Bookmarked!") : (isUrdu ? "بک مارک ہٹا دیا" : "Bookmark removed"));
+              }}
+              className="p-2 rounded-lg active:scale-90 transition-all shrink-0"
+            >
+              <BookmarkIcon className={`w-5 h-5 ${isContentBookmarked("book-text", subView.book.id) ? "text-primary fill-primary" : "text-muted-foreground"}`} />
+            </button>
+          </div>
           {subView.book.chapters.map((ch, i) => (
             <BookChapterCard key={i} chapter={ch} isUrdu={isUrdu} index={i} />
           ))}
