@@ -507,14 +507,10 @@ const IslamicCalendar: React.FC = () => {
                 const today = isToday(day);
                 const isImportant = importantHijriDays.has(day.hijriDay);
                 const isFriday = day.weekday === 5;
-                const gMonthLabel = gMonthChangeDays.get(day.hijriDay);
-
                 return (
                   <div
                     key={`hday-${day.hijriDay}`}
-                    className={`relative flex flex-col items-center justify-center rounded-lg transition-all ${
-                      gMonthLabel ? "h-[4.2rem]" : "h-14"
-                    } ${
+                    className={`relative flex flex-col items-center justify-center rounded-lg h-12 transition-all ${
                       today
                         ? "bg-primary text-primary-foreground font-bold"
                         : isImportant
@@ -524,19 +520,12 @@ const IslamicCalendar: React.FC = () => {
                         : "text-foreground"
                     }`}
                   >
-                    {gMonthLabel && (
-                      <span className={`text-[6px] leading-none font-bold ${
-                        today ? "text-primary-foreground/80" : "text-primary/60"
-                      }`}>{gMonthLabel}</span>
-                    )}
                     <span className={`text-sm font-bold leading-tight ${today ? "text-primary-foreground" : ""}`}>
                       {day.hijriDay}
                     </span>
-                    <span className={`text-[8px] leading-tight ${
-                      today ? "text-primary-foreground/60" : "text-muted-foreground"
-                    }`}>
-                      {day.gregorianDay} {GREGORIAN_MONTHS_SHORT[day.gregorianMonth - 1]}
-                    </span>
+                    {isImportant && !today && (
+                      <Star className="w-1.5 h-1.5 text-primary absolute top-0.5 right-0.5 fill-primary" />
+                    )}
                     {isImportant && !today && (
                       <Star className="w-1.5 h-1.5 text-primary absolute top-0.5 right-0.5 fill-primary" />
                     )}
