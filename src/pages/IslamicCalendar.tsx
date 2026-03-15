@@ -196,7 +196,7 @@ const IslamicCalendar: React.FC = () => {
           setTodayHijriDay(adjustedDay);
           setTodayHijriMonth(adjustedMonth);
           setTodayHijriYear(adjustedYear);
-          setTodayGregorian(`${now.getDate()} ${GREGORIAN_MONTHS[now.getMonth()]} ${now.getFullYear()}`);
+          setTodayGregorian(`${adjustedDate.getDate()} ${GREGORIAN_MONTHS[adjustedDate.getMonth()]} ${adjustedDate.getFullYear()}`);
           if (hMonth === 0) {
             setHMonth(adjustedMonth);
             setHYear(adjustedYear);
