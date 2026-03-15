@@ -246,7 +246,7 @@ const T: Translations = {
   "calendar.indian": { en: "Indian", ur: "ہندوستانی", hi: "भारतीय" },
   "calendar.saudi": { en: "Saudi", ur: "سعودی", hi: "सऊदी" },
   "calendar.today": { en: "Today", ur: "آج", hi: "आज" },
-  "calendar.ah": { en: "AH", ur: "ہجری", hi: "हिजरी" },
+  "calendar.ah": { en: "Hijri", ur: "ہجری", hi: "हिजरी" },
   "calendar.importantDates": { en: "Important Dates This Month", ur: "اس ماہ کی اہم تاریخیں", hi: "इस माह की महत्वपूर्ण तिथियां" },
   "calendar.dateAdjust": { en: "Date Adjustment", ur: "تاریخ کی تصحیح", hi: "तिथि समायोजन" },
   "calendar.dayBehind": { en: "-1 Day", ur: "-۱ دن", hi: "-1 दिन" },
