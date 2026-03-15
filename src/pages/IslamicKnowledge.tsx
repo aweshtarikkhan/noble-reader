@@ -93,6 +93,7 @@ const IslamicKnowledge: React.FC = () => {
   // Audio player state
   const [playingLecture, setPlayingLecture] = useState<LectureItem | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playRequestRef = useRef(0);
 
