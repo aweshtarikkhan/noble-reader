@@ -24,7 +24,7 @@ export interface LectureItem {
 
 const SEERAT_BASE = "https://archive.org/download/Seerat-un-nabi-seerah-urdu-mp3-audio/";
 
-const DR_ISRAR_BASE = "https://archive.org/download/Bayan-ul-Quran-in-Urdu-by-Dr-Israr-Ahmed-Audio-MP3-CD/";
+
 
 export const LECTURE_SERIES: LectureSeries[] = [
   {
