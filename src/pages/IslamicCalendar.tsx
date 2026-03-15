@@ -448,7 +448,7 @@ const IslamicCalendar: React.FC = () => {
           }`}
         >
           <Moon className="w-3.5 h-3.5" />
-          {lang === "ur" ? "اسلامی" : lang === "hi" ? "इस्लामी" : "Islamic"}
+          {lang === "ur" ? "اسلامی کیلنڈر" : lang === "hi" ? "इस्लामी कैलेंडर" : "Islamic Calendar"}
         </button>
         <button
           onClick={() => setActiveTab("gregorian")}
@@ -459,7 +459,7 @@ const IslamicCalendar: React.FC = () => {
           }`}
         >
           <Calendar className="w-3.5 h-3.5" />
-          {lang === "ur" ? "عیسوی" : lang === "hi" ? "ग्रेगोरियन" : "Gregorian"}
+          {lang === "ur" ? "عیسوی کیلنڈر" : lang === "hi" ? "ग्रेगोरियन कैलेंडर" : "Gregorian Calendar"}
         </button>
       </div>
 
