@@ -774,6 +774,23 @@ const IslamicKnowledge: React.FC = () => {
       {/* Lectures - Series List */}
       {tab === "lectures" && !subView && (
         <div className="px-4 py-4 space-y-2">
+          {/* Resume Last Played */}
+          {lastPlayed && !playingLecture && (
+            <button
+              onClick={resumeLastPlayed}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border border-primary/30 active:scale-[0.98] transition-all duration-150 mb-2"
+            >
+              <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                <RotateCcw className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-xs font-bold text-primary">{isUrdu ? "آخری سنا ہوا جاری رکھیں" : "Resume Last Played"}</p>
+                <p className="text-[10px] text-foreground truncate">{isUrdu ? lastPlayed.titleUr : lastPlayed.title}</p>
+                <p className="text-[9px] text-muted-foreground">{Math.floor(lastPlayed.currentTime / 60)}:{String(Math.floor(lastPlayed.currentTime % 60)).padStart(2, "0")} {isUrdu ? "پر" : "at"}</p>
+              </div>
+              <Play className="w-4 h-4 text-primary shrink-0" />
+            </button>
+          )}
           {LECTURE_SERIES.map((series) => (
             <button key={series.id} onClick={() => openSubView({ type: "lecture-series", series })} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl bg-card border border-border active:scale-[0.98] transition-all duration-150">
               <span className="text-xl">{series.icon}</span>
