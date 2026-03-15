@@ -300,6 +300,7 @@ const IslamicKnowledge: React.FC = () => {
   // Cleanup audio on unmount
   useEffect(() => {
     return () => {
+      playRequestRef.current += 1;
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.src = "";
