@@ -96,24 +96,33 @@ const IslamicKnowledge: React.FC = () => {
       return;
     }
 
-    // Check offline cache first
-    const cached = await lectureStore.getItem<string>(lecture.id);
-    const src = cached || lecture.audioUrl;
-
+    // Create audio element immediately in user gesture context
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = "";
     }
-    const audio = new Audio(src);
+    const audio = new Audio();
     audioRef.current = audio;
+    audio.preload = "auto";
     audio.onended = () => setIsPlaying(false);
     audio.onerror = () => {
       toast({ title: "⚠️", description: isUrdu ? "آڈیو لوڈ نہیں ہو سکا" : "Could not load audio" });
       setIsPlaying(false);
+      setPlayingLecture(null);
     };
-    await audio.play();
-    setPlayingLecture(lecture);
-    setIsPlaying(true);
+
+    // Check offline cache first
+    const cached = await lectureStore.getItem<string>(lecture.id);
+    audio.src = cached || lecture.audioUrl;
+
+    try {
+      await audio.play();
+      setPlayingLecture(lecture);
+      setIsPlaying(true);
+    } catch {
+      toast({ title: "⚠️", description: isUrdu ? "آڈیو چلانے میں مسئلہ" : "Could not play audio" });
+      setIsPlaying(false);
+    }
   };
 
   const downloadLecture = async (lecture: LectureItem) => {

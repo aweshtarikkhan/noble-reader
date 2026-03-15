@@ -20,6 +20,8 @@ export interface LectureItem {
   duration?: string;
 }
 
+const DR_ISRAR_BASE = "https://archive.org/download/Bayan-ul-Quran-in-Urdu-by-Dr-Israr-Ahmed-Audio-MP3-CD/";
+
 export const LECTURE_SERIES: LectureSeries[] = [
   {
     id: "dr-israr-bayan",
@@ -31,50 +33,53 @@ export const LECTURE_SERIES: LectureSeries[] = [
     description: "Complete Urdu Tafseer of the Quran by Dr. Israr Ahmad",
     descriptionUr: "ڈاکٹر اسرار احمد کی قرآن کی مکمل اردو تفسیر",
     lectures: [
-      { id: "bayan-1", title: "Surah Al-Fatihah", titleUr: "سورۃ الفاتحہ", audioUrl: "https://archive.org/download/Bayan-ul-Quran-in-Urdu-by-Dr-Israr-Ahmed-Audio-MP3-CD/001 - Al-Fatihah ( The Opening ) - سورة الفاتحة.mp3" },
-      { id: "bayan-2", title: "Surah Al-Baqarah", titleUr: "سورۃ البقرہ", audioUrl: "https://archive.org/download/Bayan-ul-Quran-in-Urdu-by-Dr-Israr-Ahmed-Audio-MP3-CD/002 - Al-Baqarah ( The Cow ) - سورة البقرة.mp3" },
-      { id: "bayan-3", title: "Surah Aal-e-Imran", titleUr: "سورۃ آل عمران", audioUrl: "https://archive.org/download/Bayan-ul-Quran-in-Urdu-by-Dr-Israr-Ahmed-Audio-MP3-CD/003 - Al-Imran ( The Family of Imran ) - سورة آل عمران.mp3" },
-      { id: "bayan-4", title: "Surah An-Nisa", titleUr: "سورۃ النساء", audioUrl: "https://archive.org/download/Bayan-ul-Quran-in-Urdu-by-Dr-Israr-Ahmed-Audio-MP3-CD/004 - An-Nisa ( The Women ) - سورة النساء.mp3" },
-      { id: "bayan-5", title: "Surah Al-Maidah", titleUr: "سورۃ المائدہ", audioUrl: "https://archive.org/download/Bayan-ul-Quran-in-Urdu-by-Dr-Israr-Ahmed-Audio-MP3-CD/005 - Al-Maidah ( The Table spread with Food ) - سورة المائدة.mp3" },
-      { id: "bayan-36", title: "Surah Ya-Sin", titleUr: "سورۃ یٰسین", audioUrl: "https://archive.org/download/Bayan-ul-Quran-in-Urdu-by-Dr-Israr-Ahmed-Audio-MP3-CD/036 - Ya-seen - سورة يس.mp3" },
-      { id: "bayan-55", title: "Surah Ar-Rahman", titleUr: "سورۃ الرحمٰن", audioUrl: "https://archive.org/download/Bayan-ul-Quran-in-Urdu-by-Dr-Israr-Ahmed-Audio-MP3-CD/055 - Ar-Rahman ( The Most Graciouse ) - سورة الرحمن.mp3" },
-      { id: "bayan-56", title: "Surah Al-Waqiah", titleUr: "سورۃ الواقعہ", audioUrl: "https://archive.org/download/Bayan-ul-Quran-in-Urdu-by-Dr-Israr-Ahmed-Audio-MP3-CD/056 - Al-Waqi'ah ( The Event ) - سورة الواقعة.mp3" },
-      { id: "bayan-67", title: "Surah Al-Mulk", titleUr: "سورۃ الملک", audioUrl: "https://archive.org/download/Bayan-ul-Quran-in-Urdu-by-Dr-Israr-Ahmed-Audio-MP3-CD/067 - Al-Mulk ( Dominion ) - سورة الملك.mp3" },
-      { id: "bayan-78", title: "Surah An-Naba", titleUr: "سورۃ النبا", audioUrl: "https://archive.org/download/Bayan-ul-Quran-in-Urdu-by-Dr-Israr-Ahmed-Audio-MP3-CD/078 - An-Naba' ( The Great News ) - سورة النبأ.mp3" },
-      { id: "bayan-112", title: "Surah Al-Ikhlas", titleUr: "سورۃ الاخلاص", audioUrl: "https://archive.org/download/Bayan-ul-Quran-in-Urdu-by-Dr-Israr-Ahmed-Audio-MP3-CD/112 - Al-Ikhlas ( Sincerity ) - سورة الإخلاص.mp3" },
-      { id: "bayan-114", title: "Surah An-Nas", titleUr: "سورۃ الناس", audioUrl: "https://archive.org/download/Bayan-ul-Quran-in-Urdu-by-Dr-Israr-Ahmed-Audio-MP3-CD/114 - An-Nas ( Mankind ) - سورة الناس.mp3" },
+      { id: "bayan-1", title: "Surah Al-Fatihah", titleUr: "سورۃ الفاتحہ", audioUrl: `${DR_ISRAR_BASE}001%20-%20Al-Fatihah%20%28%20The%20Opening%20%29%20-%20%D8%B3%D9%88%D8%B1%D8%A9%20%D8%A7%D9%84%D9%81%D8%A7%D8%AA%D8%AD%D8%A9.mp3` },
+      { id: "bayan-2", title: "Surah Al-Baqarah", titleUr: "سورۃ البقرہ", audioUrl: `${DR_ISRAR_BASE}002%20-%20Al-Baqarah%20%28%20The%20Cow%20%29%20-%20%D8%B3%D9%88%D8%B1%D8%A9%20%D8%A7%D9%84%D8%A8%D9%82%D8%B1%D8%A9.mp3` },
+      { id: "bayan-3", title: "Surah Aal-e-Imran", titleUr: "سورۃ آل عمران", audioUrl: `${DR_ISRAR_BASE}003%20-%20Al-Imran%20%28%20The%20Family%20of%20Imran%20%29%20-%20%D8%B3%D9%88%D8%B1%D8%A9%20%D8%A2%D9%84%20%D8%B9%D9%85%D8%B1%D8%A7%D9%86.mp3` },
+      { id: "bayan-4", title: "Surah An-Nisa", titleUr: "سورۃ النساء", audioUrl: `${DR_ISRAR_BASE}004%20-%20An-Nisa%20%28%20The%20Women%20%29%20-%20%D8%B3%D9%88%D8%B1%D8%A9%20%D8%A7%D9%84%D9%86%D8%B3%D8%A7%D8%A1.mp3` },
+      { id: "bayan-5", title: "Surah Al-Maidah", titleUr: "سورۃ المائدہ", audioUrl: `${DR_ISRAR_BASE}005%20-%20Al-Maidah%20%28%20The%20Table%20spread%20with%20Food%20%29%20-%20%D8%B3%D9%88%D8%B1%D8%A9%20%D8%A7%D9%84%D9%85%D8%A7%D8%A6%D8%AF%D8%A9.mp3` },
+      { id: "bayan-36", title: "Surah Ya-Sin", titleUr: "سورۃ یٰسین", audioUrl: `${DR_ISRAR_BASE}036%20-%20Ya-seen%20-%20%D8%B3%D9%88%D8%B1%D8%A9%20%D9%8A%D8%B3.mp3` },
+      { id: "bayan-55", title: "Surah Ar-Rahman", titleUr: "سورۃ الرحمٰن", audioUrl: `${DR_ISRAR_BASE}055%20-%20Ar-Rahman%20%28%20The%20Most%20Graciouse%20%29%20-%20%D8%B3%D9%88%D8%B1%D8%A9%20%D8%A7%D9%84%D8%B1%D8%AD%D9%85%D9%86.mp3` },
+      { id: "bayan-56", title: "Surah Al-Waqiah", titleUr: "سورۃ الواقعہ", audioUrl: `${DR_ISRAR_BASE}056%20-%20Al-Waqi%27ah%20%28%20The%20Event%20%29%20-%20%D8%B3%D9%88%D8%B1%D8%A9%20%D8%A7%D9%84%D9%88%D8%A7%D9%82%D8%B9%D8%A9.mp3` },
+      { id: "bayan-67", title: "Surah Al-Mulk", titleUr: "سورۃ الملک", audioUrl: `${DR_ISRAR_BASE}067%20-%20Al-Mulk%20%28%20Dominion%20%29%20-%20%D8%B3%D9%88%D8%B1%D8%A9%20%D8%A7%D9%84%D9%85%D9%84%D9%83.mp3` },
+      { id: "bayan-78", title: "Surah An-Naba", titleUr: "سورۃ النبا", audioUrl: `${DR_ISRAR_BASE}078%20-%20An-Naba%27%20%28%20The%20Great%20News%20%29%20-%20%D8%B3%D9%88%D8%B1%D8%A9%20%D8%A7%D9%84%D9%86%D8%A8%D8%A3.mp3` },
+      { id: "bayan-112", title: "Surah Al-Ikhlas", titleUr: "سورۃ الاخلاص", audioUrl: `${DR_ISRAR_BASE}112%20-%20Al-Ikhlas%20%28%20Sincerity%20%29%20-%20%D8%B3%D9%88%D8%B1%D8%A9%20%D8%A7%D9%84%D8%A5%D8%AE%D9%84%D8%A7%D8%B5.mp3` },
+      { id: "bayan-114", title: "Surah An-Nas", titleUr: "سورۃ الناس", audioUrl: `${DR_ISRAR_BASE}114%20-%20An-Nas%20%28%20Mankind%20%29%20-%20%D8%B3%D9%88%D8%B1%D8%A9%20%D8%A7%D9%84%D9%86%D8%A7%D8%B3.mp3` },
     ]
   },
   {
-    id: "seerat-lectures",
-    title: "Seerat un Nabi Lectures",
-    titleUr: "سیرت النبی لیکچرز",
-    speaker: "Various Scholars",
-    speakerUr: "مختلف علماء",
-    icon: "🕌",
-    description: "Collection of lectures on the life of Prophet Muhammad ﷺ",
-    descriptionUr: "نبی کریم ﷺ کی سیرت پر لیکچرز کا مجموعہ",
+    id: "mishary-quran",
+    title: "Quran Recitation - Mishary Rashid",
+    titleUr: "تلاوت قرآن - مشاری راشد",
+    speaker: "Mishary Rashid Alafasy",
+    speakerUr: "مشاری راشد العفاسی",
+    icon: "🎧",
+    description: "Beautiful Quran recitation by Mishary Rashid Alafasy",
+    descriptionUr: "مشاری راشد العفاسی کی خوبصورت تلاوت",
     lectures: [
-      { id: "seerat-1", title: "Birth & Early Life of the Prophet", titleUr: "نبی ﷺ کی ولادت اور ابتدائی زندگی", audioUrl: "https://archive.org/download/Seerat-un-Nabi-PBUH-Dr-Israr-Ahmad/01-Seerat-un-Nabi-PBUH.mp3" },
-      { id: "seerat-2", title: "Prophethood & First Revelation", titleUr: "نبوت اور پہلی وحی", audioUrl: "https://archive.org/download/Seerat-un-Nabi-PBUH-Dr-Israr-Ahmad/02-Seerat-un-Nabi-PBUH.mp3" },
-      { id: "seerat-3", title: "Persecution & Migration", titleUr: "ایذا رسانی اور ہجرت", audioUrl: "https://archive.org/download/Seerat-un-Nabi-PBUH-Dr-Israr-Ahmad/03-Seerat-un-Nabi-PBUH.mp3" },
-      { id: "seerat-4", title: "Life in Madinah", titleUr: "مدینہ کی زندگی", audioUrl: "https://archive.org/download/Seerat-un-Nabi-PBUH-Dr-Israr-Ahmad/04-Seerat-un-Nabi-PBUH.mp3" },
-      { id: "seerat-5", title: "Major Battles & Conquests", titleUr: "اہم غزوات اور فتوحات", audioUrl: "https://archive.org/download/Seerat-un-Nabi-PBUH-Dr-Israr-Ahmad/05-Seerat-un-Nabi-PBUH.mp3" },
+      { id: "mishary-1", title: "Surah Al-Fatihah", titleUr: "سورۃ الفاتحہ", audioUrl: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/1.mp3" },
+      { id: "mishary-36", title: "Surah Ya-Sin", titleUr: "سورۃ یٰسین", audioUrl: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/404.mp3" },
+      { id: "mishary-55", title: "Surah Ar-Rahman", titleUr: "سورۃ الرحمٰن", audioUrl: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/531.mp3" },
+      { id: "mishary-56", title: "Surah Al-Waqiah", titleUr: "سورۃ الواقعہ", audioUrl: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/534.mp3" },
+      { id: "mishary-67", title: "Surah Al-Mulk", titleUr: "سورۃ الملک", audioUrl: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/542.mp3" },
+      { id: "mishary-112", title: "Surah Al-Ikhlas", titleUr: "سورۃ الاخلاص", audioUrl: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/604.mp3" },
+      { id: "mishary-113", title: "Surah Al-Falaq", titleUr: "سورۃ الفلق", audioUrl: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/605.mp3" },
+      { id: "mishary-114", title: "Surah An-Nas", titleUr: "سورۃ الناس", audioUrl: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/606.mp3" },
     ]
   },
   {
-    id: "islamic-guidance",
-    title: "Islamic Guidance & Reminders",
-    titleUr: "اسلامی رہنمائی اور نصیحت",
-    speaker: "Various Scholars",
-    speakerUr: "مختلف علماء",
+    id: "islamic-reminders",
+    title: "Islamic Reminders & Nasheeds",
+    titleUr: "اسلامی نصیحت اور نشید",
+    speaker: "Various Artists",
+    speakerUr: "مختلف فنکار",
     icon: "🎤",
-    description: "Short lectures on various Islamic topics for daily guidance",
-    descriptionUr: "روزمرہ رہنمائی کے لیے مختلف اسلامی موضوعات پر مختصر بیانات",
+    description: "Short Islamic nasheeds and audio reminders",
+    descriptionUr: "مختصر اسلامی نشید اور آڈیو نصیحتیں",
     lectures: [
-      { id: "guide-1", title: "Importance of Salah", titleUr: "نماز کی اہمیت", audioUrl: "https://archive.org/download/importance-of-salah-dr-israr/Importance-of-Salah.mp3" },
-      { id: "guide-2", title: "Virtues of Dhikr", titleUr: "ذکر کے فضائل", audioUrl: "https://archive.org/download/Fazail-e-Zikr/Fazail-e-Zikr.mp3" },
-      { id: "guide-3", title: "Rights of Parents in Islam", titleUr: "اسلام میں والدین کے حقوق", audioUrl: "https://archive.org/download/rights-of-parents-islam/Rights-of-Parents.mp3" },
+      { id: "tala-al-badru", title: "Tala'al Badru Alayna", titleUr: "طلع البدر علینا", audioUrl: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/1.mp3" },
+      { id: "ayatul-kursi", title: "Ayatul Kursi (Beautiful)", titleUr: "آیۃ الکرسی", audioUrl: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/255.mp3" },
+      { id: "surah-mulk-full", title: "Surah Al-Mulk (Full)", titleUr: "سورۃ الملک (مکمل)", audioUrl: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/542.mp3" },
     ]
   }
 ];
