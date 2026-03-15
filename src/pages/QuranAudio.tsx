@@ -25,6 +25,7 @@ const RECITERS: Reciter[] = [
 const URDU_TRANSLATORS: TranslationAuthor[] = [
   { id: "fateh", name: "Fateh Muhammad Jalandhari", language: "Urdu" },
   { id: "drisrar", name: "Dr. Israr Ahmad (Bayan ul Quran)", language: "Urdu" },
+  { id: "minshawi", name: "Mohammed Al-Minshawi (Urdu Translation)", language: "Urdu" },
 ];
 
 const PLAYBACK_SPEEDS = [0.75, 1, 1.25, 1.5, 1.75, 2];
@@ -41,6 +42,9 @@ const getTranslationAudioUrl = (translatorId: string, surahNum: number) => {
   if (translatorId === "drisrar") {
     const fileName = DR_ISRAR_AUDIO_MAP[surahNum];
     return fileName ? `${DR_ISRAR_BASE_URL}${encodeURIComponent(fileName)}` : "";
+  }
+  if (translatorId === "minshawi") {
+    return `https://archive.org/download/mohammed_alminshawi_urdu_translation_mp3_quran/${String(surahNum).padStart(3, "0")}.mp3`;
   }
   return "";
 };
