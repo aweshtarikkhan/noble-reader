@@ -164,9 +164,12 @@ const IslamicCalendar: React.FC = () => {
     const fetchToday = async () => {
       try {
         const now = new Date();
-        const dd = String(now.getDate()).padStart(2, "0");
-        const mm = String(now.getMonth() + 1).padStart(2, "0");
-        const yyyy = now.getFullYear();
+        // Shift the actual date by userAdjust to get correct Gregorian too
+        const adjustedDate = new Date(now);
+        adjustedDate.setDate(adjustedDate.getDate() + userAdjust);
+        const dd = String(adjustedDate.getDate()).padStart(2, "0");
+        const mm = String(adjustedDate.getMonth() + 1).padStart(2, "0");
+        const yyyy = adjustedDate.getFullYear();
         const res = await fetch(`https://api.aladhan.com/v1/gToH/${dd}-${mm}-${yyyy}`);
         const data = await res.json();
         if (data.code === 200) {
@@ -193,7 +196,7 @@ const IslamicCalendar: React.FC = () => {
           setTodayHijriDay(adjustedDay);
           setTodayHijriMonth(adjustedMonth);
           setTodayHijriYear(adjustedYear);
-          setTodayGregorian(`${now.getDate()} ${GREGORIAN_MONTHS[now.getMonth()]} ${now.getFullYear()}`);
+          setTodayGregorian(`${adjustedDate.getDate()} ${GREGORIAN_MONTHS[adjustedDate.getMonth()]} ${adjustedDate.getFullYear()}`);
           if (hMonth === 0) {
             setHMonth(adjustedMonth);
             setHYear(adjustedYear);
