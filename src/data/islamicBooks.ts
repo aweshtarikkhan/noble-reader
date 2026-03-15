@@ -124,6 +124,20 @@ export const ISLAMIC_BOOKS: IslamicBook[] = [
     descriptionUr: "قرآن میں مذکور انبیاء کے تفصیلی واقعات"
   },
   {
+    id: "qasas-ul-ambiyaa",
+    title: "Qasas ul Ambiyaa (Urdu)",
+    titleUr: "قصص الانبیاء (اردو)",
+    author: "Ibn Kathir",
+    authorUr: "ابن کثیر",
+    icon: "📗",
+    type: "pdf",
+    pdfUrl: "https://archive.org/download/QasasulAmbiyaa/Qasasul%20Ambiyaa.pdf",
+    description: "Stories of the Prophets in Urdu - Detailed accounts of prophets mentioned in the Quran",
+    descriptionUr: "قصص الانبیاء اردو - قرآن میں مذکور انبیاء کے تفصیلی واقعات",
+    sizeWarning: "⚠️ This file is ~12 MB. Downloading will use significant data.",
+    sizeWarningUr: "⚠️ یہ فائل ~12 MB کی ہے۔ ڈاؤن لوڈ میں کافی ڈیٹا خرچ ہوگا۔"
+  },
+  {
     id: "fiqh-sunnah",
     title: "Fiqh us-Sunnah",
     titleUr: "فقہ السنہ",
