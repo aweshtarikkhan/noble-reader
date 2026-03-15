@@ -314,6 +314,7 @@ const IslamicKnowledge: React.FC = () => {
   const getTitle = () => {
     if (subView) {
       if (subView.type === "seerat-chapter") return isUrdu ? subView.chapter.titleUr : subView.chapter.title;
+      if (subView.type === "seerat-roman-chapter") return subView.chapter.title;
       if (subView.type === "book-read" || subView.type === "book-pdf") return isUrdu ? subView.book.titleUr : subView.book.title;
       if (subView.type === "lecture-series") return isUrdu ? subView.series.titleUr : subView.series.title;
     }
