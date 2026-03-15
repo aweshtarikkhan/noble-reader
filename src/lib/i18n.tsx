@@ -84,6 +84,12 @@ const T: Translations = {
   "page.hadith": { en: "Hadith", ur: "حدیث", hi: "हदीस" },
   "page.settings": { en: "Settings", ur: "ترتیبات", hi: "सेटिंग्स" },
   "page.zakatCalculator": { en: "Zakat Calculator", ur: "زکوٰۃ کیلکولیٹر", hi: "ज़कात कैलकुलेटर" },
+  "page.islamicKnowledge": { en: "Islamic Knowledge", ur: "اسلامی علم", hi: "इस्लामी ज्ञान" },
+  "tool.islamicKnowledge": { en: "Islamic Knowledge", ur: "اسلامی علم", hi: "इस्लामी ज्ञान" },
+  "knowledge.99names": { en: "99 Names of Allah", ur: "اللہ کے 99 نام", hi: "अल्लाह के 99 नाम" },
+  "knowledge.seerat": { en: "Seerat un Nabi ﷺ", ur: "سیرت النبی ﷺ", hi: "सीरत उन नबी ﷺ" },
+  "knowledge.books": { en: "Islamic Books", ur: "اسلامی کتابیں", hi: "इस्लामी किताबें" },
+  "knowledge.lectures": { en: "Lectures / Audio", ur: "لیکچرز / آڈیو", hi: "लेक्चर / ऑडियो" },
 
   // Bookmarks page
   "bookmarks.myBookmarks": { en: "My Bookmarks", ur: "میرے بک مارکس", hi: "मेरे बुकमार्क" },
