@@ -692,7 +692,66 @@ const IslamicKnowledge: React.FC = () => {
               <BookmarkIcon className={`w-5 h-5 ${isContentBookmarked("book-pdf", subView.book.id) ? "text-primary fill-primary" : "text-muted-foreground"}`} />
             </button>
           </div>
-          <div className="rounded-xl overflow-hidden border border-border bg-card" style={{ height: "calc(100vh - 200px)" }}>
+
+          {/* Jump to Page & Bookmark Page Controls */}
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex-1 flex items-center gap-1.5">
+              <input
+                type="number"
+                min="1"
+                value={pdfPageInput}
+                onChange={(e) => setPdfPageInput(e.target.value)}
+                placeholder={isUrdu ? "صفحہ نمبر..." : "Page no..."}
+                className="flex-1 px-3 py-2 text-xs rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+              <button
+                onClick={() => {
+                  const page = parseInt(pdfPageInput);
+                  if (page > 0) jumpToPdfPage(subView.book.pdfUrl!, page);
+                  else sonnerToast(isUrdu ? "درست صفحہ نمبر درج کریں" : "Enter a valid page number");
+                }}
+                className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium active:scale-95 transition-all flex items-center gap-1"
+              >
+                <Hash className="w-3 h-3" />
+                {isUrdu ? "جائیں" : "Go"}
+              </button>
+              <button
+                onClick={() => {
+                  const page = parseInt(pdfPageInput);
+                  if (page > 0) bookmarkPdfPage(subView.book.id, page);
+                  else sonnerToast(isUrdu ? "پہلے صفحہ نمبر درج کریں" : "Enter page number first");
+                }}
+                className="px-3 py-2 rounded-lg bg-muted/50 border border-border text-xs font-medium active:scale-95 transition-all flex items-center gap-1 text-foreground"
+              >
+                <BookmarkIcon className="w-3 h-3" />
+                {isUrdu ? "محفوظ" : "Save"}
+              </button>
+            </div>
+          </div>
+
+          {/* Saved Page Bookmarks */}
+          {pdfBookmarkedPages[subView.book.id]?.length > 0 && (
+            <div className="mb-3 flex flex-wrap items-center gap-1.5">
+              <span className="text-[10px] text-muted-foreground">{isUrdu ? "محفوظ صفحات:" : "Saved pages:"}</span>
+              {pdfBookmarkedPages[subView.book.id].map((page) => (
+                <button
+                  key={page}
+                  onClick={() => jumpToPdfPage(subView.book.pdfUrl!, page)}
+                  className="group relative px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-medium active:scale-90 transition-all flex items-center gap-1"
+                >
+                  📄 {page}
+                  <span
+                    onClick={(e) => { e.stopPropagation(); bookmarkPdfPage(subView.book.id, page); }}
+                    className="text-muted-foreground hover:text-destructive ml-0.5"
+                  >
+                    ×
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="rounded-xl overflow-hidden border border-border bg-card" style={{ height: "calc(100vh - 300px)" }}>
             <iframe
               src={`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(subView.book.pdfUrl)}`}
               className="w-full h-full"
