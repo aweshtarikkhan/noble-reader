@@ -15,7 +15,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const NAV_ITEMS = [
     { path: "/", icon: Home, label: t("nav.home") },
     { path: "/read-quran", icon: BookOpen, label: t("nav.quran") },
-    { path: "__continue__", icon: PlayCircle, label: t("nav.continue") },
+    { path: "/islamic-knowledge", icon: GraduationCap, label: t("nav.knowledge") },
     { path: "/translation", icon: Languages, label: t("nav.translation") },
     { path: "/prayer-times", icon: Clock, label: t("nav.namaz") },
   ];
