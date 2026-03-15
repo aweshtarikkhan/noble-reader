@@ -299,12 +299,9 @@ const IslamicCalendar: React.FC = () => {
     return `${fStr} — ${lStr}`;
   }, [calendarDays]);
 
-  // Check if a day is today
+  // Check if a day is today (using adjusted hijri date)
   const isToday = (day: HijriDayData) => {
-    const now = new Date();
-    return day.gregorianDay === now.getDate() &&
-      day.gregorianMonth === now.getMonth() + 1 &&
-      day.gregorianYear === now.getFullYear();
+    return hMonth === todayHijriMonth && hYear === todayHijriYear && day.hijriDay === todayHijriDay;
   };
 
   // Detect gregorian month changes within the hijri month
