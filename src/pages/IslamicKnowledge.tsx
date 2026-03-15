@@ -501,6 +501,11 @@ const IslamicKnowledge: React.FC = () => {
               allowFullScreen
             />
           </div>
+          {subView.book.sizeWarning && (
+            <div className="mt-3 px-3 py-2 rounded-lg bg-destructive/10 border border-destructive/20">
+              <p className="text-xs text-destructive font-medium">{isUrdu ? subView.book.sizeWarningUr : subView.book.sizeWarning}</p>
+            </div>
+          )}
           <a href={subView.book.pdfUrl} target="_blank" rel="noopener noreferrer" className="mt-3 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold active:scale-[0.98] transition-all duration-150">
             <Download className="w-4 h-4" />
             {isUrdu ? "پی ڈی ایف ڈاؤن لوڈ کریں" : "Download PDF"}
