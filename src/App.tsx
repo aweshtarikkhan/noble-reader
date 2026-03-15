@@ -70,6 +70,7 @@ const AppContent = () => {
         <Route path="/sahih-muslim" element={<SahihMuslim />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/zakat-calculator" element={<ZakatCalculator />} />
+        <Route path="/islamic-knowledge" element={<IslamicKnowledge />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>

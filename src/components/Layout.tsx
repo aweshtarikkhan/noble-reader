@@ -44,6 +44,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (p.startsWith("/hadith")) return t("page.hadith");
     if (p.startsWith("/settings")) return t("page.settings");
     if (p.startsWith("/zakat-calculator")) return t("page.zakatCalculator");
+    if (p.startsWith("/islamic-knowledge")) return t("page.islamicKnowledge");
     return "";
   };
 
