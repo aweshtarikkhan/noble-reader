@@ -49,10 +49,13 @@ const IslamicKnowledge: React.FC = () => {
   const [playingLecture, setPlayingLecture] = useState<LectureItem | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playRequestRef = useRef(0);
 
   // Offline state
   const [downloadedLectures, setDownloadedLectures] = useState<Set<string>>(new Set());
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [downloadingAllSeriesId, setDownloadingAllSeriesId] = useState<string | null>(null);
+  const [downloadAllProgress, setDownloadAllProgress] = useState<{ done: number; total: number }>({ done: 0, total: 0 });
 
   // Load downloaded lecture ids on mount + clear invalid cached files
   useEffect(() => {
@@ -123,8 +126,39 @@ const IslamicKnowledge: React.FC = () => {
     return () => window.removeEventListener("popstate", handlePopState);
   }, [tab, subView]);
 
+  const cacheLectureAudio = async (lecture: LectureItem) => {
+    const resp = await fetch(lecture.audioUrl, { cache: "no-store" });
+    if (!resp.ok) {
+      throw new Error(`HTTP ${resp.status}`);
+    }
+
+    const contentType = resp.headers.get("content-type") ?? "";
+    if (!contentType.includes("audio")) {
+      throw new Error("Invalid audio response type");
+    }
+
+    const blob = await resp.blob();
+    if (!blob.type.startsWith("audio/")) {
+      throw new Error("Invalid audio blob");
+    }
+
+    const dataUrl = await blobToDataUrl(blob);
+    if (!isAudioDataUrl(dataUrl)) {
+      throw new Error("Invalid audio data URL");
+    }
+
+    await lectureStore.setItem(lecture.id, dataUrl);
+    setDownloadedLectures((prev) => {
+      const next = new Set(prev);
+      next.add(lecture.id);
+      return next;
+    });
+  };
+
   // Audio player functions
   const playLecture = async (lecture: LectureItem) => {
+    const requestId = ++playRequestRef.current;
+
     if (playingLecture?.id === lecture.id && isPlaying) {
       audioRef.current?.pause();
       setIsPlaying(false);
@@ -134,6 +168,7 @@ const IslamicKnowledge: React.FC = () => {
     if (playingLecture?.id === lecture.id && !isPlaying && audioRef.current) {
       try {
         await audioRef.current.play();
+        if (requestId !== playRequestRef.current) return;
         setIsPlaying(true);
       } catch {
         toast({ title: "⚠️", description: isUrdu ? "آڈیو چلانے میں مسئلہ" : "Could not play audio" });
@@ -146,37 +181,31 @@ const IslamicKnowledge: React.FC = () => {
       audioRef.current.src = "";
     }
 
-    // IMPORTANT: create + play immediately in user gesture context
-    const audio = new Audio(lecture.audioUrl);
+    // Keep playback in tap/click context (fixes mobile gesture issues)
+    const audio = new Audio();
     audio.preload = "auto";
     audioRef.current = audio;
+    void audio.play().catch(() => {});
 
-    audio.onended = () => setIsPlaying(false);
-    audio.onerror = () => {
-      setIsPlaying(false);
+    audio.onended = () => {
+      if (requestId === playRequestRef.current) {
+        setIsPlaying(false);
+      }
     };
 
-    try {
-      await audio.play();
-      setPlayingLecture(lecture);
-      setIsPlaying(true);
-      return;
-    } catch {
-      // network source failed, try cached offline source
-    }
+    audio.onerror = () => {
+      if (requestId === playRequestRef.current) {
+        setIsPlaying(false);
+      }
+    };
 
     const cached = await lectureStore.getItem<unknown>(lecture.id);
+    if (requestId !== playRequestRef.current) return;
+
+    const sources: string[] = [];
 
     if (isAudioDataUrl(cached)) {
-      audio.src = cached;
-      try {
-        await audio.play();
-        setPlayingLecture(lecture);
-        setIsPlaying(true);
-        return;
-      } catch {
-        // continue to final error
-      }
+      sources.push(cached);
     } else if (cached !== null) {
       await lectureStore.removeItem(lecture.id);
       setDownloadedLectures((prev) => {
@@ -186,44 +215,86 @@ const IslamicKnowledge: React.FC = () => {
       });
     }
 
+    sources.push(lecture.audioUrl);
+
+    let lastError: unknown = null;
+
+    for (const src of sources) {
+      audio.src = src;
+      try {
+        await audio.play();
+        if (requestId !== playRequestRef.current) return;
+        setPlayingLecture(lecture);
+        setIsPlaying(true);
+        return;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    if (requestId !== playRequestRef.current) return;
+
+    if (lastError instanceof DOMException && (lastError.name === "AbortError" || lastError.name === "NotAllowedError")) {
+      return;
+    }
+
     toast({ title: "⚠️", description: isUrdu ? "آڈیو لوڈ نہیں ہو سکا" : "Could not load audio" });
     setPlayingLecture(null);
     setIsPlaying(false);
   };
 
   const downloadLecture = async (lecture: LectureItem) => {
-    if (downloadedLectures.has(lecture.id)) return;
+    if (downloadedLectures.has(lecture.id) || downloadingAllSeriesId) return;
     setDownloadingId(lecture.id);
 
     try {
-      const resp = await fetch(lecture.audioUrl, { cache: "no-store" });
-      if (!resp.ok) {
-        throw new Error(`HTTP ${resp.status}`);
-      }
-
-      const contentType = resp.headers.get("content-type") ?? "";
-      if (!contentType.includes("audio")) {
-        throw new Error("Invalid audio response type");
-      }
-
-      const blob = await resp.blob();
-      if (!blob.type.startsWith("audio/")) {
-        throw new Error("Invalid audio blob");
-      }
-
-      const dataUrl = await blobToDataUrl(blob);
-      if (!isAudioDataUrl(dataUrl)) {
-        throw new Error("Invalid audio data URL");
-      }
-
-      await lectureStore.setItem(lecture.id, dataUrl);
-      setDownloadedLectures((prev) => new Set([...prev, lecture.id]));
+      await cacheLectureAudio(lecture);
       toast({ title: "✅", description: isUrdu ? "ڈاؤن لوڈ مکمل" : "Downloaded for offline" });
     } catch {
       toast({ title: "⚠️", description: isUrdu ? "ڈاؤن لوڈ ناکام" : "Download failed" });
     } finally {
       setDownloadingId(null);
     }
+  };
+
+  const downloadAllLectures = async (series: LectureSeries) => {
+    if (downloadingAllSeriesId) return;
+
+    const pendingLectures = series.lectures.filter((lecture) => !downloadedLectures.has(lecture.id));
+    if (pendingLectures.length === 0) {
+      toast({ title: "✅", description: isUrdu ? "تمام ابواب پہلے سے ڈاؤن لوڈ ہیں" : "All chapters are already downloaded" });
+      return;
+    }
+
+    setDownloadingAllSeriesId(series.id);
+    setDownloadAllProgress({ done: 0, total: pendingLectures.length });
+
+    let successCount = 0;
+
+    for (const lecture of pendingLectures) {
+      try {
+        await cacheLectureAudio(lecture);
+        successCount += 1;
+      } catch {
+        // continue remaining downloads
+      } finally {
+        setDownloadAllProgress((prev) => ({ ...prev, done: Math.min(prev.done + 1, prev.total) }));
+      }
+    }
+
+    if (successCount === pendingLectures.length) {
+      toast({ title: "✅", description: isUrdu ? "تمام ابواب ڈاؤن لوڈ ہو گئے" : "All chapters downloaded" });
+    } else {
+      toast({
+        title: "⚠️",
+        description: isUrdu
+          ? `${successCount} / ${pendingLectures.length} ابواب ڈاؤن لوڈ ہوئے`
+          : `${successCount}/${pendingLectures.length} chapters downloaded`,
+      });
+    }
+
+    setDownloadingAllSeriesId(null);
+    setDownloadAllProgress({ done: 0, total: 0 });
   };
 
   // Cleanup audio on unmount
