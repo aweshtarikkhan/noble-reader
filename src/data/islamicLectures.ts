@@ -1,5 +1,6 @@
 // Islamic Lectures - Archive.org audio sources for in-app streaming
 import { RIYAD_LECTURES } from "./riyadSaliheen";
+import { QASAS_ANBIYA_LECTURES } from "./qasasAmbiyaAudio";
 
 export interface LectureSeries {
   id: string;
