@@ -28,6 +28,7 @@ import Hadith from "@/pages/Hadith";
 import SahihMuslim from "@/pages/SahihMuslim";
 import Settings from "@/pages/Settings";
 import ZakatCalculator from "@/pages/ZakatCalculator";
+import IslamicKnowledge from "@/pages/IslamicKnowledge";
 import NotFound from "@/pages/NotFound";
 import { useLocationPermission } from "@/hooks/useLocationPermission";
 import { useAutoDownload } from "@/hooks/useAutoDownload";
