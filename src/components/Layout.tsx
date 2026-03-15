@@ -1,9 +1,8 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, BookOpen, Languages, Clock, PlayCircle, Globe } from "lucide-react";
+import { Home, BookOpen, Languages, Clock, GraduationCap, Globe } from "lucide-react";
 import ExitDialog from "./ExitDialog";
 import { useBackHandler } from "@/hooks/useBackHandler";
-import { getBookmarks } from "@/lib/bookmarks";
 import { useI18n } from "@/lib/i18n";
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
