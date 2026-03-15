@@ -8,6 +8,7 @@ const T: Translations = {
   // Navigation
   "nav.home": { en: "Home", ur: "ہوم", hi: "होम" },
   "nav.quran": { en: "Quran", ur: "قرآن", hi: "क़ुरआन" },
+  "nav.knowledge": { en: "Knowledge", ur: "علم", hi: "ज्ञान" },
   "nav.continue": { en: "Continue", ur: "جاری", hi: "जारी" },
   "nav.translation": { en: "Tarjuma", ur: "ترجمہ", hi: "तर्जुमा" },
   "nav.namaz": { en: "Namaz", ur: "نماز", hi: "नमाज़" },
