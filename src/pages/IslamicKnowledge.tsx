@@ -431,6 +431,24 @@ const IslamicKnowledge: React.FC = () => {
       {/* Seerat Chapter Detail (English) */}
       {subView?.type === "seerat-chapter" && (
         <div className="px-4 py-4 space-y-4">
+          <div className="flex justify-end">
+            <button
+              onClick={() => {
+                const added = toggleContentBookmark({
+                  type: "seerat",
+                  contentId: subView.chapter.id,
+                  title: subView.chapter.title,
+                  titleUr: subView.chapter.titleUr,
+                  icon: subView.chapter.icon,
+                  navData: { tab: "seerat", chapterId: subView.chapter.id, lang: "english" },
+                });
+                sonnerToast(added ? (isUrdu ? "بک مارک شامل ہو گیا" : "Bookmarked!") : (isUrdu ? "بک مارک ہٹا دیا" : "Bookmark removed"));
+              }}
+              className="p-2 rounded-lg active:scale-90 transition-all"
+            >
+              <BookmarkIcon className={`w-5 h-5 ${isContentBookmarked("seerat", subView.chapter.id) ? "text-primary fill-primary" : "text-muted-foreground"}`} />
+            </button>
+          </div>
           {subView.chapter.sections.map((sec, i) => (
             <SeeratSectionCard key={i} section={sec} isUrdu={isUrdu} />
           ))}
