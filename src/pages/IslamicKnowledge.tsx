@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, Star, BookOpen, Mic, GraduationCap, Copy, ChevronRight, ChevronLeft, Play, Pause, Download, Check, FileText, BookOpenCheck, Languages, Bookmark as BookmarkIcon } from "lucide-react";
+import { Search, Star, BookOpen, Mic, GraduationCap, Copy, ChevronRight, ChevronLeft, Play, Pause, Download, Check, FileText, BookOpenCheck, Languages, Bookmark as BookmarkIcon, RotateCcw, Hash, X } from "lucide-react";
 import { toggleContentBookmark, isContentBookmarked } from "@/lib/contentBookmarks";
 import { toast as sonnerToast } from "sonner";
 import { ALLAH_NAMES } from "@/data/allahNames";
