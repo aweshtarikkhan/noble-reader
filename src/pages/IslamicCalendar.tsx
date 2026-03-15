@@ -197,8 +197,9 @@ const IslamicCalendar: React.FC = () => {
           setTodayHijriDay(adjustedDay);
           setTodayHijriMonth(adjustedMonth);
           setTodayHijriYear(adjustedYear);
-          // Gregorian is always today's actual date
-          setTodayGregorian(`${now.getDate()} ${GREGORIAN_MONTHS[now.getMonth()]} ${now.getFullYear()}`);
+          // Gregorian is always today's REAL date - fresh Date() to avoid any stale reference
+          const realNow = new Date();
+          setTodayGregorian(`${realNow.getDate()} ${GREGORIAN_MONTHS[realNow.getMonth()]} ${realNow.getFullYear()}`);
           if (hMonth === 0) {
             setHMonth(adjustedMonth);
             setHYear(adjustedYear);
