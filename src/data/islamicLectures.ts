@@ -57,7 +57,7 @@ export const LECTURE_SERIES: LectureSeries[] = [
       { id: "seerat-20", title: "Hijrah of Muhammad ﷺ", titleUr: "محمد ﷺ کی ہجرت", audioUrl: `${SEERAT_BASE}%2820%29%20Muhammad%20%28s%29%20ki%20Hijrat_-_Seerat-un-Nabi_in_Urdu.mp3`, duration: "16:43" },
       { id: "seerat-21", title: "Arrival in Madinah", titleUr: "مدینہ میں آمد", audioUrl: `${SEERAT_BASE}%2821%29%20Muhammad%20%28s%29%20ki%20madina%20me%20aamad_-_Seerat-un-Nabi_in_Urdu.mp3`, duration: "06:38" },
       { id: "seerat-22", title: "Construction of Masjid Nabawi", titleUr: "مسجد نبوی کی تعمیر", audioUrl: `${SEERAT_BASE}%2822%29%20Masjid%20e%20Nabwi%20ki%20tameer_-_Seerat-un-Nabi_in_Urdu.mp3`, duration: "13:20" },
-      { id: "seerat-23", title: "Battle of Badr", titleUr: "جنگ بدر", audioUrl: `${SEERAT_BASE}%2823%29%20Jung%20e%20Badr_-_Seerat-un-Nabi_in_Urdu.mp3`, duration: "35:44" },
+      { id: "seerat-23", title: "Battle of Badr", titleUr: "جنگ بدر", audioUrl: `${SEERAT_BASE}%2823%29%20Jung%20e%20Badr_-_Seerat-un-Nabi_in_Urdu.mp3.mp3`, duration: "35:44" },
       { id: "seerat-24", title: "Battle of Uhud", titleUr: "جنگ احد", audioUrl: `${SEERAT_BASE}%2824%29%20Jung%20e%20Uhad_-_Seerat-un-Nabi_in_Urdu.mp3`, duration: "19:12" },
       { id: "seerat-25", title: "Betrayals Against Muslims", titleUr: "مسلمانوں سے دھوکے", audioUrl: `${SEERAT_BASE}%2825%29%20Musalmanoun%20se%20dhoke_-_Seerat-un-Nabi_in_Urdu.mp3`, duration: "17:00" },
       { id: "seerat-26", title: "Battle of Ahzab (Khandaq)", titleUr: "جنگ احزاب (خندق)", audioUrl: `${SEERAT_BASE}%2826%29%20Jung%20e%20Ahzaab_-_Seerat-un-Nabi_in_Urdu.mp3`, duration: "25:35" },
