@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Search, Star, BookOpen, Mic, GraduationCap, Copy, ChevronRight, ChevronLeft, Play, Pause, Download, Check, FileText, BookOpenCheck } from "lucide-react";
+import { Search, Star, BookOpen, Mic, GraduationCap, Copy, ChevronRight, ChevronLeft, Play, Pause, Download, Check, FileText, BookOpenCheck, Languages } from "lucide-react";
 import { ALLAH_NAMES } from "@/data/allahNames";
 import { SEERAT_CHAPTERS, SEERAT_BOOK_CREDITS, type SeeratChapter, type SeeratSection } from "@/data/seeratContent";
+import { SEERAT_ROMAN_CHAPTERS, SEERAT_ROMAN_BOOK_CREDITS, type SeeratRomanChapter } from "@/data/seeratRomanContent";
 import { ISLAMIC_BOOKS, type IslamicBook } from "@/data/islamicBooks";
 import { LECTURE_SERIES, type LectureSeries, type LectureItem } from "@/data/islamicLectures";
 import { useToast } from "@/hooks/use-toast";
@@ -9,7 +10,8 @@ import { useI18n } from "@/lib/i18n";
 import localforage from "localforage";
 
 type Tab = "main" | "names" | "seerat" | "books" | "lectures";
-type SubView = null | { type: "seerat-chapter"; chapter: SeeratChapter } | { type: "book-read"; book: IslamicBook } | { type: "book-pdf"; book: IslamicBook } | { type: "lecture-series"; series: LectureSeries };
+type SeeratLang = "english" | "roman";
+type SubView = null | { type: "seerat-chapter"; chapter: SeeratChapter } | { type: "seerat-roman-chapter"; chapter: SeeratRomanChapter } | { type: "book-read"; book: IslamicBook } | { type: "book-pdf"; book: IslamicBook } | { type: "lecture-series"; series: LectureSeries };
 
 const lectureStore = localforage.createInstance({ name: "islamic_lectures_cache" });
 
@@ -43,6 +45,7 @@ const IslamicKnowledge: React.FC = () => {
   const isUrdu = lang === "ur";
   const [tab, setTab] = useState<Tab>("main");
   const [subView, setSubView] = useState<SubView>(null);
+  const [seeratLang, setSeeratLang] = useState<SeeratLang>(() => (localStorage.getItem("seerat_lang") as SeeratLang) || "english");
   const [nameSearch, setNameSearch] = useState("");
 
   // Audio player state
@@ -311,6 +314,7 @@ const IslamicKnowledge: React.FC = () => {
   const getTitle = () => {
     if (subView) {
       if (subView.type === "seerat-chapter") return isUrdu ? subView.chapter.titleUr : subView.chapter.title;
+      if (subView.type === "seerat-roman-chapter") return subView.chapter.title;
       if (subView.type === "book-read" || subView.type === "book-pdf") return isUrdu ? subView.book.titleUr : subView.book.title;
       if (subView.type === "lecture-series") return isUrdu ? subView.series.titleUr : subView.series.title;
     }
@@ -383,33 +387,74 @@ const IslamicKnowledge: React.FC = () => {
 
       {/* Seerat un Nabi - Chapter List */}
       {tab === "seerat" && !subView && (
-        <div className="px-4 py-4 space-y-2">
-          {SEERAT_CHAPTERS.map((ch) => (
-            <button key={ch.id} onClick={() => openSubView({ type: "seerat-chapter", chapter: ch })} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl bg-card border border-border active:scale-[0.98] transition-all duration-150">
-              <span className="text-xl">{ch.icon}</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">{isUrdu ? ch.titleUr : ch.title}</p>
-                <p className="text-[10px] text-muted-foreground">{ch.sections.length} {isUrdu ? "ابواب" : "sections"}</p>
-              </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+        <div className="px-4 py-4 space-y-3">
+          {/* Language Toggle */}
+          <div className="flex items-center gap-2 p-1 rounded-xl bg-muted/50 border border-border">
+            <button onClick={() => { setSeeratLang("english"); localStorage.setItem("seerat_lang", "english"); }}
+              className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 ${seeratLang === "english" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"}`}>
+              <Languages className="w-3.5 h-3.5" /> English
             </button>
-          ))}
+            <button onClick={() => { setSeeratLang("roman"); localStorage.setItem("seerat_lang", "roman"); }}
+              className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 ${seeratLang === "roman" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"}`}>
+              <Languages className="w-3.5 h-3.5" /> Roman Urdu
+            </button>
+          </div>
+
+          {seeratLang === "english" ? (
+            SEERAT_CHAPTERS.map((ch) => (
+              <button key={ch.id} onClick={() => openSubView({ type: "seerat-chapter", chapter: ch })} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl bg-card border border-border active:scale-[0.98] transition-all duration-150">
+                <span className="text-xl">{ch.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground">{isUrdu ? ch.titleUr : ch.title}</p>
+                  <p className="text-[10px] text-muted-foreground">{ch.sections.length} {isUrdu ? "ابواب" : "sections"}</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+              </button>
+            ))
+          ) : (
+            SEERAT_ROMAN_CHAPTERS.map((ch) => (
+              <button key={ch.id} onClick={() => openSubView({ type: "seerat-roman-chapter", chapter: ch })} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl bg-card border border-border active:scale-[0.98] transition-all duration-150">
+                <span className="text-xl">{ch.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground">{ch.title}</p>
+                  <p className="text-[10px] text-muted-foreground">{ch.titleEn}</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+              </button>
+            ))
+          )}
         </div>
       )}
 
-      {/* Seerat Chapter Detail */}
+      {/* Seerat Chapter Detail (English) */}
       {subView?.type === "seerat-chapter" && (
         <div className="px-4 py-4 space-y-4">
           {subView.chapter.sections.map((sec, i) => (
             <SeeratSectionCard key={i} section={sec} isUrdu={isUrdu} />
           ))}
-          {/* Credits */}
           <div className="rounded-xl bg-primary/5 border border-primary/20 px-4 py-3 mt-6">
             <p className="text-[10px] font-bold text-primary mb-1">📚 {isUrdu ? "ماخذ" : "Source"}</p>
             <p className="text-xs font-semibold text-foreground">{isUrdu ? SEERAT_BOOK_CREDITS.titleUr : SEERAT_BOOK_CREDITS.title}</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">{isUrdu ? SEERAT_BOOK_CREDITS.authorsUr : SEERAT_BOOK_CREDITS.authors}</p>
             <p className="text-[10px] text-muted-foreground">{isUrdu ? SEERAT_BOOK_CREDITS.editionUr : SEERAT_BOOK_CREDITS.edition}</p>
             <p className="text-[10px] text-muted-foreground">{isUrdu ? "نظرثانی:" : "Reviewed by:"} {isUrdu ? SEERAT_BOOK_CREDITS.reviewerUr : SEERAT_BOOK_CREDITS.reviewer}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Seerat Chapter Detail (Roman Urdu) */}
+      {subView?.type === "seerat-roman-chapter" && (
+        <div className="px-4 py-4 space-y-4">
+          <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">
+            {subView.chapter.content}
+          </p>
+          <div className="rounded-xl bg-primary/5 border border-primary/20 px-4 py-3 mt-6">
+            <p className="text-[10px] font-bold text-primary mb-1">📚 Source</p>
+            <p className="text-xs font-semibold text-foreground">{SEERAT_ROMAN_BOOK_CREDITS.title}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{SEERAT_ROMAN_BOOK_CREDITS.author}</p>
+            <p className="text-[10px] text-muted-foreground">{SEERAT_ROMAN_BOOK_CREDITS.publisher} ({SEERAT_ROMAN_BOOK_CREDITS.edition})</p>
+            <p className="text-[10px] text-muted-foreground">ISBN: {SEERAT_ROMAN_BOOK_CREDITS.isbn}</p>
+            <p className="text-[10px] text-muted-foreground/70 mt-1 italic">{SEERAT_ROMAN_BOOK_CREDITS.note}</p>
           </div>
         </div>
       )}
