@@ -210,7 +210,7 @@ const IslamicCalendar: React.FC = () => {
     const fetchHijriMonth = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`https://api.aladhan.com/v1/hToGCalendar/${hMonth}/${hYear}?adjustment=${totalAdjustment}`);
+        const res = await fetch(`https://api.aladhan.com/v1/hToGCalendar/${hMonth}/${hYear}`);
         const data = await res.json();
         if (data.code === 200) {
           const days: HijriDayData[] = data.data.map((item: any) => {
