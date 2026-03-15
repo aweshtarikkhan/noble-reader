@@ -333,7 +333,13 @@ const IslamicCalendar: React.FC = () => {
   }, [calendarDays]);
 
   const isToday = (day: HijriDayData) => {
-    return hMonth === todayHijriMonth && hYear === todayHijriYear && day.hijriDay === todayHijriDay;
+    // Always highlight the cell matching TODAY's real Gregorian date
+    // The Hijri label for that cell will be from the API (unadjusted),
+    // but the "today" marker stays on the correct real-world day
+    const now = new Date();
+    return day.gregorianDay === now.getDate() &&
+           day.gregorianMonth === (now.getMonth() + 1) &&
+           day.gregorianYear === now.getFullYear();
   };
 
   const isGregorianToday = (day: number) => {
