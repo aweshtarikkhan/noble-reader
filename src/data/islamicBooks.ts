@@ -119,7 +119,7 @@ export const ISLAMIC_BOOKS: IslamicBook[] = [
     authorUr: "ابن کثیر",
     icon: "📕",
     type: "pdf",
-    pdfUrl: "https://archive.org/download/StoriesOfTheProphets_201601/Stories%20of%20the%20Prophets.pdf",
+    pdfUrl: "https://archive.org/download/stories_of_the_prophets_202004/stories_of_the_prophets.pdf",
     description: "Detailed accounts of the prophets mentioned in the Quran",
     descriptionUr: "قرآن میں مذکور انبیاء کے تفصیلی واقعات"
   },
