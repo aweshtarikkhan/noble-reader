@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Search, Star, BookOpen, Mic, GraduationCap, Copy, ChevronRight, ChevronLeft, Play, Pause, Download, Check, FileText, BookOpenCheck } from "lucide-react";
 import { ALLAH_NAMES } from "@/data/allahNames";
-import { SEERAT_CHAPTERS, type SeeratChapter, type SeeratSection } from "@/data/seeratContent";
+import { SEERAT_CHAPTERS, SEERAT_BOOK_CREDITS, type SeeratChapter, type SeeratSection } from "@/data/seeratContent";
 import { ISLAMIC_BOOKS, type IslamicBook } from "@/data/islamicBooks";
 import { LECTURE_SERIES, type LectureSeries, type LectureItem } from "@/data/islamicLectures";
 import { useToast } from "@/hooks/use-toast";
@@ -403,6 +403,14 @@ const IslamicKnowledge: React.FC = () => {
           {subView.chapter.sections.map((sec, i) => (
             <SeeratSectionCard key={i} section={sec} isUrdu={isUrdu} />
           ))}
+          {/* Credits */}
+          <div className="rounded-xl bg-primary/5 border border-primary/20 px-4 py-3 mt-6">
+            <p className="text-[10px] font-bold text-primary mb-1">📚 {isUrdu ? "ماخذ" : "Source"}</p>
+            <p className="text-xs font-semibold text-foreground">{isUrdu ? SEERAT_BOOK_CREDITS.titleUr : SEERAT_BOOK_CREDITS.title}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{isUrdu ? SEERAT_BOOK_CREDITS.authorsUr : SEERAT_BOOK_CREDITS.authors}</p>
+            <p className="text-[10px] text-muted-foreground">{isUrdu ? SEERAT_BOOK_CREDITS.editionUr : SEERAT_BOOK_CREDITS.edition}</p>
+            <p className="text-[10px] text-muted-foreground">{isUrdu ? "نظرثانی:" : "Reviewed by:"} {isUrdu ? SEERAT_BOOK_CREDITS.reviewerUr : SEERAT_BOOK_CREDITS.reviewer}</p>
+          </div>
         </div>
       )}
 
