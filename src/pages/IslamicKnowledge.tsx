@@ -13,6 +13,23 @@ type SubView = null | { type: "seerat-chapter"; chapter: SeeratChapter } | { typ
 
 const lectureStore = localforage.createInstance({ name: "islamic_lectures_cache" });
 
+const isAudioDataUrl = (value: unknown): value is string =>
+  typeof value === "string" && value.startsWith("data:audio/");
+
+const blobToDataUrl = (blob: Blob): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+      } else {
+        reject(new Error("Invalid file data"));
+      }
+    };
+    reader.onerror = () => reject(new Error("Could not read audio file"));
+    reader.readAsDataURL(blob);
+  });
+
 const TABS: { id: Tab; icon: React.ReactNode; labelKey: string; emoji: string }[] = [
   { id: "names", icon: <Star className="w-5 h-5 text-primary" />, labelKey: "knowledge.99names", emoji: "⭐" },
   { id: "seerat", icon: <GraduationCap className="w-5 h-5 text-primary" />, labelKey: "knowledge.seerat", emoji: "🕌" },
@@ -37,9 +54,33 @@ const IslamicKnowledge: React.FC = () => {
   const [downloadedLectures, setDownloadedLectures] = useState<Set<string>>(new Set());
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  // Load downloaded lecture ids on mount
+  // Load downloaded lecture ids on mount + clear invalid cached files
   useEffect(() => {
-    lectureStore.keys().then(keys => setDownloadedLectures(new Set(keys)));
+    let mounted = true;
+
+    const hydrateDownloads = async () => {
+      const keys = await lectureStore.keys();
+      const validKeys: string[] = [];
+
+      for (const key of keys) {
+        const cached = await lectureStore.getItem<unknown>(key);
+        if (isAudioDataUrl(cached)) {
+          validKeys.push(key);
+        } else {
+          await lectureStore.removeItem(key);
+        }
+      }
+
+      if (mounted) {
+        setDownloadedLectures(new Set(validKeys));
+      }
+    };
+
+    hydrateDownloads();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const filteredNames = ALLAH_NAMES.filter((n) => {
@@ -90,58 +131,98 @@ const IslamicKnowledge: React.FC = () => {
       return;
     }
 
-    if (playingLecture?.id === lecture.id && !isPlaying) {
-      audioRef.current?.play();
-      setIsPlaying(true);
+    if (playingLecture?.id === lecture.id && !isPlaying && audioRef.current) {
+      try {
+        await audioRef.current.play();
+        setIsPlaying(true);
+      } catch {
+        toast({ title: "⚠️", description: isUrdu ? "آڈیو چلانے میں مسئلہ" : "Could not play audio" });
+      }
       return;
     }
 
-    // Create audio element immediately in user gesture context
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = "";
     }
-    const audio = new Audio();
-    audioRef.current = audio;
+
+    // IMPORTANT: create + play immediately in user gesture context
+    const audio = new Audio(lecture.audioUrl);
     audio.preload = "auto";
+    audioRef.current = audio;
+
     audio.onended = () => setIsPlaying(false);
     audio.onerror = () => {
-      toast({ title: "⚠️", description: isUrdu ? "آڈیو لوڈ نہیں ہو سکا" : "Could not load audio" });
       setIsPlaying(false);
-      setPlayingLecture(null);
     };
-
-    // Check offline cache first
-    const cached = await lectureStore.getItem<string>(lecture.id);
-    audio.src = cached || lecture.audioUrl;
 
     try {
       await audio.play();
       setPlayingLecture(lecture);
       setIsPlaying(true);
+      return;
     } catch {
-      toast({ title: "⚠️", description: isUrdu ? "آڈیو چلانے میں مسئلہ" : "Could not play audio" });
-      setIsPlaying(false);
+      // network source failed, try cached offline source
     }
+
+    const cached = await lectureStore.getItem<unknown>(lecture.id);
+
+    if (isAudioDataUrl(cached)) {
+      audio.src = cached;
+      try {
+        await audio.play();
+        setPlayingLecture(lecture);
+        setIsPlaying(true);
+        return;
+      } catch {
+        // continue to final error
+      }
+    } else if (cached !== null) {
+      await lectureStore.removeItem(lecture.id);
+      setDownloadedLectures((prev) => {
+        const next = new Set(prev);
+        next.delete(lecture.id);
+        return next;
+      });
+    }
+
+    toast({ title: "⚠️", description: isUrdu ? "آڈیو لوڈ نہیں ہو سکا" : "Could not load audio" });
+    setPlayingLecture(null);
+    setIsPlaying(false);
   };
 
   const downloadLecture = async (lecture: LectureItem) => {
     if (downloadedLectures.has(lecture.id)) return;
     setDownloadingId(lecture.id);
+
     try {
-      const resp = await fetch(lecture.audioUrl);
+      const resp = await fetch(lecture.audioUrl, { cache: "no-store" });
+      if (!resp.ok) {
+        throw new Error(`HTTP ${resp.status}`);
+      }
+
+      const contentType = resp.headers.get("content-type") ?? "";
+      if (!contentType.includes("audio")) {
+        throw new Error("Invalid audio response type");
+      }
+
       const blob = await resp.blob();
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        await lectureStore.setItem(lecture.id, reader.result as string);
-        setDownloadedLectures(prev => new Set([...prev, lecture.id]));
-        setDownloadingId(null);
-        toast({ title: "✅", description: isUrdu ? "ڈاؤن لوڈ مکمل" : "Downloaded for offline" });
-      };
-      reader.readAsDataURL(blob);
+      if (!blob.type.startsWith("audio/")) {
+        throw new Error("Invalid audio blob");
+      }
+
+      const dataUrl = await blobToDataUrl(blob);
+      if (!isAudioDataUrl(dataUrl)) {
+        throw new Error("Invalid audio data URL");
+      }
+
+      await lectureStore.setItem(lecture.id, dataUrl);
+      setDownloadedLectures((prev) => new Set([...prev, lecture.id]));
+      toast({ title: "✅", description: isUrdu ? "ڈاؤن لوڈ مکمل" : "Downloaded for offline" });
     } catch {
-      setDownloadingId(null);
       toast({ title: "⚠️", description: isUrdu ? "ڈاؤن لوڈ ناکام" : "Download failed" });
+    } finally {
+      setDownloadingId(null);
     }
   };
 
