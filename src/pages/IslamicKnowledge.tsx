@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Search, Star, BookOpen, Mic, GraduationCap, Copy, ChevronRight, ChevronLeft, Play, Pause, Download, Check, FileText, BookOpenCheck } from "lucide-react";
 import { ALLAH_NAMES } from "@/data/allahNames";
-import { SEERAT_CHAPTERS, type SeeratChapter, type SeeratSection } from "@/data/seeratContent";
+import { SEERAT_CHAPTERS, SEERAT_BOOK_CREDITS, type SeeratChapter, type SeeratSection } from "@/data/seeratContent";
 import { ISLAMIC_BOOKS, type IslamicBook } from "@/data/islamicBooks";
 import { LECTURE_SERIES, type LectureSeries, type LectureItem } from "@/data/islamicLectures";
 import { useToast } from "@/hooks/use-toast";
