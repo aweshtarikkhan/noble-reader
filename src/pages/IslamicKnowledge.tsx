@@ -737,9 +737,10 @@ const IslamicKnowledge: React.FC = () => {
                     if (audioRef.current) {
                       audioRef.current.playbackRate = speed;
                     }
+                    setPlaybackRate(speed);
                   }}
                   className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-all duration-150 active:scale-90 ${
-                    audioRef.current?.playbackRate === speed
+                    playbackRate === speed
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted/50 text-muted-foreground hover:bg-muted"
                   }`}
