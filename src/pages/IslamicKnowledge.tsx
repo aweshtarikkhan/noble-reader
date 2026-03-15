@@ -1,5 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Search, Star, BookOpen, Mic, GraduationCap, Copy, ChevronRight, ChevronLeft, Play, Pause, Download, Check, FileText, BookOpenCheck, Languages } from "lucide-react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Search, Star, BookOpen, Mic, GraduationCap, Copy, ChevronRight, ChevronLeft, Play, Pause, Download, Check, FileText, BookOpenCheck, Languages, Bookmark as BookmarkIcon } from "lucide-react";
+import { toggleContentBookmark, isContentBookmarked } from "@/lib/contentBookmarks";
+import { toast as sonnerToast } from "sonner";
 import { ALLAH_NAMES } from "@/data/allahNames";
 import { SEERAT_CHAPTERS, SEERAT_BOOK_CREDITS, type SeeratChapter, type SeeratSection } from "@/data/seeratContent";
 import { SEERAT_ROMAN_CHAPTERS, SEERAT_ROMAN_BOOK_CREDITS, type SeeratRomanChapter } from "@/data/seeratRomanContent";
@@ -43,10 +46,49 @@ const IslamicKnowledge: React.FC = () => {
   const { toast } = useToast();
   const { t, lang } = useI18n();
   const isUrdu = lang === "ur";
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = useState<Tab>("main");
   const [subView, setSubView] = useState<SubView>(null);
   const [seeratLang, setSeeratLang] = useState<SeeratLang>(() => (localStorage.getItem("seerat_lang") as SeeratLang) || "english");
   const [nameSearch, setNameSearch] = useState("");
+
+  // Handle bookmark navigation via URL params
+  useEffect(() => {
+    const navTab = searchParams.get("tab");
+    if (!navTab) return;
+
+    if (navTab === "seerat") {
+      const chapterId = searchParams.get("chapterId");
+      const navLang = searchParams.get("lang") || "english";
+      setTab("seerat");
+      setSeeratLang(navLang as SeeratLang);
+      if (chapterId) {
+        if (navLang === "roman") {
+          const ch = SEERAT_ROMAN_CHAPTERS.find((c) => c.id === chapterId);
+          if (ch) setSubView({ type: "seerat-roman-chapter", chapter: ch });
+        } else {
+          const ch = SEERAT_CHAPTERS.find((c) => c.id === chapterId);
+          if (ch) setSubView({ type: "seerat-chapter", chapter: ch });
+        }
+      }
+    } else if (navTab === "books") {
+      const bookId = searchParams.get("bookId");
+      setTab("books");
+      if (bookId) {
+        const book = ISLAMIC_BOOKS.find((b) => b.id === bookId);
+        if (book) setSubView(book.type === "pdf" ? { type: "book-pdf", book } : { type: "book-read", book });
+      }
+    } else if (navTab === "lectures") {
+      const seriesId = searchParams.get("seriesId");
+      setTab("lectures");
+      if (seriesId) {
+        const series = LECTURE_SERIES.find((s) => s.id === seriesId);
+        if (series) setSubView({ type: "lecture-series", series });
+      }
+    }
+    // Clear params after navigation
+    setSearchParams({}, { replace: true });
+  }, []);
 
   // Audio player state
   const [playingLecture, setPlayingLecture] = useState<LectureItem | null>(null);
@@ -429,6 +471,24 @@ const IslamicKnowledge: React.FC = () => {
       {/* Seerat Chapter Detail (English) */}
       {subView?.type === "seerat-chapter" && (
         <div className="px-4 py-4 space-y-4">
+          <div className="flex justify-end">
+            <button
+              onClick={() => {
+                const added = toggleContentBookmark({
+                  type: "seerat",
+                  contentId: subView.chapter.id,
+                  title: subView.chapter.title,
+                  titleUr: subView.chapter.titleUr,
+                  icon: subView.chapter.icon,
+                  navData: { tab: "seerat", chapterId: subView.chapter.id, lang: "english" },
+                });
+                sonnerToast(added ? (isUrdu ? "بک مارک شامل ہو گیا" : "Bookmarked!") : (isUrdu ? "بک مارک ہٹا دیا" : "Bookmark removed"));
+              }}
+              className="p-2 rounded-lg active:scale-90 transition-all"
+            >
+              <BookmarkIcon className={`w-5 h-5 ${isContentBookmarked("seerat", subView.chapter.id) ? "text-primary fill-primary" : "text-muted-foreground"}`} />
+            </button>
+          </div>
           {subView.chapter.sections.map((sec, i) => (
             <SeeratSectionCard key={i} section={sec} isUrdu={isUrdu} />
           ))}
@@ -445,6 +505,24 @@ const IslamicKnowledge: React.FC = () => {
       {/* Seerat Chapter Detail (Roman Urdu) */}
       {subView?.type === "seerat-roman-chapter" && (
         <div className="px-4 py-4 space-y-4">
+          <div className="flex justify-end">
+            <button
+              onClick={() => {
+                const added = toggleContentBookmark({
+                  type: "seerat-roman",
+                  contentId: subView.chapter.id,
+                  title: subView.chapter.title,
+                  titleUr: subView.chapter.title,
+                  icon: subView.chapter.icon,
+                  navData: { tab: "seerat", chapterId: subView.chapter.id, lang: "roman" },
+                });
+                sonnerToast(added ? "Bookmarked!" : "Bookmark removed");
+              }}
+              className="p-2 rounded-lg active:scale-90 transition-all"
+            >
+              <BookmarkIcon className={`w-5 h-5 ${isContentBookmarked("seerat-roman", subView.chapter.id) ? "text-primary fill-primary" : "text-muted-foreground"}`} />
+            </button>
+          </div>
           <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">
             {subView.chapter.content}
           </p>
@@ -482,7 +560,25 @@ const IslamicKnowledge: React.FC = () => {
       {/* Book Text Reader */}
       {subView?.type === "book-read" && subView.book.chapters && (
         <div className="px-4 py-4 space-y-3">
-          <p className="text-xs text-muted-foreground mb-2">{isUrdu ? subView.book.descriptionUr : subView.book.description}</p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs text-muted-foreground">{isUrdu ? subView.book.descriptionUr : subView.book.description}</p>
+            <button
+              onClick={() => {
+                const added = toggleContentBookmark({
+                  type: "book-text",
+                  contentId: subView.book.id,
+                  title: subView.book.title,
+                  titleUr: subView.book.titleUr,
+                  icon: subView.book.icon,
+                  navData: { tab: "books", bookId: subView.book.id },
+                });
+                sonnerToast(added ? (isUrdu ? "بک مارک شامل ہو گیا" : "Bookmarked!") : (isUrdu ? "بک مارک ہٹا دیا" : "Bookmark removed"));
+              }}
+              className="p-2 rounded-lg active:scale-90 transition-all shrink-0"
+            >
+              <BookmarkIcon className={`w-5 h-5 ${isContentBookmarked("book-text", subView.book.id) ? "text-primary fill-primary" : "text-muted-foreground"}`} />
+            </button>
+          </div>
           {subView.book.chapters.map((ch, i) => (
             <BookChapterCard key={i} chapter={ch} isUrdu={isUrdu} index={i} />
           ))}
@@ -492,7 +588,25 @@ const IslamicKnowledge: React.FC = () => {
       {/* Book PDF Viewer */}
       {subView?.type === "book-pdf" && subView.book.pdfUrl && (
         <div className="px-4 py-4">
-          <p className="text-xs text-muted-foreground mb-3">{isUrdu ? subView.book.descriptionUr : subView.book.description}</p>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs text-muted-foreground">{isUrdu ? subView.book.descriptionUr : subView.book.description}</p>
+            <button
+              onClick={() => {
+                const added = toggleContentBookmark({
+                  type: "book-pdf",
+                  contentId: subView.book.id,
+                  title: subView.book.title,
+                  titleUr: subView.book.titleUr,
+                  icon: subView.book.icon,
+                  navData: { tab: "books", bookId: subView.book.id },
+                });
+                sonnerToast(added ? (isUrdu ? "بک مارک شامل ہو گیا" : "Bookmarked!") : (isUrdu ? "بک مارک ہٹا دیا" : "Bookmark removed"));
+              }}
+              className="p-2 rounded-lg active:scale-90 transition-all shrink-0"
+            >
+              <BookmarkIcon className={`w-5 h-5 ${isContentBookmarked("book-pdf", subView.book.id) ? "text-primary fill-primary" : "text-muted-foreground"}`} />
+            </button>
+          </div>
           <div className="rounded-xl overflow-hidden border border-border bg-card" style={{ height: "calc(100vh - 200px)" }}>
             <iframe
               src={`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(subView.book.pdfUrl)}`}
@@ -532,7 +646,25 @@ const IslamicKnowledge: React.FC = () => {
       {/* Lecture Series Detail with Player */}
       {subView?.type === "lecture-series" && (
         <div className="px-4 py-4 space-y-2">
-          <p className="text-xs text-muted-foreground mb-3">{isUrdu ? subView.series.descriptionUr : subView.series.description}</p>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs text-muted-foreground">{isUrdu ? subView.series.descriptionUr : subView.series.description}</p>
+            <button
+              onClick={() => {
+                const added = toggleContentBookmark({
+                  type: "lecture",
+                  contentId: subView.series.id,
+                  title: subView.series.title,
+                  titleUr: subView.series.titleUr,
+                  icon: subView.series.icon,
+                  navData: { tab: "lectures", seriesId: subView.series.id },
+                });
+                sonnerToast(added ? (isUrdu ? "بک مارک شامل ہو گیا" : "Bookmarked!") : (isUrdu ? "بک مارک ہٹا دیا" : "Bookmark removed"));
+              }}
+              className="p-2 rounded-lg active:scale-90 transition-all shrink-0"
+            >
+              <BookmarkIcon className={`w-5 h-5 ${isContentBookmarked("lecture", subView.series.id) ? "text-primary fill-primary" : "text-muted-foreground"}`} />
+            </button>
+          </div>
 
           <button
             onClick={() => downloadAllLectures(subView.series)}
