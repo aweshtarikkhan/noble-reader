@@ -94,8 +94,27 @@ const IslamicKnowledge: React.FC = () => {
   const [playingLecture, setPlayingLecture] = useState<LectureItem | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
+  const [playingSeriesId, setPlayingSeriesId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playRequestRef = useRef(0);
+
+  // Resume play state
+  interface LastPlayed { lectureId: string; seriesId: string; currentTime: number; title: string; titleUr: string; }
+  const [lastPlayed, setLastPlayed] = useState<LastPlayed | null>(() => {
+    try {
+      const raw = localStorage.getItem("audio_last_played");
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  });
+
+  // PDF page bookmarks state
+  const [pdfPageInput, setPdfPageInput] = useState("");
+  const [pdfBookmarkedPages, setPdfBookmarkedPages] = useState<Record<string, number[]>>(() => {
+    try {
+      const raw = localStorage.getItem("pdf_bookmarked_pages");
+      return raw ? JSON.parse(raw) : {};
+    } catch { return {}; }
+  });
 
   // Offline state
   const [downloadedLectures, setDownloadedLectures] = useState<Set<string>>(new Set());
