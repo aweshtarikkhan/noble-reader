@@ -230,6 +230,7 @@ const IslamicKnowledge: React.FC = () => {
     // Keep playback in tap/click context (fixes mobile gesture issues)
     const audio = new Audio();
     audio.preload = "auto";
+    audio.playbackRate = playbackRate;
     audioRef.current = audio;
     void audio.play().catch(() => {});
 
