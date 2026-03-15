@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Search, Star, BookOpen, Mic, GraduationCap, Copy, ChevronRight, ChevronLeft, Play, Pause, Download, Check, FileText, BookOpenCheck } from "lucide-react";
+import { Search, Star, BookOpen, Mic, GraduationCap, Copy, ChevronRight, ChevronLeft, Play, Pause, Download, Check, FileText, BookOpenCheck, Languages } from "lucide-react";
 import { ALLAH_NAMES } from "@/data/allahNames";
 import { SEERAT_CHAPTERS, SEERAT_BOOK_CREDITS, type SeeratChapter, type SeeratSection } from "@/data/seeratContent";
+import { SEERAT_ROMAN_CHAPTERS, SEERAT_ROMAN_BOOK_CREDITS, type SeeratRomanChapter } from "@/data/seeratRomanContent";
 import { ISLAMIC_BOOKS, type IslamicBook } from "@/data/islamicBooks";
 import { LECTURE_SERIES, type LectureSeries, type LectureItem } from "@/data/islamicLectures";
 import { useToast } from "@/hooks/use-toast";
@@ -9,7 +10,8 @@ import { useI18n } from "@/lib/i18n";
 import localforage from "localforage";
 
 type Tab = "main" | "names" | "seerat" | "books" | "lectures";
-type SubView = null | { type: "seerat-chapter"; chapter: SeeratChapter } | { type: "book-read"; book: IslamicBook } | { type: "book-pdf"; book: IslamicBook } | { type: "lecture-series"; series: LectureSeries };
+type SeeratLang = "english" | "roman";
+type SubView = null | { type: "seerat-chapter"; chapter: SeeratChapter } | { type: "seerat-roman-chapter"; chapter: SeeratRomanChapter } | { type: "book-read"; book: IslamicBook } | { type: "book-pdf"; book: IslamicBook } | { type: "lecture-series"; series: LectureSeries };
 
 const lectureStore = localforage.createInstance({ name: "islamic_lectures_cache" });
 
