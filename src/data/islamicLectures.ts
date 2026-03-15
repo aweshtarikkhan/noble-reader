@@ -128,4 +128,15 @@ export const LECTURE_SERIES: LectureSeries[] = [
     descriptionUr: "ریاض الصالحین (باغات صالحین) کا مکمل اردو آڈیو - امام نووی - 173 ابواب احادیث کا مجموعہ",
     lectures: RIYAD_LECTURES,
   },
+  {
+    id: "qasas-ul-anbiya",
+    title: "Qasas ul Anbiya - Stories of the Prophets",
+    titleUr: "قصص الانبیاء - انبیاء کے واقعات",
+    speaker: "Islamic Audio Series",
+    speakerUr: "اسلامی آڈیو سیریز",
+    icon: "📗",
+    description: "Complete Urdu audio series on the Stories of the Prophets - 32 chapters covering all prophets from Adam A.S to Eisa A.S",
+    descriptionUr: "قصص الانبیاء مکمل اردو آڈیو - 32 ابواب حضرت آدم سے حضرت عیسیٰ علیہم السلام تک",
+    lectures: QASAS_ANBIYA_LECTURES,
+  },
 ];
