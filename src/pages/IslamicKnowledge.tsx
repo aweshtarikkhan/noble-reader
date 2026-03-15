@@ -45,6 +45,7 @@ const IslamicKnowledge: React.FC = () => {
   const isUrdu = lang === "ur";
   const [tab, setTab] = useState<Tab>("main");
   const [subView, setSubView] = useState<SubView>(null);
+  const [seeratLang, setSeeratLang] = useState<SeeratLang>(() => (localStorage.getItem("seerat_lang") as SeeratLang) || "english");
   const [nameSearch, setNameSearch] = useState("");
 
   // Audio player state
