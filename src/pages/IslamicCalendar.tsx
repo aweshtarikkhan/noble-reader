@@ -233,7 +233,7 @@ const IslamicCalendar: React.FC = () => {
       setLoading(false);
     };
     fetchHijriMonth();
-  }, [hMonth, hYear, totalAdjustment]);
+  }, [hMonth, hYear]);
 
   const prevMonth = () => {
     if (hMonth <= 1) { setHMonth(12); setHYear(y => y - 1); }
