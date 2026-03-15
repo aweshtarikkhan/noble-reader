@@ -606,7 +606,25 @@ const IslamicKnowledge: React.FC = () => {
       {/* Lecture Series Detail with Player */}
       {subView?.type === "lecture-series" && (
         <div className="px-4 py-4 space-y-2">
-          <p className="text-xs text-muted-foreground mb-3">{isUrdu ? subView.series.descriptionUr : subView.series.description}</p>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs text-muted-foreground">{isUrdu ? subView.series.descriptionUr : subView.series.description}</p>
+            <button
+              onClick={() => {
+                const added = toggleContentBookmark({
+                  type: "lecture",
+                  contentId: subView.series.id,
+                  title: subView.series.title,
+                  titleUr: subView.series.titleUr,
+                  icon: subView.series.icon,
+                  navData: { tab: "lectures", seriesId: subView.series.id },
+                });
+                sonnerToast(added ? (isUrdu ? "بک مارک شامل ہو گیا" : "Bookmarked!") : (isUrdu ? "بک مارک ہٹا دیا" : "Bookmark removed"));
+              }}
+              className="p-2 rounded-lg active:scale-90 transition-all shrink-0"
+            >
+              <BookmarkIcon className={`w-5 h-5 ${isContentBookmarked("lecture", subView.series.id) ? "text-primary fill-primary" : "text-muted-foreground"}`} />
+            </button>
+          </div>
 
           <button
             onClick={() => downloadAllLectures(subView.series)}
