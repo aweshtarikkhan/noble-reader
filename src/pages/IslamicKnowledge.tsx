@@ -885,7 +885,10 @@ const IslamicKnowledge: React.FC = () => {
                 <p className="text-xs font-semibold text-foreground truncate">{isUrdu ? playingLecture.titleUr : playingLecture.title}</p>
                 <p className="text-[10px] text-muted-foreground">{isPlaying ? (isUrdu ? "چل رہا ہے" : "Playing") : (isUrdu ? "روکا ہوا" : "Paused")}</p>
               </div>
-              <button onClick={() => { playRequestRef.current += 1; audioRef.current?.pause(); audioRef.current = null; setPlayingLecture(null); setIsPlaying(false); }} className="text-[10px] text-muted-foreground px-2 py-1 rounded-lg">✕</button>
+              <button onClick={() => { 
+                if (playingLecture && playingSeriesId) saveAudioPosition(playingLecture.id, playingSeriesId, playingLecture.title, playingLecture.titleUr);
+                playRequestRef.current += 1; audioRef.current?.pause(); audioRef.current = null; setPlayingLecture(null); setIsPlaying(false); 
+              }} className="text-[10px] text-muted-foreground px-2 py-1 rounded-lg">✕</button>
             </div>
             {/* Speed Controls */}
             <div className="flex items-center gap-1.5 mt-2 justify-center">
