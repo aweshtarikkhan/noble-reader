@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, Star, BookOpen, Mic, GraduationCap, Copy, ChevronRight, ChevronLeft, Play, Pause, Download, Check, FileText, BookOpenCheck, Languages, Bookmark as BookmarkIcon } from "lucide-react";
+import { Search, Star, BookOpen, Mic, GraduationCap, Copy, ChevronRight, ChevronLeft, Play, Pause, Download, Check, FileText, BookOpenCheck, Languages, Bookmark as BookmarkIcon, RotateCcw, Hash, X } from "lucide-react";
 import { toggleContentBookmark, isContentBookmarked } from "@/lib/contentBookmarks";
 import { toast as sonnerToast } from "sonner";
 import { ALLAH_NAMES } from "@/data/allahNames";
@@ -94,8 +94,27 @@ const IslamicKnowledge: React.FC = () => {
   const [playingLecture, setPlayingLecture] = useState<LectureItem | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
+  const [playingSeriesId, setPlayingSeriesId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playRequestRef = useRef(0);
+
+  // Resume play state
+  interface LastPlayed { lectureId: string; seriesId: string; currentTime: number; title: string; titleUr: string; }
+  const [lastPlayed, setLastPlayed] = useState<LastPlayed | null>(() => {
+    try {
+      const raw = localStorage.getItem("audio_last_played");
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  });
+
+  // PDF page bookmarks state
+  const [pdfPageInput, setPdfPageInput] = useState("");
+  const [pdfBookmarkedPages, setPdfBookmarkedPages] = useState<Record<string, number[]>>(() => {
+    try {
+      const raw = localStorage.getItem("pdf_bookmarked_pages");
+      return raw ? JSON.parse(raw) : {};
+    } catch { return {}; }
+  });
 
   // Offline state
   const [downloadedLectures, setDownloadedLectures] = useState<Set<string>>(new Set());
@@ -201,12 +220,23 @@ const IslamicKnowledge: React.FC = () => {
     });
   };
 
+  // Save audio position periodically
+  const saveAudioPosition = useCallback((lectureId: string, seriesId: string, title: string, titleUr: string) => {
+    if (audioRef.current && audioRef.current.currentTime > 0) {
+      const data: LastPlayed = { lectureId, seriesId, currentTime: audioRef.current.currentTime, title, titleUr };
+      localStorage.setItem("audio_last_played", JSON.stringify(data));
+      setLastPlayed(data);
+    }
+  }, []);
+
   // Audio player functions
-  const playLecture = async (lecture: LectureItem) => {
+  const playLecture = async (lecture: LectureItem, resumeTime?: number) => {
     const requestId = ++playRequestRef.current;
 
     if (playingLecture?.id === lecture.id && isPlaying) {
       audioRef.current?.pause();
+      // Save position on pause
+      if (playingSeriesId) saveAudioPosition(lecture.id, playingSeriesId, lecture.title, lecture.titleUr);
       setIsPlaying(false);
       return;
     }
@@ -227,20 +257,27 @@ const IslamicKnowledge: React.FC = () => {
       audioRef.current.src = "";
     }
 
-    // Keep playback in tap/click context (fixes mobile gesture issues)
     const audio = new Audio();
     audio.preload = "auto";
     audio.playbackRate = playbackRate;
     audioRef.current = audio;
     void audio.play().catch(() => {});
 
+    // Save position every 5 seconds
+    let saveInterval: ReturnType<typeof setInterval> | null = null;
+
     audio.onended = () => {
+      if (saveInterval) clearInterval(saveInterval);
       if (requestId === playRequestRef.current) {
         setIsPlaying(false);
+        // Clear last played on completion
+        localStorage.removeItem("audio_last_played");
+        setLastPlayed(null);
       }
     };
 
     audio.onerror = () => {
+      if (saveInterval) clearInterval(saveInterval);
       if (requestId === playRequestRef.current) {
         setIsPlaying(false);
       }
@@ -271,8 +308,18 @@ const IslamicKnowledge: React.FC = () => {
       try {
         await audio.play();
         if (requestId !== playRequestRef.current) return;
+        // Restore resume position
+        if (resumeTime && resumeTime > 0) {
+          audio.currentTime = resumeTime;
+        }
         setPlayingLecture(lecture);
         setIsPlaying(true);
+        // Start saving position
+        const currentSeriesId = subView?.type === "lecture-series" ? subView.series.id : (playingSeriesId || "");
+        setPlayingSeriesId(currentSeriesId);
+        saveInterval = setInterval(() => {
+          saveAudioPosition(lecture.id, currentSeriesId, lecture.title, lecture.titleUr);
+        }, 5000);
         return;
       } catch (error) {
         lastError = error;
@@ -288,6 +335,41 @@ const IslamicKnowledge: React.FC = () => {
     toast({ title: "⚠️", description: isUrdu ? "آڈیو لوڈ نہیں ہو سکا" : "Could not load audio" });
     setPlayingLecture(null);
     setIsPlaying(false);
+  };
+
+  // Resume last played lecture
+  const resumeLastPlayed = () => {
+    if (!lastPlayed) return;
+    // Find the lecture across all series
+    for (const series of LECTURE_SERIES) {
+      const lecture = series.lectures.find((l) => l.id === lastPlayed.lectureId);
+      if (lecture) {
+        setPlayingSeriesId(series.id);
+        playLecture(lecture, lastPlayed.currentTime);
+        return;
+      }
+    }
+    sonnerToast(isUrdu ? "لیکچر نہیں ملا" : "Lecture not found");
+  };
+
+  // PDF page bookmark helpers
+  const bookmarkPdfPage = (bookId: string, page: number) => {
+    const updated = { ...pdfBookmarkedPages };
+    if (!updated[bookId]) updated[bookId] = [];
+    if (updated[bookId].includes(page)) {
+      updated[bookId] = updated[bookId].filter((p) => p !== page);
+      sonnerToast(isUrdu ? "صفحہ بک مارک ہٹا دیا" : "Page bookmark removed");
+    } else {
+      updated[bookId].push(page);
+      updated[bookId].sort((a, b) => a - b);
+      sonnerToast(isUrdu ? "صفحہ بک مارک ہو گیا" : "Page bookmarked!");
+    }
+    setPdfBookmarkedPages(updated);
+    localStorage.setItem("pdf_bookmarked_pages", JSON.stringify(updated));
+  };
+
+  const jumpToPdfPage = (pdfUrl: string, page: number) => {
+    window.open(`${pdfUrl}#page=${page}`, "_blank", "noopener,noreferrer");
   };
 
   const downloadLecture = async (lecture: LectureItem) => {
@@ -344,16 +426,17 @@ const IslamicKnowledge: React.FC = () => {
     setDownloadAllProgress({ done: 0, total: 0 });
   };
 
-  // Cleanup audio on unmount
+  // Cleanup audio on unmount - save position
   useEffect(() => {
     return () => {
       playRequestRef.current += 1;
-      if (audioRef.current) {
+      if (audioRef.current && playingLecture && playingSeriesId) {
+        saveAudioPosition(playingLecture.id, playingSeriesId, playingLecture.title, playingLecture.titleUr);
         audioRef.current.pause();
         audioRef.current.src = "";
       }
     };
-  }, []);
+  }, [playingLecture, playingSeriesId, saveAudioPosition]);
 
   const getTitle = () => {
     if (subView) {
@@ -609,7 +692,66 @@ const IslamicKnowledge: React.FC = () => {
               <BookmarkIcon className={`w-5 h-5 ${isContentBookmarked("book-pdf", subView.book.id) ? "text-primary fill-primary" : "text-muted-foreground"}`} />
             </button>
           </div>
-          <div className="rounded-xl overflow-hidden border border-border bg-card" style={{ height: "calc(100vh - 200px)" }}>
+
+          {/* Jump to Page & Bookmark Page Controls */}
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex-1 flex items-center gap-1.5">
+              <input
+                type="number"
+                min="1"
+                value={pdfPageInput}
+                onChange={(e) => setPdfPageInput(e.target.value)}
+                placeholder={isUrdu ? "صفحہ نمبر..." : "Page no..."}
+                className="flex-1 px-3 py-2 text-xs rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+              <button
+                onClick={() => {
+                  const page = parseInt(pdfPageInput);
+                  if (page > 0) jumpToPdfPage(subView.book.pdfUrl!, page);
+                  else sonnerToast(isUrdu ? "درست صفحہ نمبر درج کریں" : "Enter a valid page number");
+                }}
+                className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium active:scale-95 transition-all flex items-center gap-1"
+              >
+                <Hash className="w-3 h-3" />
+                {isUrdu ? "جائیں" : "Go"}
+              </button>
+              <button
+                onClick={() => {
+                  const page = parseInt(pdfPageInput);
+                  if (page > 0) bookmarkPdfPage(subView.book.id, page);
+                  else sonnerToast(isUrdu ? "پہلے صفحہ نمبر درج کریں" : "Enter page number first");
+                }}
+                className="px-3 py-2 rounded-lg bg-muted/50 border border-border text-xs font-medium active:scale-95 transition-all flex items-center gap-1 text-foreground"
+              >
+                <BookmarkIcon className="w-3 h-3" />
+                {isUrdu ? "محفوظ" : "Save"}
+              </button>
+            </div>
+          </div>
+
+          {/* Saved Page Bookmarks */}
+          {pdfBookmarkedPages[subView.book.id]?.length > 0 && (
+            <div className="mb-3 flex flex-wrap items-center gap-1.5">
+              <span className="text-[10px] text-muted-foreground">{isUrdu ? "محفوظ صفحات:" : "Saved pages:"}</span>
+              {pdfBookmarkedPages[subView.book.id].map((page) => (
+                <button
+                  key={page}
+                  onClick={() => jumpToPdfPage(subView.book.pdfUrl!, page)}
+                  className="group relative px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-medium active:scale-90 transition-all flex items-center gap-1"
+                >
+                  📄 {page}
+                  <span
+                    onClick={(e) => { e.stopPropagation(); bookmarkPdfPage(subView.book.id, page); }}
+                    className="text-muted-foreground hover:text-destructive ml-0.5"
+                  >
+                    ×
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="rounded-xl overflow-hidden border border-border bg-card" style={{ height: "calc(100vh - 300px)" }}>
             <iframe
               src={`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(subView.book.pdfUrl)}`}
               className="w-full h-full"
@@ -632,6 +774,23 @@ const IslamicKnowledge: React.FC = () => {
       {/* Lectures - Series List */}
       {tab === "lectures" && !subView && (
         <div className="px-4 py-4 space-y-2">
+          {/* Resume Last Played */}
+          {lastPlayed && !playingLecture && (
+            <button
+              onClick={resumeLastPlayed}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border border-primary/30 active:scale-[0.98] transition-all duration-150 mb-2"
+            >
+              <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                <RotateCcw className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-xs font-bold text-primary">{isUrdu ? "آخری سنا ہوا جاری رکھیں" : "Resume Last Played"}</p>
+                <p className="text-[10px] text-foreground truncate">{isUrdu ? lastPlayed.titleUr : lastPlayed.title}</p>
+                <p className="text-[9px] text-muted-foreground">{Math.floor(lastPlayed.currentTime / 60)}:{String(Math.floor(lastPlayed.currentTime % 60)).padStart(2, "0")} {isUrdu ? "پر" : "at"}</p>
+              </div>
+              <Play className="w-4 h-4 text-primary shrink-0" />
+            </button>
+          )}
           {LECTURE_SERIES.map((series) => (
             <button key={series.id} onClick={() => openSubView({ type: "lecture-series", series })} className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl bg-card border border-border active:scale-[0.98] transition-all duration-150">
               <span className="text-xl">{series.icon}</span>
@@ -726,7 +885,10 @@ const IslamicKnowledge: React.FC = () => {
                 <p className="text-xs font-semibold text-foreground truncate">{isUrdu ? playingLecture.titleUr : playingLecture.title}</p>
                 <p className="text-[10px] text-muted-foreground">{isPlaying ? (isUrdu ? "چل رہا ہے" : "Playing") : (isUrdu ? "روکا ہوا" : "Paused")}</p>
               </div>
-              <button onClick={() => { playRequestRef.current += 1; audioRef.current?.pause(); audioRef.current = null; setPlayingLecture(null); setIsPlaying(false); }} className="text-[10px] text-muted-foreground px-2 py-1 rounded-lg">✕</button>
+              <button onClick={() => { 
+                if (playingLecture && playingSeriesId) saveAudioPosition(playingLecture.id, playingSeriesId, playingLecture.title, playingLecture.titleUr);
+                playRequestRef.current += 1; audioRef.current?.pause(); audioRef.current = null; setPlayingLecture(null); setIsPlaying(false); 
+              }} className="text-[10px] text-muted-foreground px-2 py-1 rounded-lg">✕</button>
             </div>
             {/* Speed Controls */}
             <div className="flex items-center gap-1.5 mt-2 justify-center">
