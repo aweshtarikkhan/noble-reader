@@ -28,6 +28,7 @@ import Hadith from "@/pages/Hadith";
 import SahihMuslim from "@/pages/SahihMuslim";
 import Settings from "@/pages/Settings";
 import ZakatCalculator from "@/pages/ZakatCalculator";
+import IslamicKnowledge from "@/pages/IslamicKnowledge";
 import NotFound from "@/pages/NotFound";
 import { useLocationPermission } from "@/hooks/useLocationPermission";
 import { useAutoDownload } from "@/hooks/useAutoDownload";
@@ -69,6 +70,7 @@ const AppContent = () => {
         <Route path="/sahih-muslim" element={<SahihMuslim />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/zakat-calculator" element={<ZakatCalculator />} />
+        <Route path="/islamic-knowledge" element={<IslamicKnowledge />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Languages, List, BookCopy, MapPin, Share2, Clock, LocateFixed, Compass, Search, Building, BellOff, Bell, Calendar, Bookmark, HandHeart, BookMarked, Headphones, Calculator, Settings } from "lucide-react";
+import { BookOpen, Languages, List, BookCopy, MapPin, Share2, Clock, LocateFixed, Compass, Search, Building, BellOff, Bell, Calendar, Bookmark, HandHeart, BookMarked, Headphones, Calculator, Settings, GraduationCap } from "lucide-react";
 import { useSharedLocation } from "@/hooks/useSharedLocation";
 import CitySearchDialog from "@/components/CitySearchDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -73,6 +73,7 @@ const Home: React.FC = () => {
     { icon: HandHeart, title: t("tool.duas"), path: "/duas" },
     { icon: BookMarked, title: t("tool.hadith"), path: "/hadith" },
     { icon: Calculator, title: t("tool.zakatCalculator"), path: "/zakat-calculator" },
+    { icon: GraduationCap, title: t("tool.islamicKnowledge"), path: "/islamic-knowledge" },
     { icon: Settings, title: t("tool.settings"), path: "/settings", theme: "light" },
   ];
 
