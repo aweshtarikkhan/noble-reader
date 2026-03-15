@@ -86,35 +86,9 @@ export const ISLAMIC_BOOKS: IslamicBook[] = [
     ]
   },
   {
-    id: "riyad-salihin",
-    title: "Riyad as-Salihin",
-    titleUr: "ریاض الصالحین",
-    author: "Imam An-Nawawi",
-    authorUr: "امام نووی",
-    icon: "📗",
-    type: "pdf",
-    pdfUrl: "https://archive.org/download/RiyadUsSaliheen_201802/Riyad%20us%20Saliheen.pdf",
-    description: "A compilation of hadith covering virtues and manners of Muslims",
-    descriptionUr: "مسلمانوں کے فضائل اور آداب پر احادیث کا مجموعہ"
-  },
-  {
-    id: "tafsir-ibn-kathir",
-    title: "Tafsir Ibn Kathir (All 10 Volumes)",
-    titleUr: "تفسیر ابن کثیر (تمام 10 جلدیں)",
-    author: "Ibn Kathir",
-    authorUr: "ابن کثیر",
-    icon: "📖",
-    type: "pdf",
-    pdfUrl: "https://archive.org/download/TafsirIbnKathir_795/TafsirIbnKathirAll10Volumes.pdf",
-    description: "Complete Tafsir Ibn Kathir - All 10 volumes compiled. Abridged English translation with Arabic verses.",
-    descriptionUr: "مکمل تفسیر ابن کثیر - تمام 10 جلدیں۔ عربی آیات کے ساتھ مختصر انگریزی ترجمہ۔",
-    sizeWarning: "⚠️ This is a large file (~33 MB). Downloading will consume significant data and storage on your device.",
-    sizeWarningUr: "⚠️ یہ ایک بڑی فائل ہے (~33 MB)۔ ڈاؤن لوڈ کرنے سے آپ کے ڈیوائس پر کافی ڈیٹا اور اسٹوریج خرچ ہوگا۔"
-  },
-  {
     id: "stories-prophets",
     title: "Stories of the Prophets",
-    titleUr: "قصص الانبیاء",
+    titleUr: "قصص الانبیاء (انگریزی)",
     author: "Ibn Kathir",
     authorUr: "ابن کثیر",
     icon: "📕",
@@ -136,18 +110,6 @@ export const ISLAMIC_BOOKS: IslamicBook[] = [
     descriptionUr: "قصص الانبیاء اردو - قرآن میں مذکور انبیاء کے تفصیلی واقعات",
     sizeWarning: "⚠️ This file is ~12 MB. Downloading will use significant data.",
     sizeWarningUr: "⚠️ یہ فائل ~12 MB کی ہے۔ ڈاؤن لوڈ میں کافی ڈیٹا خرچ ہوگا۔"
-  },
-  {
-    id: "fiqh-sunnah",
-    title: "Fiqh us-Sunnah",
-    titleUr: "فقہ السنہ",
-    author: "As-Sayyid Sabiq",
-    authorUr: "السید سابق",
-    icon: "📚",
-    type: "pdf",
-    pdfUrl: "https://archive.org/download/FiqhUsSunnahSayyidSabiq/Fiqh%20us-Sunnah%20-%20Sayyid%20Sabiq.pdf",
-    description: "Practical guide to Islamic jurisprudence based on the Sunnah",
-    descriptionUr: "سنت کی بنیاد پر اسلامی فقہ کا عملی رہنما"
   },
   {
     id: "hazrat-umar",
