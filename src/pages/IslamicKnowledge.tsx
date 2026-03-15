@@ -715,15 +715,38 @@ const IslamicKnowledge: React.FC = () => {
       {/* Floating Audio Player */}
       {playingLecture && (
         <div className="fixed bottom-16 left-0 right-0 z-30 px-4 pb-2">
-          <div className="bg-card border border-border rounded-2xl px-4 py-3 flex items-center gap-3 shadow-lg">
-            <button onClick={() => playLecture(playingLecture)} className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shrink-0 active:scale-90 transition-all duration-150">
-              {isPlaying ? <Pause className="w-5 h-5 text-primary-foreground" /> : <Play className="w-5 h-5 text-primary-foreground ml-0.5" />}
-            </button>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-foreground truncate">{isUrdu ? playingLecture.titleUr : playingLecture.title}</p>
-              <p className="text-[10px] text-muted-foreground">{isPlaying ? (isUrdu ? "چل رہا ہے" : "Playing") : (isUrdu ? "روکا ہوا" : "Paused")}</p>
+          <div className="bg-card border border-border rounded-2xl px-4 py-3 shadow-lg">
+            <div className="flex items-center gap-3">
+              <button onClick={() => playLecture(playingLecture)} className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shrink-0 active:scale-90 transition-all duration-150">
+                {isPlaying ? <Pause className="w-5 h-5 text-primary-foreground" /> : <Play className="w-5 h-5 text-primary-foreground ml-0.5" />}
+              </button>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-foreground truncate">{isUrdu ? playingLecture.titleUr : playingLecture.title}</p>
+                <p className="text-[10px] text-muted-foreground">{isPlaying ? (isUrdu ? "چل رہا ہے" : "Playing") : (isUrdu ? "روکا ہوا" : "Paused")}</p>
+              </div>
+              <button onClick={() => { playRequestRef.current += 1; audioRef.current?.pause(); audioRef.current = null; setPlayingLecture(null); setIsPlaying(false); }} className="text-[10px] text-muted-foreground px-2 py-1 rounded-lg">✕</button>
             </div>
-            <button onClick={() => { playRequestRef.current += 1; audioRef.current?.pause(); audioRef.current = null; setPlayingLecture(null); setIsPlaying(false); }} className="text-[10px] text-muted-foreground px-2 py-1 rounded-lg">✕</button>
+            {/* Speed Controls */}
+            <div className="flex items-center gap-1.5 mt-2 justify-center">
+              <span className="text-[10px] text-muted-foreground mr-1">{isUrdu ? "رفتار:" : "Speed:"}</span>
+              {[1, 1.25, 1.5, 2].map((speed) => (
+                <button
+                  key={speed}
+                  onClick={() => {
+                    if (audioRef.current) {
+                      audioRef.current.playbackRate = speed;
+                    }
+                  }}
+                  className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-all duration-150 active:scale-90 ${
+                    audioRef.current?.playbackRate === speed
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  {speed}x
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}

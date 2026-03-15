@@ -148,5 +148,17 @@ export const ISLAMIC_BOOKS: IslamicBook[] = [
     pdfUrl: "https://archive.org/download/FiqhUsSunnahSayyidSabiq/Fiqh%20us-Sunnah%20-%20Sayyid%20Sabiq.pdf",
     description: "Practical guide to Islamic jurisprudence based on the Sunnah",
     descriptionUr: "سنت کی بنیاد پر اسلامی فقہ کا عملی رہنما"
+  },
+  {
+    id: "hazrat-umar",
+    title: "Hazrat Umar Bin Khattab (R.A)",
+    titleUr: "حضرت عمر بن خطاب رضی اللہ عنہ",
+    author: "Shaykh Muhammad Anas Chitrali",
+    authorUr: "شیخ محمد انس چترالی",
+    icon: "📘",
+    type: "pdf",
+    pdfUrl: "https://archive.org/download/HazratUmarBinKhattabr.aByShaykhMuhammadAnasChitrali_201406/Hazrat%20Umar%20Bin%20Khattab%20%28r.a%29%20By%20Shaykh%20Muhammad%20Anas%20Chitrali.pdf",
+    description: "Biography of Hazrat Umar Bin Khattab (R.A) - The second Caliph of Islam",
+    descriptionUr: "حضرت عمر بن خطاب رضی اللہ عنہ کی سوانح حیات - اسلام کے دوسرے خلیفہ"
   }
 ];
