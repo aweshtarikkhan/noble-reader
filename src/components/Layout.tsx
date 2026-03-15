@@ -104,38 +104,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className="flex items-center justify-around h-[64px]">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
-            const isContinue = item.path === "__continue__";
-            const isActive = isContinue
-              ? false
-              : location.pathname === item.path ||
+            const isActive = location.pathname === item.path ||
                 (item.path !== "/" && location.pathname.startsWith(item.path));
-
-            const handleClick = () => {
-              if (isContinue) {
-                const bookmarks = getBookmarks();
-                if (bookmarks.length > 0) {
-                  const last = bookmarks[0];
-                  if (last.mode === "complete") {
-                    navigate(`/mushaf?page=${last.page}&style=${last.style === "indopak" ? "indopak" : "saudi"}`);
-                  } else if (last.mode === "para" && last.paraNum) {
-                    navigate(`/para-read/${last.paraNum}?page=${last.page}&style=${last.style}`);
-                  } else if (last.mode === "surah" && last.surahNum) {
-                    navigate(`/surah-read/${last.surahNum}?page=${last.page}&style=${last.style}`);
-                  } else {
-                    navigate("/bookmarks");
-                  }
-                } else {
-                  navigate("/bookmarks");
-                }
-              } else {
-                navigate(item.path);
-              }
-            };
 
             return (
               <button
                 key={item.path}
-                onClick={handleClick}
+                onClick={() => navigate(item.path)}
                 className={`flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl transition-smooth active:scale-95 relative ${
                   isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 }`}
