@@ -479,6 +479,18 @@ const IslamicKnowledge: React.FC = () => {
       {/* Main menu */}
       {tab === "main" && !subView && (
         <div className="px-4 py-4 space-y-3">
+          {/* Quick shortcuts to Hadith and Duas */}
+          <div className="grid grid-cols-2 gap-3 mb-2">
+            <button onClick={() => window.location.hash = "#/hadith"} className="text-left px-4 py-4 rounded-2xl bg-primary/5 border-2 border-primary/25 flex flex-col items-center justify-center gap-2 active:scale-[0.98] transition-all duration-150">
+              <div className="text-2xl">📖</div>
+              <p className="text-xs font-bold text-foreground text-center">{isUrdu ? "حدیث" : "Hadith"}</p>
+            </button>
+            <button onClick={() => window.location.hash = "#/duas"} className="text-left px-4 py-4 rounded-2xl bg-primary/5 border-2 border-primary/25 flex flex-col items-center justify-center gap-2 active:scale-[0.98] transition-all duration-150">
+              <div className="text-2xl">🤲</div>
+              <p className="text-xs font-bold text-foreground text-center">{isUrdu ? "دعائیں" : "Duas"}</p>
+            </button>
+          </div>
+
           {TABS.map((item) => (
             <button key={item.id} onClick={() => openTab(item.id)} className="w-full text-left px-4 py-4 rounded-2xl bg-card border border-border flex items-center justify-between active:scale-[0.98] transition-all duration-150">
               <div className="flex items-center gap-3 min-w-0">
