@@ -43,6 +43,9 @@ const getTranslationAudioUrl = (translatorId: string, surahNum: number) => {
     const fileName = DR_ISRAR_AUDIO_MAP[surahNum];
     return fileName ? `${DR_ISRAR_BASE_URL}${encodeURIComponent(fileName)}` : "";
   }
+  if (translatorId === "minshawi") {
+    return `https://archive.org/download/mohammed_alminshawi_urdu_translation_mp3_quran/${String(surahNum).padStart(3, "0")}.mp3`;
+  }
   return "";
 };
 
