@@ -426,16 +426,17 @@ const IslamicKnowledge: React.FC = () => {
     setDownloadAllProgress({ done: 0, total: 0 });
   };
 
-  // Cleanup audio on unmount
+  // Cleanup audio on unmount - save position
   useEffect(() => {
     return () => {
       playRequestRef.current += 1;
-      if (audioRef.current) {
+      if (audioRef.current && playingLecture && playingSeriesId) {
+        saveAudioPosition(playingLecture.id, playingSeriesId, playingLecture.title, playingLecture.titleUr);
         audioRef.current.pause();
         audioRef.current.src = "";
       }
     };
-  }, []);
+  }, [playingLecture, playingSeriesId, saveAudioPosition]);
 
   const getTitle = () => {
     if (subView) {
