@@ -1,9 +1,8 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, BookOpen, Languages, Clock, PlayCircle, Globe } from "lucide-react";
+import { Home, BookOpen, Languages, Clock, GraduationCap, Globe } from "lucide-react";
 import ExitDialog from "./ExitDialog";
 import { useBackHandler } from "@/hooks/useBackHandler";
-import { getBookmarks } from "@/lib/bookmarks";
 import { useI18n } from "@/lib/i18n";
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -16,7 +15,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const NAV_ITEMS = [
     { path: "/", icon: Home, label: t("nav.home") },
     { path: "/read-quran", icon: BookOpen, label: t("nav.quran") },
-    { path: "__continue__", icon: PlayCircle, label: t("nav.continue") },
+    { path: "/islamic-knowledge", icon: GraduationCap, label: t("nav.knowledge") },
     { path: "/translation", icon: Languages, label: t("nav.translation") },
     { path: "/prayer-times", icon: Clock, label: t("nav.namaz") },
   ];
@@ -105,38 +104,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className="flex items-center justify-around h-[64px]">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
-            const isContinue = item.path === "__continue__";
-            const isActive = isContinue
-              ? false
-              : location.pathname === item.path ||
+            const isActive = location.pathname === item.path ||
                 (item.path !== "/" && location.pathname.startsWith(item.path));
-
-            const handleClick = () => {
-              if (isContinue) {
-                const bookmarks = getBookmarks();
-                if (bookmarks.length > 0) {
-                  const last = bookmarks[0];
-                  if (last.mode === "complete") {
-                    navigate(`/mushaf?page=${last.page}&style=${last.style === "indopak" ? "indopak" : "saudi"}`);
-                  } else if (last.mode === "para" && last.paraNum) {
-                    navigate(`/para-read/${last.paraNum}?page=${last.page}&style=${last.style}`);
-                  } else if (last.mode === "surah" && last.surahNum) {
-                    navigate(`/surah-read/${last.surahNum}?page=${last.page}&style=${last.style}`);
-                  } else {
-                    navigate("/bookmarks");
-                  }
-                } else {
-                  navigate("/bookmarks");
-                }
-              } else {
-                navigate(item.path);
-              }
-            };
 
             return (
               <button
                 key={item.path}
-                onClick={handleClick}
+                onClick={() => navigate(item.path)}
                 className={`flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl transition-smooth active:scale-95 relative ${
                   isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 }`}
