@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Search, Star, BookOpen, Mic, GraduationCap, Copy, ChevronRight, ChevronLeft, Play, Pause, Download, Check, FileText, BookOpenCheck, Languages } from "lucide-react";
+import { Search, Star, BookOpen, Mic, GraduationCap, Copy, ChevronRight, ChevronLeft, Play, Pause, Download, Check, FileText, BookOpenCheck, Languages, Bookmark as BookmarkIcon } from "lucide-react";
+import { toggleContentBookmark, isContentBookmarked } from "@/lib/contentBookmarks";
+import { toast as sonnerToast } from "sonner";
 import { ALLAH_NAMES } from "@/data/allahNames";
 import { SEERAT_CHAPTERS, SEERAT_BOOK_CREDITS, type SeeratChapter, type SeeratSection } from "@/data/seeratContent";
 import { SEERAT_ROMAN_CHAPTERS, SEERAT_ROMAN_BOOK_CREDITS, type SeeratRomanChapter } from "@/data/seeratRomanContent";
