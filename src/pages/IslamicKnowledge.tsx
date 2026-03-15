@@ -548,7 +548,25 @@ const IslamicKnowledge: React.FC = () => {
       {/* Book PDF Viewer */}
       {subView?.type === "book-pdf" && subView.book.pdfUrl && (
         <div className="px-4 py-4">
-          <p className="text-xs text-muted-foreground mb-3">{isUrdu ? subView.book.descriptionUr : subView.book.description}</p>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs text-muted-foreground">{isUrdu ? subView.book.descriptionUr : subView.book.description}</p>
+            <button
+              onClick={() => {
+                const added = toggleContentBookmark({
+                  type: "book-pdf",
+                  contentId: subView.book.id,
+                  title: subView.book.title,
+                  titleUr: subView.book.titleUr,
+                  icon: subView.book.icon,
+                  navData: { tab: "books", bookId: subView.book.id },
+                });
+                sonnerToast(added ? (isUrdu ? "بک مارک شامل ہو گیا" : "Bookmarked!") : (isUrdu ? "بک مارک ہٹا دیا" : "Bookmark removed"));
+              }}
+              className="p-2 rounded-lg active:scale-90 transition-all shrink-0"
+            >
+              <BookmarkIcon className={`w-5 h-5 ${isContentBookmarked("book-pdf", subView.book.id) ? "text-primary fill-primary" : "text-muted-foreground"}`} />
+            </button>
+          </div>
           <div className="rounded-xl overflow-hidden border border-border bg-card" style={{ height: "calc(100vh - 200px)" }}>
             <iframe
               src={`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(subView.book.pdfUrl)}`}
