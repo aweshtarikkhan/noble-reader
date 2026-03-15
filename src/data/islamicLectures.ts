@@ -1,4 +1,5 @@
 // Islamic Lectures - Archive.org audio sources for in-app streaming
+import { RIYAD_LECTURES } from "./riyadSaliheen";
 
 export interface LectureSeries {
   id: string;
@@ -114,5 +115,16 @@ export const LECTURE_SERIES: LectureSeries[] = [
       { id: "mishary-113", title: "Surah Al-Falaq", titleUr: "سورۃ الفلق", audioUrl: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/605.mp3" },
       { id: "mishary-114", title: "Surah An-Nas", titleUr: "سورۃ الناس", audioUrl: "https://cdn.islamic.network/quran/audio/128/ar.alafasy/606.mp3" },
     ]
+  },
+  {
+    id: "riyad-us-saliheen",
+    title: "Riyad us-Saliheen (Urdu Audio)",
+    titleUr: "ریاض الصالحین (اردو آڈیو)",
+    speaker: "Imam Nawawi",
+    speakerUr: "امام نووی",
+    icon: "📖",
+    description: "Complete Urdu audio book of Riyad us-Saliheen (Gardens of the Righteous) by Imam Nawawi - 173 chapters of Hadith collection",
+    descriptionUr: "ریاض الصالحین (باغات صالحین) کا مکمل اردو آڈیو - امام نووی - 173 ابواب احادیث کا مجموعہ",
+    lectures: RIYAD_LECTURES,
   },
 ];
