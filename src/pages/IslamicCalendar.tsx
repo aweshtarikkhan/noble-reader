@@ -110,7 +110,6 @@ const IslamicCalendar: React.FC = () => {
   });
 
   const config = useMemo(() => getRegionalConfig(countryCode), [countryCode]);
-  const totalAdjustment = config.adjustment + userAdjust;
 
   const handleUserAdjust = (val: number) => {
     setUserAdjust(val);
