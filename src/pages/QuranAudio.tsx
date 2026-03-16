@@ -417,6 +417,135 @@ const QuranAudio: React.FC = () => {
           )}
         </div>
 
+        {/* Ayatul Kursi Section */}
+        <div className="bg-card rounded-xl border border-border mb-3 animate-fade-in overflow-hidden">
+          <button onClick={() => setShowAyatulKursi(!showAyatulKursi)} className="w-full flex items-center justify-between p-3">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🛡️</span>
+              <div>
+                <p className="text-xs font-semibold text-foreground text-left">Ayatul Kursi</p>
+                <p className="text-[10px] text-muted-foreground">آیت الکرسی • Recitation & Tafseer</p>
+              </div>
+            </div>
+            <span className={`text-muted-foreground text-xs transition-transform ${showAyatulKursi ? "rotate-180" : ""}`}>▼</span>
+          </button>
+          {showAyatulKursi && (
+            <div className="flex flex-col gap-1 px-3 pb-3">
+              {/* Ayatul Kursi with English Meaning */}
+              <button
+                onClick={() => {
+                  const audio = audioRef.current;
+                  if (!audio) return;
+                  setPlayingAyatulKursi("english");
+                  setPlayingPanjSurah(null);
+                  audio.pause();
+                  audio.src = "https://archive.org/download/20170527QuraanTafseerAyatulKursi/20170527_QuraanTafseerAyatulKursi.mp3";
+                  audio.load();
+                  audio.play().then(() => setIsPlaying(true)).catch(() => {});
+                  if ("mediaSession" in navigator) {
+                    navigator.mediaSession.metadata = new MediaMetadata({ title: "Ayatul Kursi - English Tafseer", artist: "Maulana Anwar", album: "Ayatul Kursi" });
+                  }
+                }}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ${playingAyatulKursi === "english" ? "bg-primary/10 border border-primary/30" : "hover:bg-muted border border-transparent"}`}
+              >
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${playingAyatulKursi === "english" ? "bg-primary text-primary-foreground" : "bg-primary/20"}`}>
+                  <span className={`text-[10px] font-bold ${playingAyatulKursi === "english" ? "" : "text-primary"}`}>EN</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-medium text-foreground">Ayatul Kursi - English Meaning</span>
+                  <p className="text-[10px] text-muted-foreground">Maulana Anwar • 38:44</p>
+                </div>
+                {playingAyatulKursi === "english" && isPlaying && (
+                  <div className="flex gap-0.5 items-end h-4 shrink-0">
+                    <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "60%" }} />
+                    <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "100%", animationDelay: "0.2s" }} />
+                    <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "40%", animationDelay: "0.4s" }} />
+                  </div>
+                )}
+              </button>
+
+              {/* Ayatul Kursi Urdu - First Dars */}
+              <button
+                onClick={() => {
+                  const audio = audioRef.current;
+                  if (!audio) return;
+                  setPlayingAyatulKursi("urdu");
+                  setPlayingPanjSurah(null);
+                  audio.pause();
+                  audio.src = "https://archive.org/download/tafseerayatulkursi/Dars01%20Ayatul%20Kursi%20Ahmiyat%20wo%20Fazilat%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%20Hafizahullah%2019_05_2020.mp3";
+                  audio.load();
+                  audio.play().then(() => setIsPlaying(true)).catch(() => {});
+                  if ("mediaSession" in navigator) {
+                    navigator.mediaSession.metadata = new MediaMetadata({ title: "Ayatul Kursi - Urdu Tafseer", artist: "Shaikh Abu Rizwan Mohammadi", album: "Tafseer Ayatul Kursi" });
+                  }
+                }}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ${playingAyatulKursi === "urdu" ? "bg-primary/10 border border-primary/30" : "hover:bg-muted border border-transparent"}`}
+              >
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${playingAyatulKursi === "urdu" ? "bg-primary text-primary-foreground" : "bg-primary/20"}`}>
+                  <span className={`text-[10px] font-bold ${playingAyatulKursi === "urdu" ? "" : "text-primary"}`}>اُ</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-medium text-foreground">Ayatul Kursi - Urdu Tafseer</span>
+                  <p className="text-[10px] text-muted-foreground">Shaikh Abu Rizwan Mohammadi Salafi</p>
+                </div>
+                {playingAyatulKursi === "urdu" && isPlaying && (
+                  <div className="flex gap-0.5 items-end h-4 shrink-0">
+                    <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "60%" }} />
+                    <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "100%", animationDelay: "0.2s" }} />
+                    <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "40%", animationDelay: "0.4s" }} />
+                  </div>
+                )}
+              </button>
+
+              {/* Tafseer Ayatul Kursi Durooos - Expandable */}
+              <div className="mt-1 bg-muted/30 rounded-xl overflow-hidden">
+                <button onClick={() => setShowAyatulKursiDurooos(!showAyatulKursiDurooos)} className="w-full flex items-center justify-between px-3 py-2">
+                  <div>
+                    <p className="text-xs font-medium text-foreground text-left">📚 Tafseer Ayatul Kursi - Complete Durooos</p>
+                    <p className="text-[10px] text-muted-foreground">Shaikh Abu Rizwan Mohammadi • 40 Dars</p>
+                  </div>
+                  <span className={`text-muted-foreground text-xs transition-transform ${showAyatulKursiDurooos ? "rotate-180" : ""}`}>▼</span>
+                </button>
+                {showAyatulKursiDurooos && (
+                  <div className="flex flex-col gap-1 px-2 pb-2 max-h-72 overflow-y-auto">
+                    {AYATUL_KURSI_DUROOOS.map((dars) => (
+                      <button
+                        key={dars.id}
+                        onClick={() => {
+                          const audio = audioRef.current;
+                          if (!audio) return;
+                          setPlayingAyatulKursi(dars.id);
+                          setPlayingPanjSurah(null);
+                          audio.pause();
+                          audio.src = dars.url;
+                          audio.load();
+                          audio.play().then(() => setIsPlaying(true)).catch(() => {});
+                          if ("mediaSession" in navigator) {
+                            navigator.mediaSession.metadata = new MediaMetadata({ title: dars.title, artist: "Shaikh Abu Rizwan Mohammadi", album: "Tafseer Ayatul Kursi" });
+                          }
+                        }}
+                        className={`flex items-center gap-2 px-2 py-2 rounded-lg text-left transition-all ${playingAyatulKursi === dars.id ? "bg-primary/10 border border-primary/30" : "hover:bg-muted border border-transparent"}`}
+                      >
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[9px] font-bold ${playingAyatulKursi === dars.id ? "bg-primary text-primary-foreground" : "bg-primary/20 text-primary"}`}>
+                          {dars.num}
+                        </div>
+                        <span className="text-xs text-foreground flex-1 min-w-0 truncate">{dars.title}</span>
+                        {playingAyatulKursi === dars.id && isPlaying && (
+                          <div className="flex gap-0.5 items-end h-3 shrink-0">
+                            <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "60%" }} />
+                            <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "100%", animationDelay: "0.2s" }} />
+                            <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "40%", animationDelay: "0.4s" }} />
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Panj Surah Section */}
         <div className="bg-card rounded-xl border border-border mb-3 animate-fade-in overflow-hidden">
           <button onClick={() => setShowPanjSurah(!showPanjSurah)} className="w-full flex items-center justify-between p-3">
