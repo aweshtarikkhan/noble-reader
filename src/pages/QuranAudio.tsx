@@ -15,14 +15,8 @@ import {
 
 type AudioMode = "quran" | "translation";
 
-const PANJ_SURAH_BASE = "https://archive.org/download/PanjSurah_201808/Panj%20Surah/";
-const PANJ_SURAHS = [
-  { id: 1, name: "Surah Yaseen", nameAr: "سورة يس", nameUr: "سورۃ یٰسین", file: "01-Surah%20Yaseen.mp3", duration: "22:30" },
-  { id: 2, name: "Surah Rahman", nameAr: "سورة الرحمن", nameUr: "سورۃ الرحمٰن", file: "02-Surah%20Rahman.mp3", duration: "13:46" },
-  { id: 3, name: "Surah Mulk", nameAr: "سورة الملك", nameUr: "سورۃ الملک", file: "03-Surah%20Mulk.mp3", duration: "10:18" },
-  { id: 4, name: "Surah Muzammil", nameAr: "سورة المزمل", nameUr: "سورۃ المزمل", file: "04-Surah%20Muzammil.mp3", duration: "06:30" },
-  { id: 5, name: "Surah Mudassir", nameAr: "سورة المدثر", nameUr: "سورۃ المدثر", file: "05-Surah%20Mudassir.mp3", duration: "08:19" },
-];
+
+
 
 const TAFSEER_AK_BASE = "https://archive.org/download/tafseerayatulkursi/";
 const AYATUL_KURSI_DUROOOS = [
