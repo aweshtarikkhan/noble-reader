@@ -96,4 +96,15 @@ export const LECTURE_SERIES: LectureSeries[] = [
     descriptionUr: "قصص الانبیاء مکمل اردو آڈیو - 32 ابواب حضرت آدم سے حضرت عیسیٰ علیہم السلام تک",
     lectures: QASAS_ANBIYA_LECTURES,
   },
+  {
+    id: "daily-naseehah",
+    title: "Daily Naseehah - Seerah & Islamic Guidance",
+    titleUr: "روزانہ نصیحہ - سیرت و اسلامی رہنمائی",
+    speaker: "Mufti AK Hoosen (Compiled by Ahmed Dockrat & Ahmed Muhammad)",
+    speakerUr: "مفتی اے کے حسین (مرتب: احمد ڈاکرٹ و احمد محمد)",
+    icon: "🎙️",
+    description: "194 short Islamic talks covering Seerah, Sahaba biographies, Islamic etiquettes and daily guidance by Mufti AK Hoosen",
+    descriptionUr: "194 مختصر اسلامی بیانات - سیرت، صحابہ کی سوانح حیات، اسلامی آداب اور روزانہ رہنمائی - مفتی اے کے حسین",
+    lectures: DAILY_NASEEHAH_LECTURES,
+  },
 ];
