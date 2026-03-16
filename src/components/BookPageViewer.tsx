@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { IslamicBook } from "@/data/islamicBooks";
-import { Download, BookmarkIcon, ZoomIn, ZoomOut, Check, Loader2 } from "lucide-react";
+import { Download, Bookmark as BookmarkIcon, ZoomIn, ZoomOut, Check, Loader2 } from "lucide-react";
 import { usePinchZoom } from "@/hooks/usePinchZoom";
 import localforage from "localforage";
 
