@@ -230,7 +230,7 @@ const QuranAudio: React.FC = () => {
 
   const handlePrev = useCallback(() => { if (selectedSurah > 1) { pendingPlayRef.current = isPlaying; pendingSeekRef.current = null; setSelectedSurah((p) => p - 1); } }, [selectedSurah, isPlaying]);
   const handleNext = useCallback(() => { if (selectedSurah < 114) { pendingPlayRef.current = isPlaying; pendingSeekRef.current = null; setSelectedSurah((p) => p + 1); } }, [selectedSurah, isPlaying]);
-  const selectSurah = useCallback((num: number) => { pendingPlayRef.current = true; pendingSeekRef.current = null; setSelectedSurah(num); }, []);
+  const selectSurah = useCallback((num: number) => { pendingPlayRef.current = true; pendingSeekRef.current = null; setSelectedSurah(num); setPlayingPanjSurah(null); }, []);
   const changeSpeed = useCallback((speed: number) => { setPlaybackSpeed(speed); if (audioRef.current) audioRef.current.playbackRate = speed; setShowSpeedMenu(false); }, []);
 
   const formatTime = (t: number) => { if (!t || isNaN(t)) return "0:00"; const m = Math.floor(t / 60); const s = Math.floor(t % 60); return `${m}:${s.toString().padStart(2, "0")}`; };
