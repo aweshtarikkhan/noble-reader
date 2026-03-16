@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Calculator, Download, Plus, Trash2 } from "lucide-react";
 import jsPDF from "jspdf";
-import { Filesystem, Directory } from "@capacitor/filesystem";
+import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
 import { Capacitor } from "@capacitor/core";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -299,19 +299,43 @@ const ZakatCalculator: React.FC = () => {
     
     const fileName = `Zakat_Calculation_${new Date().toISOString().split('T')[0]}.pdf`;
 
-    // If running inside Capacitor native app, save to Downloads folder
+    // If running inside Capacitor native app, save to actual Downloads folder
     if (Capacitor.isNativePlatform()) {
       try {
+        // Request permissions first
+        const permStatus = await Filesystem.checkPermissions();
+        if (permStatus.publicStorage !== 'granted') {
+          await Filesystem.requestPermissions();
+        }
+
         const base64Data = doc.output('datauristring').split(',')[1];
-        await Filesystem.writeFile({
-          path: fileName,
-          data: base64Data,
-          directory: Directory.Documents,
-        });
-        toast({ title: t("zakat.pdfDownloaded"), description: `${fileName} saved to Documents folder` });
+        
+        // Try saving to Downloads folder via ExternalStorage
+        try {
+          await Filesystem.writeFile({
+            path: `Download/${fileName}`,
+            data: base64Data,
+            directory: Directory.ExternalStorage,
+          });
+          toast({ 
+            title: "✅ PDF Downloaded!", 
+            description: `${fileName} saved to Downloads folder` 
+          });
+        } catch {
+          // Fallback: save to Documents if ExternalStorage fails
+          await Filesystem.writeFile({
+            path: fileName,
+            data: base64Data,
+            directory: Directory.Documents,
+          });
+          toast({ 
+            title: "✅ PDF Saved!", 
+            description: `${fileName} saved to Documents folder` 
+          });
+        }
       } catch (err) {
         console.error("PDF save error:", err);
-        // Fallback: try browser download
+        // Final fallback: browser download
         doc.save(fileName);
         toast({ title: t("zakat.pdfDownloaded"), description: t("zakat.pdfSaved") });
       }
