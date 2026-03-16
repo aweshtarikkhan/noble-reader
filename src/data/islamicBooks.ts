@@ -1,4 +1,4 @@
-// Islamic Books - Free text content and PDF sources
+// Islamic Books - Free text content and Archive.org page image sources
 
 export interface IslamicBook {
   id: string;
@@ -14,6 +14,8 @@ export interface IslamicBook {
   descriptionUr: string;
   sizeWarning?: string;
   sizeWarningUr?: string;
+  totalPages?: number;
+  getPageImage?: (page: number) => string;
 }
 
 export interface BookChapter {
