@@ -15,6 +15,15 @@ import {
 
 type AudioMode = "quran" | "translation";
 
+const PANJ_SURAH_BASE = "https://archive.org/download/PanjSurah_201808/Panj%20Surah/";
+const PANJ_SURAHS = [
+  { id: 1, name: "Surah Yaseen", nameAr: "سورة يس", nameUr: "سورۃ یٰسین", file: "01-Surah%20Yaseen.mp3", duration: "22:30" },
+  { id: 2, name: "Surah Rahman", nameAr: "سورة الرحمن", nameUr: "سورۃ الرحمٰن", file: "02-Surah%20Rahman.mp3", duration: "13:46" },
+  { id: 3, name: "Surah Mulk", nameAr: "سورة الملك", nameUr: "سورۃ الملک", file: "03-Surah%20Mulk.mp3", duration: "10:18" },
+  { id: 4, name: "Surah Muzammil", nameAr: "سورة المزمل", nameUr: "سورۃ المزمل", file: "04-Surah%20Muzammil.mp3", duration: "06:30" },
+  { id: 5, name: "Surah Mudassir", nameAr: "سورة المدثر", nameUr: "سورۃ المدثر", file: "05-Surah%20Mudassir.mp3", duration: "08:19" },
+];
+
 interface Reciter { id: string; name: string; server: string; subfolder: string; }
 interface TranslationAuthor { id: string; name: string; language: string; }
 
@@ -76,6 +85,8 @@ const QuranAudio: React.FC = () => {
   const [playbackSpeed, setPlaybackSpeed] = useState(savedState?.speed || 1);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [showTranslatorList, setShowTranslatorList] = useState(false);
+  const [showPanjSurah, setShowPanjSurah] = useState(false);
+  const [playingPanjSurah, setPlayingPanjSurah] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const pendingPlayRef = useRef(false);
   const pendingSeekRef = useRef<number | null>(savedState?.time || null);
@@ -219,7 +230,7 @@ const QuranAudio: React.FC = () => {
 
   const handlePrev = useCallback(() => { if (selectedSurah > 1) { pendingPlayRef.current = isPlaying; pendingSeekRef.current = null; setSelectedSurah((p) => p - 1); } }, [selectedSurah, isPlaying]);
   const handleNext = useCallback(() => { if (selectedSurah < 114) { pendingPlayRef.current = isPlaying; pendingSeekRef.current = null; setSelectedSurah((p) => p + 1); } }, [selectedSurah, isPlaying]);
-  const selectSurah = useCallback((num: number) => { pendingPlayRef.current = true; pendingSeekRef.current = null; setSelectedSurah(num); }, []);
+  const selectSurah = useCallback((num: number) => { pendingPlayRef.current = true; pendingSeekRef.current = null; setSelectedSurah(num); setPlayingPanjSurah(null); }, []);
   const changeSpeed = useCallback((speed: number) => { setPlaybackSpeed(speed); if (audioRef.current) audioRef.current.playbackRate = speed; setShowSpeedMenu(false); }, []);
 
   const formatTime = (t: number) => { if (!t || isNaN(t)) return "0:00"; const m = Math.floor(t / 60); const s = Math.floor(t % 60); return `${m}:${s.toString().padStart(2, "0")}`; };
@@ -399,6 +410,70 @@ const QuranAudio: React.FC = () => {
                 Downloading Surah {downloadingSurah}...
                 {downloadTotal > 0 && ` ${Math.round(downloadProgress / 1024)}KB / ${Math.round(downloadTotal / 1024)}KB`}
               </p>
+            </div>
+          )}
+        </div>
+
+        {/* Panj Surah Section */}
+        <div className="bg-card rounded-xl border border-border mb-3 animate-fade-in overflow-hidden">
+          <button onClick={() => setShowPanjSurah(!showPanjSurah)} className="w-full flex items-center justify-between p-3">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">📖</span>
+              <div>
+                <p className="text-xs font-semibold text-foreground text-left">Panj Surah</p>
+                <p className="text-[10px] text-muted-foreground">پنج سورہ • 5 Surahs • Hafiz Fahad Shah</p>
+              </div>
+            </div>
+            <span className={`text-muted-foreground text-xs transition-transform ${showPanjSurah ? "rotate-180" : ""}`}>▼</span>
+          </button>
+          {showPanjSurah && (
+            <div className="flex flex-col gap-1 px-3 pb-3">
+              {PANJ_SURAHS.map((ps) => (
+                <button
+                  key={ps.id}
+                  onClick={() => {
+                    const audio = audioRef.current;
+                    if (!audio) return;
+                    setPlayingPanjSurah(ps.id);
+                    audio.pause();
+                    audio.src = `${PANJ_SURAH_BASE}${ps.file}`;
+                    audio.load();
+                    audio.play().then(() => setIsPlaying(true)).catch(() => {});
+                    if ("mediaSession" in navigator) {
+                      navigator.mediaSession.metadata = new MediaMetadata({
+                        title: ps.name,
+                        artist: "Hafiz Fahad Shah - Panj Surah",
+                        album: "Panj Surah",
+                      });
+                    }
+                  }}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ${
+                    playingPanjSurah === ps.id
+                      ? "bg-primary/10 border border-primary/30"
+                      : "hover:bg-muted border border-transparent"
+                  }`}
+                >
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                    playingPanjSurah === ps.id ? "bg-primary text-primary-foreground" : "bg-primary/20"
+                  }`}>
+                    <span className={`text-[10px] font-bold ${playingPanjSurah === ps.id ? "" : "text-primary"}`}>{ps.id}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-foreground">{ps.name}</span>
+                      <span className="font-arabic text-primary text-sm">{ps.nameAr}</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">{ps.duration}</p>
+                  </div>
+                  {playingPanjSurah === ps.id && isPlaying && (
+                    <div className="flex gap-0.5 items-end h-4 shrink-0">
+                      <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "60%" }} />
+                      <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "100%", animationDelay: "0.2s" }} />
+                      <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "40%", animationDelay: "0.4s" }} />
+                    </div>
+                  )}
+                </button>
+              ))}
             </div>
           )}
         </div>
