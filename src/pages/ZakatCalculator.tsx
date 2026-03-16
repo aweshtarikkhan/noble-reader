@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Calculator, Download, Plus, Trash2 } from "lucide-react";
 import jsPDF from "jspdf";
+import { Filesystem, Directory } from "@capacitor/filesystem";
+import { Capacitor } from "@capacitor/core";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
