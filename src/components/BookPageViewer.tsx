@@ -135,7 +135,7 @@ const BookPageViewer: React.FC<BookPageViewerProps> = ({ book, isUrdu }) => {
   const [downloading, setDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [isFullyDownloaded, setIsFullyDownloaded] = useState(false);
-  const [zoom, setZoom] = useState(1);
+  const { zoom, setZoom, onTouchStart: pinchStart, onTouchMove: pinchMove, onTouchEnd: pinchEnd } = usePinchZoom(1, 1, 4);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Check if already downloaded
@@ -317,7 +317,14 @@ const BookPageViewer: React.FC<BookPageViewerProps> = ({ book, isUrdu }) => {
       )}
 
       {/* All Pages - Vertical Scroll */}
-      <div ref={containerRef} className="rounded-2xl overflow-hidden border border-border bg-card">
+      <div
+        ref={containerRef}
+        className="rounded-2xl overflow-auto border border-border bg-card"
+        onTouchStart={pinchStart}
+        onTouchMove={pinchMove}
+        onTouchEnd={pinchEnd}
+        style={{ touchAction: zoom > 1 ? "pan-x pan-y" : "auto" }}
+      >
         {pages.map((p) => (
           <div key={p} data-page={p} className="relative">
             <BookPage
