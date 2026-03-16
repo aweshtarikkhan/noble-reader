@@ -135,7 +135,7 @@ const BookPageViewer: React.FC<BookPageViewerProps> = ({ book, isUrdu }) => {
   const [downloading, setDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [isFullyDownloaded, setIsFullyDownloaded] = useState(false);
-  const [zoom, setZoom] = useState(1);
+  const { zoom, setZoom, onTouchStart: pinchStart, onTouchMove: pinchMove, onTouchEnd: pinchEnd } = usePinchZoom(1, 1, 4);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Check if already downloaded
