@@ -1,4 +1,4 @@
-// Islamic Books - Free text content and PDF sources
+// Islamic Books - Free text content and Archive.org page image sources
 
 export interface IslamicBook {
   id: string;
@@ -14,6 +14,8 @@ export interface IslamicBook {
   descriptionUr: string;
   sizeWarning?: string;
   sizeWarningUr?: string;
+  totalPages?: number;
+  getPageImage?: (page: number) => string;
 }
 
 export interface BookChapter {
@@ -95,7 +97,12 @@ export const ISLAMIC_BOOKS: IslamicBook[] = [
     type: "pdf",
     pdfUrl: "https://archive.org/download/stories_of_the_prophets_202004/stories_of_the_prophets.pdf",
     description: "Detailed accounts of the prophets mentioned in the Quran",
-    descriptionUr: "قرآن میں مذکور انبیاء کے تفصیلی واقعات"
+    descriptionUr: "قرآن میں مذکور انبیاء کے تفصیلی واقعات",
+    totalPages: 228,
+    getPageImage: (page: number) => {
+      const padded = String(page - 1).padStart(4, '0');
+      return `https://ia802904.us.archive.org/BookReader/BookReaderImages.php?zip=/11/items/stories_of_the_prophets_202004/stories_of_the_prophets_jp2.zip&file=stories_of_the_prophets_jp2/stories_of_the_prophets_${padded}.jp2&id=stories_of_the_prophets_202004&scale=2&rotate=0`;
+    },
   },
   {
     id: "qasas-ul-ambiyaa",
@@ -108,8 +115,11 @@ export const ISLAMIC_BOOKS: IslamicBook[] = [
     pdfUrl: "https://archive.org/download/QasasulAmbiyaa/Qasasul%20Ambiyaa.pdf",
     description: "Stories of the Prophets in Urdu - Detailed accounts of prophets mentioned in the Quran",
     descriptionUr: "قصص الانبیاء اردو - قرآن میں مذکور انبیاء کے تفصیلی واقعات",
-    sizeWarning: "⚠️ This file is ~12 MB. Downloading will use significant data.",
-    sizeWarningUr: "⚠️ یہ فائل ~12 MB کی ہے۔ ڈاؤن لوڈ میں کافی ڈیٹا خرچ ہوگا۔"
+    totalPages: 678,
+    getPageImage: (page: number) => {
+      const padded = String(page - 1).padStart(4, '0');
+      return `https://ia801507.us.archive.org/BookReader/BookReaderImages.php?zip=/3/items/QasasulAmbiyaa/Qasasul%20Ambiyaa_jp2.zip&file=Qasasul%20Ambiyaa_jp2/Qasasul%20Ambiyaa_${padded}.jp2&id=QasasulAmbiyaa&scale=2&rotate=0`;
+    },
   },
   {
     id: "hazrat-umar",
@@ -121,6 +131,11 @@ export const ISLAMIC_BOOKS: IslamicBook[] = [
     type: "pdf",
     pdfUrl: "https://archive.org/download/HazratUmarBinKhattabr.aByShaykhMuhammadAnasChitrali_201406/Hazrat%20Umar%20Bin%20Khattab%20%28r.a%29%20By%20Shaykh%20Muhammad%20Anas%20Chitrali.pdf",
     description: "Biography of Hazrat Umar Bin Khattab (R.A) - The second Caliph of Islam",
-    descriptionUr: "حضرت عمر بن خطاب رضی اللہ عنہ کی سوانح حیات - اسلام کے دوسرے خلیفہ"
+    descriptionUr: "حضرت عمر بن خطاب رضی اللہ عنہ کی سوانح حیات - اسلام کے دوسرے خلیفہ",
+    totalPages: 225,
+    getPageImage: (page: number) => {
+      const padded = String(page - 1).padStart(4, '0');
+      return `https://ia801504.us.archive.org/BookReader/BookReaderImages.php?zip=/11/items/HazratUmarBinKhattabr.aByShaykhMuhammadAnasChitrali_201406/HazratUmarBinKhattabr.aByShaykhMuhammadAnasChitrali_jp2.zip&file=HazratUmarBinKhattabr.aByShaykhMuhammadAnasChitrali_jp2/HazratUmarBinKhattabr.aByShaykhMuhammadAnasChitrali_${padded}.jp2&id=HazratUmarBinKhattabr.aByShaykhMuhammadAnasChitrali_201406&scale=2&rotate=0`;
+    },
   }
 ];
