@@ -414,6 +414,70 @@ const QuranAudio: React.FC = () => {
           )}
         </div>
 
+        {/* Panj Surah Section */}
+        <div className="bg-card rounded-xl border border-border mb-3 animate-fade-in overflow-hidden">
+          <button onClick={() => setShowPanjSurah(!showPanjSurah)} className="w-full flex items-center justify-between p-3">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">📖</span>
+              <div>
+                <p className="text-xs font-semibold text-foreground text-left">Panj Surah</p>
+                <p className="text-[10px] text-muted-foreground">پنج سورہ • 5 Surahs • Hafiz Fahad Shah</p>
+              </div>
+            </div>
+            <span className={`text-muted-foreground text-xs transition-transform ${showPanjSurah ? "rotate-180" : ""}`}>▼</span>
+          </button>
+          {showPanjSurah && (
+            <div className="flex flex-col gap-1 px-3 pb-3">
+              {PANJ_SURAHS.map((ps) => (
+                <button
+                  key={ps.id}
+                  onClick={() => {
+                    const audio = audioRef.current;
+                    if (!audio) return;
+                    setPlayingPanjSurah(ps.id);
+                    audio.pause();
+                    audio.src = `${PANJ_SURAH_BASE}${ps.file}`;
+                    audio.load();
+                    audio.play().then(() => setIsPlaying(true)).catch(() => {});
+                    if ("mediaSession" in navigator) {
+                      navigator.mediaSession.metadata = new MediaMetadata({
+                        title: ps.name,
+                        artist: "Hafiz Fahad Shah - Panj Surah",
+                        album: "Panj Surah",
+                      });
+                    }
+                  }}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ${
+                    playingPanjSurah === ps.id
+                      ? "bg-primary/10 border border-primary/30"
+                      : "hover:bg-muted border border-transparent"
+                  }`}
+                >
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                    playingPanjSurah === ps.id ? "bg-primary text-primary-foreground" : "bg-primary/20"
+                  }`}>
+                    <span className={`text-[10px] font-bold ${playingPanjSurah === ps.id ? "" : "text-primary"}`}>{ps.id}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-foreground">{ps.name}</span>
+                      <span className="font-arabic text-primary text-sm">{ps.nameAr}</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">{ps.duration}</p>
+                  </div>
+                  {playingPanjSurah === ps.id && isPlaying && (
+                    <div className="flex gap-0.5 items-end h-4 shrink-0">
+                      <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "60%" }} />
+                      <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "100%", animationDelay: "0.2s" }} />
+                      <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "40%", animationDelay: "0.4s" }} />
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Search */}
         <input type="text" placeholder={t("audio.searchSurah")} value={search} onChange={(e) => setSearch(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-smooth mb-3 text-sm" />
 
