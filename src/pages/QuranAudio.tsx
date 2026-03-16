@@ -24,6 +24,49 @@ const PANJ_SURAHS = [
   { id: 5, name: "Surah Mudassir", nameAr: "سورة المدثر", nameUr: "سورۃ المدثر", file: "05-Surah%20Mudassir.mp3", duration: "08:19" },
 ];
 
+const TAFSEER_AK_BASE = "https://archive.org/download/tafseerayatulkursi/";
+const AYATUL_KURSI_DUROOOS = [
+  { id: "ak-02", num: 2, title: "La ilaha illallah Maana Aur Mafhoom", url: `${TAFSEER_AK_BASE}Dars02%20La%20ilaha%20illallah%20Maana%20Aur%20Mafhoom%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%20Hafizahullaah%2020_05_2020.mp3` },
+  { id: "ak-03", num: 3, title: "La ilaha illallah K Taqazay", url: `${TAFSEER_AK_BASE}Dars03%20La%20ilaha%20illallah%20K%20Taqazay%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%2021_05_2020.mp3` },
+  { id: "ak-04", num: 4, title: "La ilaha illallah Ki Sharah", url: `${TAFSEER_AK_BASE}Dars04%20%20La%20ilaha%20illallah%20Ki%20Sharah%20By%20Shekh%20Abu%20Rizwan%20Mohammadi%2021_05_2020.mp3` },
+  { id: "ak-05", num: 5, title: "Kalma Ki Pahli Shart Ilm", url: `${TAFSEER_AK_BASE}Dars05%20Kalma%20Ki%20Pahli%20Shart%20ilm.mp3` },
+  { id: "ak-06", num: 6, title: "Kalma Ki 2ri 3ri Aur 4thi Shart", url: `${TAFSEER_AK_BASE}Dars06%20Kalma%20Ki%202ri%203ri%20Aur%204thi%20Shart%20Shekh%20Abu%20Rizwan%20Mohammadi%2022_05_2020.mp3` },
+  { id: "ak-07", num: 7, title: "Kalma Ki 5wi Shart Mohabbat", url: `${TAFSEER_AK_BASE}Dars07%20%20Kalma%20Ki%205wi%20Shart%20Mohabbat%20Shekh%20Abu%20Rizwan%20Mohammadi%2022_05_2020.mp3` },
+  { id: "ak-08", num: 8, title: "Kalma Ki 6,7,8 Shart", url: `${TAFSEER_AK_BASE}Dars08%20%20Kalma%20Ki%206%2C7%2C8%20Shart%20Shaikh%20Abu%20Rizwan%20Mohammadi%20%2023_05_2020.mp3` },
+  { id: "ak-09", num: 9, title: "Tauheed Ki Gawahi", url: `${TAFSEER_AK_BASE}Dars09%20Tauheed%20Ki%20Gawahi%20Shaikh%20Abu%20Rizwan%20Mohammadi%2023_05_2020.mp3` },
+  { id: "ak-10", num: 10, title: "Al Hayy Ki Tafseer", url: `${TAFSEER_AK_BASE}Dars10%20Al%20Hayy%20Ki%20Tafseer%20Shaikh%20Abu%20Rizwan%20Mohammadi%2024_05_2020.mp3` },
+  { id: "ak-11", num: 11, title: "Al Qayyom Ki Tafseer", url: `${TAFSEER_AK_BASE}Dars11%20Al%20Qayyom%20Ki%20Tafseer%20Shaikh%20Abu%20Rizwan%20Mohammadi%20%2024_05_2020.mp3` },
+  { id: "ak-12", num: 12, title: "Al Hayyul Qayyom Ki Tafseer", url: `${TAFSEER_AK_BASE}Dars12%20Al%20Hayyul%20Qayyom%20Ki%20Tafseer%20Shaikh%20Abu%20Rizwan%20Mohammadi%2030_05_2020.mp3` },
+  { id: "ak-13", num: 13, title: "Al Hayyul Qayyom k Zaria Dua Karna", url: `${TAFSEER_AK_BASE}Dars13%20Al%20Hayyul%20Qayyom%20k%20Zaria%20Dua%20Karna%20Shaikh%20Abu%20Rizwan%20Mohammadi%2030_05_2020.mp3` },
+  { id: "ak-14", num: 14, title: "Allah Hi Malik e Haqiqi Hai", url: `${TAFSEER_AK_BASE}Dars14%20Allah%20Hi%20Malik%20e%20Haqiqi%20Hai%20Shaikh%20Abu%20Rizwan%20Mohammadi%2001_06_2020.mp3` },
+  { id: "ak-15", num: 15, title: "Shafa'at Ka Bayan", url: `${TAFSEER_AK_BASE}Dars15%20Shafa%27at%20Ka%20Bayan%20Shaikh%20Abu%20Rizwan%20Mohammadi%2002_06_2020.mp3` },
+  { id: "ak-16", num: 16, title: "Shafa'at Aur Sifaarshi", url: `${TAFSEER_AK_BASE}Dars16%20Shafa%27at%20Aur%20Sifaarshi%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%2009_06_2020.mp3` },
+  { id: "ak-17", num: 17, title: "Shafa'at Ki Aqsaam", url: `${TAFSEER_AK_BASE}Dars17%20Shafa%27at%20Ki%20Aqsaam%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%2010_06_2020.mp3` },
+  { id: "ak-18", num: 18, title: "Shafat e Wajahat Mohabbat Aur Ijazat", url: `${TAFSEER_AK_BASE}Dars18%20Shafat%20e%20Wajahat%20Mohabbat%20Aur%20ijazat%20Shaikh%20Abu%20Rizwan%20Mohammadi%2013_06_2020.mp3` },
+  { id: "ak-19", num: 19, title: "Lafz Wasila Ki Haqiqat", url: `${TAFSEER_AK_BASE}Dars19%20Lafz%20Wasila%20Ki%20Haqiqat%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%2014_06_2020.mp3` },
+  { id: "ak-20", num: 20, title: "Jayaz Wasile", url: `${TAFSEER_AK_BASE}Dars20%20Jayaz%20Wasile%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%20Hafizahullah%2015_06_2020.mp3` },
+  { id: "ak-21", num: 21, title: "Najayaz Wasilay", url: `${TAFSEER_AK_BASE}Dars21%20Najayaz%20Wasilay%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%20Hafizahullah%2017_06_2020.mp3` },
+  { id: "ak-22", num: 22, title: "Nabi K Wastay Say Dua Karna", url: `${TAFSEER_AK_BASE}Dars22%20Nabi%20K%20Wastay%20say%20Dua%20Karna%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%2021_06_2020.mp3` },
+  { id: "ak-23", num: 23, title: "Bidati Waselo K Dalael Ka Jayeza", url: `${TAFSEER_AK_BASE}Dars23%20Bidati%20Waselo%20k%20Dalael%20Ka%20Jayeza%20Shaikh%20Abu%20Rizwan%20Mohammadi%2022_06_2020.mp3` },
+  { id: "ak-24", num: 24, title: "Allah Ki Sifat e Ilm", url: `${TAFSEER_AK_BASE}Dars24%20%28Tafseer%20Ayatul%20Kursi%29%20_Allah%20Ki%20Sifat%20e%20ilm_%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%2023_06_2020.mp3` },
+  { id: "ak-25", num: 25, title: "Allah Ki Sifat e Ilm Ki Wus'at", url: `${TAFSEER_AK_BASE}Dars25%20%28Tafseer%20Ayatul%20Kursi%29%20_Allah%20Ki%20Sifat%20e%20ilm%20ki%20Wus%27at_%20Shaikh%20Abu%20Rizwan%20Mohammadi%2024%2006%202020.mp3` },
+  { id: "ak-26", num: 26, title: "Allah Ki Sifat Aleem Ki Tafseer", url: `${TAFSEER_AK_BASE}Dars26%20%28Tafseer%20Ayatul%20Kursi%29%20_Allah%20Ki%20Sifat%20_Aleem_%20Ki%20Tafseer_%20Shaikh%20Abu%20Rizwan%20Mohammdi%2025_06_2020.mp3` },
+  { id: "ak-27", num: 27, title: "Allah Ki Sifat e Ilm K Fawaed", url: `${TAFSEER_AK_BASE}Dars27%20%28Tafseer%20Ayatul%20Kursi%29%20_Allah%20Ki%20Sifat%20e%20ilm%20K%20Fawaed_%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%2028_06_2020.mp3` },
+  { id: "ak-28", num: 28, title: "Allah Ki Mashi'at Aur Kursi", url: `${TAFSEER_AK_BASE}Dars28%20%28Tafseer%20Ayatul%20Kursi%29%20_Allah%20Ki%20Mashi%27at%20Aur%20Kursi_%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%2028_06_2020.mp3` },
+  { id: "ak-29", num: 29, title: "Asman Wo Zamin Ki Hefazt Se Allah Thakta Nahi", url: `${TAFSEER_AK_BASE}Dars29%20%28Tafseer%20Ayatul%20Kursi%29%20_Asman%20Wo%20Zamin%20Ki%20Hefazt%20Se%20Allah%20Thakta%20Nahi_%20Shaikh%20Abu%20Rizwan%2029_06_2020.mp3` },
+  { id: "ak-30", num: 30, title: "Allah Ki Sifat Al Aliyy", url: `${TAFSEER_AK_BASE}Dars30%20%28Tsfseer%20Ayatul%20Kursi%29%20_Allah%20Ki%20Sifat%20Al%20Aliyy_%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%2030_06_2020.mp3` },
+  { id: "ak-31", num: 31, title: "Allah K Buland Hone K Dalael", url: `${TAFSEER_AK_BASE}Dars31%20%28Tafseer%20Ayatul%20Kursi%29%20_Allah%20K%20Buland%20Hone%20K%20Dalael_%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%2030_06_2020.mp3` },
+  { id: "ak-32", num: 32, title: "Allah Sab Se Buland Hai", url: `${TAFSEER_AK_BASE}Dars32%20%28Tafseer%20Ayatul%20Kursi%29%20_Allah%20Sab%20Se%20Buland%20Hai_%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%2004_07_2020.mp3` },
+  { id: "ak-33", num: 33, title: "Har Tarah Se Allah Buland Hai", url: `${TAFSEER_AK_BASE}dars33%20%28Tafseer%20Ayatul%20Kursi%29%20_Har%20Tarah%20Se%20Allah%20Buland%20Hai_%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%2005_07_2020.mp3` },
+  { id: "ak-34", num: 34, title: "Allah Ki Maiyyat Ka Ma'na", url: `${TAFSEER_AK_BASE}Dars34%20%28Tafseer%20Ayatul%20Kursi%29%20_Allah%20Ki%20Maiyyat%20Ka%20Ma%27na_%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%2005_07_2020.mp3` },
+  { id: "ak-35", num: 35, title: "Wahdatul Ujod Aur Hulol K Aqide Ka Rad", url: `${TAFSEER_AK_BASE}Dars35%20%28Tafseer%20Ayatul%20Kursi%29%20_Wahdatul%20Ujod%20Aur%20Hulol%20k%20Aqide%20ka%20Rad_Shaikh%20Abu%20Rizwan%20Mohammadi06_07_2020.mp3` },
+  { id: "ak-36", num: 36, title: "Allah Ki Azmat", url: `${TAFSEER_AK_BASE}Dars36%20%28Tafseer%20Ayatul%20Kursi%29%20_Allah%20Ki%20Azmat_%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%20Hafizahullah%2007_07_2020.mp3` },
+  { id: "ak-37", num: 37, title: "Ta'zeem K Taqaze", url: `${TAFSEER_AK_BASE}Dars37%20%28Tafseer%20Ayatul%20Kursi%29%20_Ta%27zeem%20K%20Taqaze_%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%20Hafizahullah%2007_07_2020.mp3` },
+  { id: "ak-38", num: 38, title: "Ta'zeem Sirf Allah K Liye", url: `${TAFSEER_AK_BASE}Dars38%20%28Tafseer%20Ayayul%20Kursi%29%20_Ta%27zeem%20Sirf%20Allah%20K%20Liye_%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%2008_07_2020.mp3` },
+  { id: "ak-39", num: 39, title: "Ta'zeem K Asraat", url: `${TAFSEER_AK_BASE}Dars39%20%28Tafseer%20Ayatul%20Kursi%29%20_Ta%27zeem%20K%20Asraat_%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%20Hafizahullah%2009_07_2020.mp3` },
+  { id: "ak-40", num: 40, title: "Ayatul Kursi Ka Haasil", url: `${TAFSEER_AK_BASE}Dars40%20%28Tafseer%20Ayatul%20Kursi%29%20_Ayatul%20Kursi%20Ka%20Haasil_%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%2009_07_2020.mp3` },
+];
+
 interface Reciter { id: string; name: string; server: string; subfolder: string; }
 interface TranslationAuthor { id: string; name: string; language: string; }
 
@@ -87,6 +130,9 @@ const QuranAudio: React.FC = () => {
   const [showTranslatorList, setShowTranslatorList] = useState(false);
   const [showPanjSurah, setShowPanjSurah] = useState(false);
   const [playingPanjSurah, setPlayingPanjSurah] = useState<number | null>(null);
+  const [showAyatulKursi, setShowAyatulKursi] = useState(false);
+  const [playingAyatulKursi, setPlayingAyatulKursi] = useState<string | null>(null);
+  const [showAyatulKursiDurooos, setShowAyatulKursiDurooos] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const pendingPlayRef = useRef(false);
   const pendingSeekRef = useRef<number | null>(savedState?.time || null);
@@ -410,6 +456,135 @@ const QuranAudio: React.FC = () => {
                 Downloading Surah {downloadingSurah}...
                 {downloadTotal > 0 && ` ${Math.round(downloadProgress / 1024)}KB / ${Math.round(downloadTotal / 1024)}KB`}
               </p>
+            </div>
+          )}
+        </div>
+
+        {/* Ayatul Kursi Section */}
+        <div className="bg-card rounded-xl border border-border mb-3 animate-fade-in overflow-hidden">
+          <button onClick={() => setShowAyatulKursi(!showAyatulKursi)} className="w-full flex items-center justify-between p-3">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🛡️</span>
+              <div>
+                <p className="text-xs font-semibold text-foreground text-left">Ayatul Kursi</p>
+                <p className="text-[10px] text-muted-foreground">آیت الکرسی • Recitation & Tafseer</p>
+              </div>
+            </div>
+            <span className={`text-muted-foreground text-xs transition-transform ${showAyatulKursi ? "rotate-180" : ""}`}>▼</span>
+          </button>
+          {showAyatulKursi && (
+            <div className="flex flex-col gap-1 px-3 pb-3">
+              {/* Ayatul Kursi with English Meaning */}
+              <button
+                onClick={() => {
+                  const audio = audioRef.current;
+                  if (!audio) return;
+                  setPlayingAyatulKursi("english");
+                  setPlayingPanjSurah(null);
+                  audio.pause();
+                  audio.src = "https://archive.org/download/20170527QuraanTafseerAyatulKursi/20170527_QuraanTafseerAyatulKursi.mp3";
+                  audio.load();
+                  audio.play().then(() => setIsPlaying(true)).catch(() => {});
+                  if ("mediaSession" in navigator) {
+                    navigator.mediaSession.metadata = new MediaMetadata({ title: "Ayatul Kursi - English Tafseer", artist: "Maulana Anwar", album: "Ayatul Kursi" });
+                  }
+                }}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ${playingAyatulKursi === "english" ? "bg-primary/10 border border-primary/30" : "hover:bg-muted border border-transparent"}`}
+              >
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${playingAyatulKursi === "english" ? "bg-primary text-primary-foreground" : "bg-primary/20"}`}>
+                  <span className={`text-[10px] font-bold ${playingAyatulKursi === "english" ? "" : "text-primary"}`}>EN</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-medium text-foreground">Ayatul Kursi - English Meaning</span>
+                  <p className="text-[10px] text-muted-foreground">Maulana Anwar • 38:44</p>
+                </div>
+                {playingAyatulKursi === "english" && isPlaying && (
+                  <div className="flex gap-0.5 items-end h-4 shrink-0">
+                    <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "60%" }} />
+                    <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "100%", animationDelay: "0.2s" }} />
+                    <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "40%", animationDelay: "0.4s" }} />
+                  </div>
+                )}
+              </button>
+
+              {/* Ayatul Kursi Urdu - First Dars */}
+              <button
+                onClick={() => {
+                  const audio = audioRef.current;
+                  if (!audio) return;
+                  setPlayingAyatulKursi("urdu");
+                  setPlayingPanjSurah(null);
+                  audio.pause();
+                  audio.src = "https://archive.org/download/tafseerayatulkursi/Dars01%20Ayatul%20Kursi%20Ahmiyat%20wo%20Fazilat%20Shaikh%20Abu%20Rizwan%20Mohammadi%20Salafi%20Hafizahullah%2019_05_2020.mp3";
+                  audio.load();
+                  audio.play().then(() => setIsPlaying(true)).catch(() => {});
+                  if ("mediaSession" in navigator) {
+                    navigator.mediaSession.metadata = new MediaMetadata({ title: "Ayatul Kursi - Urdu Tafseer", artist: "Shaikh Abu Rizwan Mohammadi", album: "Tafseer Ayatul Kursi" });
+                  }
+                }}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ${playingAyatulKursi === "urdu" ? "bg-primary/10 border border-primary/30" : "hover:bg-muted border border-transparent"}`}
+              >
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${playingAyatulKursi === "urdu" ? "bg-primary text-primary-foreground" : "bg-primary/20"}`}>
+                  <span className={`text-[10px] font-bold ${playingAyatulKursi === "urdu" ? "" : "text-primary"}`}>اُ</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-medium text-foreground">Ayatul Kursi - Urdu Tafseer</span>
+                  <p className="text-[10px] text-muted-foreground">Shaikh Abu Rizwan Mohammadi Salafi</p>
+                </div>
+                {playingAyatulKursi === "urdu" && isPlaying && (
+                  <div className="flex gap-0.5 items-end h-4 shrink-0">
+                    <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "60%" }} />
+                    <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "100%", animationDelay: "0.2s" }} />
+                    <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "40%", animationDelay: "0.4s" }} />
+                  </div>
+                )}
+              </button>
+
+              {/* Tafseer Ayatul Kursi Durooos - Expandable */}
+              <div className="mt-1 bg-muted/30 rounded-xl overflow-hidden">
+                <button onClick={() => setShowAyatulKursiDurooos(!showAyatulKursiDurooos)} className="w-full flex items-center justify-between px-3 py-2">
+                  <div>
+                    <p className="text-xs font-medium text-foreground text-left">📚 Tafseer Ayatul Kursi - Complete Durooos</p>
+                    <p className="text-[10px] text-muted-foreground">Shaikh Abu Rizwan Mohammadi • 40 Dars</p>
+                  </div>
+                  <span className={`text-muted-foreground text-xs transition-transform ${showAyatulKursiDurooos ? "rotate-180" : ""}`}>▼</span>
+                </button>
+                {showAyatulKursiDurooos && (
+                  <div className="flex flex-col gap-1 px-2 pb-2 max-h-72 overflow-y-auto">
+                    {AYATUL_KURSI_DUROOOS.map((dars) => (
+                      <button
+                        key={dars.id}
+                        onClick={() => {
+                          const audio = audioRef.current;
+                          if (!audio) return;
+                          setPlayingAyatulKursi(dars.id);
+                          setPlayingPanjSurah(null);
+                          audio.pause();
+                          audio.src = dars.url;
+                          audio.load();
+                          audio.play().then(() => setIsPlaying(true)).catch(() => {});
+                          if ("mediaSession" in navigator) {
+                            navigator.mediaSession.metadata = new MediaMetadata({ title: dars.title, artist: "Shaikh Abu Rizwan Mohammadi", album: "Tafseer Ayatul Kursi" });
+                          }
+                        }}
+                        className={`flex items-center gap-2 px-2 py-2 rounded-lg text-left transition-all ${playingAyatulKursi === dars.id ? "bg-primary/10 border border-primary/30" : "hover:bg-muted border border-transparent"}`}
+                      >
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[9px] font-bold ${playingAyatulKursi === dars.id ? "bg-primary text-primary-foreground" : "bg-primary/20 text-primary"}`}>
+                          {dars.num}
+                        </div>
+                        <span className="text-xs text-foreground flex-1 min-w-0 truncate">{dars.title}</span>
+                        {playingAyatulKursi === dars.id && isPlaying && (
+                          <div className="flex gap-0.5 items-end h-3 shrink-0">
+                            <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "60%" }} />
+                            <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "100%", animationDelay: "0.2s" }} />
+                            <div className="w-0.5 bg-primary rounded-full animate-pulse" style={{ height: "40%", animationDelay: "0.4s" }} />
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
