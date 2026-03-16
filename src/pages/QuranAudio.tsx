@@ -87,6 +87,9 @@ const QuranAudio: React.FC = () => {
   const [showTranslatorList, setShowTranslatorList] = useState(false);
   const [showPanjSurah, setShowPanjSurah] = useState(false);
   const [playingPanjSurah, setPlayingPanjSurah] = useState<number | null>(null);
+  const [showAyatulKursi, setShowAyatulKursi] = useState(false);
+  const [playingAyatulKursi, setPlayingAyatulKursi] = useState<string | null>(null);
+  const [showAyatulKursiDurooos, setShowAyatulKursiDurooos] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const pendingPlayRef = useRef(false);
   const pendingSeekRef = useRef<number | null>(savedState?.time || null);
