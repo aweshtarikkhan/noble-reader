@@ -337,42 +337,52 @@ const ZakatCalculator: React.FC = () => {
     
     const fileName = `Zakat_Calculation_${new Date().toISOString().split('T')[0]}.pdf`;
 
-    // If running inside Capacitor native app, save to cache and share
+    // If running inside Capacitor native app, save to Downloads and auto-open
     if (Capacitor.isNativePlatform()) {
       try {
         const base64Data = doc.output('datauristring').split(',')[1];
         
-        // Save to cache directory (no permissions needed)
+        // Save to Documents directory (accessible to user)
         const savedFile = await Filesystem.writeFile({
-          path: fileName,
+          path: `Download/${fileName}`,
           data: base64Data,
-          directory: Directory.Cache,
-        });
-
-        // Get the file URI
-        const fileUri = savedFile.uri;
-
-        // Use Share API to let user save/open the PDF
-        await Share.share({
-          title: 'Zakat Calculation Report',
-          text: 'Your Zakat calculation report is ready',
-          url: fileUri,
-          dialogTitle: 'Save or Share PDF Report',
+          directory: Directory.ExternalStorage,
+          recursive: true,
         });
 
         toast({ 
-          title: "✅ PDF Ready!", 
-          description: "Choose where to save or share the report" 
+          title: "✅ PDF Downloaded!", 
+          description: `Saved to Downloads/${fileName}` 
         });
-      } catch (err: any) {
-        // User cancelled share dialog - not an error
-        if (err?.message?.includes('cancel') || err?.message?.includes('dismissed')) {
-          return;
+
+        // Auto-open the PDF using the file URI
+        const fileUri = savedFile.uri;
+        window.open(fileUri, '_system');
+      } catch (storageErr: any) {
+        console.warn("ExternalStorage failed, trying Cache fallback:", storageErr);
+        try {
+          const base64Data = doc.output('datauristring').split(',')[1];
+          
+          // Fallback: Save to cache and open
+          const savedFile = await Filesystem.writeFile({
+            path: fileName,
+            data: base64Data,
+            directory: Directory.Cache,
+          });
+
+          toast({ 
+            title: "✅ PDF Ready!", 
+            description: "Opening PDF..." 
+          });
+
+          // Open from cache
+          window.open(savedFile.uri, '_system');
+        } catch (cacheErr: any) {
+          console.error("PDF save error:", cacheErr);
+          // Final fallback: browser download
+          doc.save(fileName);
+          toast({ title: t("zakat.pdfDownloaded"), description: t("zakat.pdfSaved") });
         }
-        console.error("PDF save error:", err);
-        // Final fallback: browser download
-        doc.save(fileName);
-        toast({ title: t("zakat.pdfDownloaded"), description: t("zakat.pdfSaved") });
       }
     } else {
       doc.save(fileName);
