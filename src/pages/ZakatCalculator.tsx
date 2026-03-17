@@ -65,6 +65,7 @@ const ZakatCalculator: React.FC = () => {
   const [cashValue, setCashValue] = useState("");
   const [otherAssets, setOtherAssets] = useState("");
   const [liabilities, setLiabilities] = useState("");
+  const [userName, setUserName] = useState("");
   
   const [zakatResult, setZakatResult] = useState<{
     totalAssets: number;
