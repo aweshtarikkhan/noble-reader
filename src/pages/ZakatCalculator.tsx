@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Calculator, Download, Plus, Trash2 } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { Calculator, Download, Plus, Trash2, RefreshCw } from "lucide-react";
 import jsPDF from "jspdf";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
+import { supabase } from "@/integrations/supabase/client";
 
 interface GoldRates {
   gold22ct: number;
@@ -66,6 +67,7 @@ const ZakatCalculator: React.FC = () => {
   const [otherAssets, setOtherAssets] = useState("");
   const [liabilities, setLiabilities] = useState("");
   const [userName, setUserName] = useState("");
+  const [fetchingRates, setFetchingRates] = useState(false);
   
   const [zakatResult, setZakatResult] = useState<{
     totalAssets: number;
@@ -93,6 +95,34 @@ const ZakatCalculator: React.FC = () => {
   useEffect(() => {
     updateRatesFromManual();
   }, [manualGold22, manualSilver]);
+
+  const fetchLiveRates = useCallback(async () => {
+    setFetchingRates(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("fetch-gold-rates");
+      if (error) throw error;
+      if (data?.success && data.rates) {
+        const r = data.rates;
+        setManualGold22(String(r.gold22ct));
+        setManualSilver(String(r.silver));
+        setRates({
+          gold24ct: r.gold24ct,
+          gold22ct: r.gold22ct,
+          gold18ct: r.gold18ct,
+          silver: r.silver,
+          lastUpdated: `Live - ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
+        });
+        toast({ title: "✅ Live Rates Fetched!", description: `Gold 22K: ₹${r.gold22ct}/gm | Silver: ₹${r.silver}/gm` });
+      } else {
+        throw new Error(data?.error || "Failed to fetch rates");
+      }
+    } catch (err: any) {
+      console.error("Failed to fetch live rates:", err);
+      toast({ title: "❌ Failed to fetch rates", description: "Using manual rates. Try again later." });
+    } finally {
+      setFetchingRates(false);
+    }
+  }, [toast]);
 
   const getGoldRateByCarat = (carat: "22" | "24" | "18") => {
     switch (carat) {
@@ -357,7 +387,22 @@ const ZakatCalculator: React.FC = () => {
         {/* Chennai Rates */}
         <Card className="border-primary/20">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold">📊 {t("zakat.goldSilverRates")}</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold">📊 {t("zakat.goldSilverRates")}</CardTitle>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={fetchLiveRates} 
+                disabled={fetchingRates}
+                className="h-8 text-xs"
+              >
+                <RefreshCw className={`w-3 h-3 mr-1 ${fetchingRates ? 'animate-spin' : ''}`} />
+                {fetchingRates ? "Fetching..." : "Live Rates"}
+              </Button>
+            </div>
+            {rates.lastUpdated.includes("Live") && (
+              <p className="text-xs text-green-500 mt-1">🟢 {rates.lastUpdated}</p>
+            )}
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-3">

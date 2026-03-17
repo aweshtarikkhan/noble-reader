@@ -2,3 +2,6 @@ project_id = "yajpzhvyhbobkehvsray"
 
 [functions.sync-hadith-data]
 verify_jwt = false
+
+[functions.fetch-gold-rates]
+verify_jwt = false
