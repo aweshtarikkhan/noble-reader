@@ -387,7 +387,22 @@ const ZakatCalculator: React.FC = () => {
         {/* Chennai Rates */}
         <Card className="border-primary/20">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold">📊 {t("zakat.goldSilverRates")}</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold">📊 {t("zakat.goldSilverRates")}</CardTitle>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={fetchLiveRates} 
+                disabled={fetchingRates}
+                className="h-8 text-xs"
+              >
+                <RefreshCw className={`w-3 h-3 mr-1 ${fetchingRates ? 'animate-spin' : ''}`} />
+                {fetchingRates ? "Fetching..." : "Live Rates"}
+              </Button>
+            </div>
+            {rates.lastUpdated.includes("Live") && (
+              <p className="text-xs text-green-500 mt-1">🟢 {rates.lastUpdated}</p>
+            )}
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
