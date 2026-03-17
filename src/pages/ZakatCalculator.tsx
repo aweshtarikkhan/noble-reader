@@ -300,41 +300,38 @@ const ZakatCalculator: React.FC = () => {
     
     const fileName = `Zakat_Calculation_${new Date().toISOString().split('T')[0]}.pdf`;
 
-    // If running inside Capacitor native app, save to actual Downloads folder
+    // If running inside Capacitor native app, save to cache and share
     if (Capacitor.isNativePlatform()) {
       try {
-        // Request permissions first
-        const permStatus = await Filesystem.checkPermissions();
-        if (permStatus.publicStorage !== 'granted') {
-          await Filesystem.requestPermissions();
-        }
-
         const base64Data = doc.output('datauristring').split(',')[1];
         
-        // Try saving to Downloads folder via ExternalStorage
-        try {
-          await Filesystem.writeFile({
-            path: `Download/${fileName}`,
-            data: base64Data,
-            directory: Directory.ExternalStorage,
-          });
-          toast({ 
-            title: "✅ PDF Downloaded!", 
-            description: `${fileName} saved to Downloads folder` 
-          });
-        } catch {
-          // Fallback: save to Documents if ExternalStorage fails
-          await Filesystem.writeFile({
-            path: fileName,
-            data: base64Data,
-            directory: Directory.Documents,
-          });
-          toast({ 
-            title: "✅ PDF Saved!", 
-            description: `${fileName} saved to Documents folder` 
-          });
+        // Save to cache directory (no permissions needed)
+        const savedFile = await Filesystem.writeFile({
+          path: fileName,
+          data: base64Data,
+          directory: Directory.Cache,
+        });
+
+        // Get the file URI
+        const fileUri = savedFile.uri;
+
+        // Use Share API to let user save/open the PDF
+        await Share.share({
+          title: 'Zakat Calculation Report',
+          text: 'Your Zakat calculation report is ready',
+          url: fileUri,
+          dialogTitle: 'Save or Share PDF Report',
+        });
+
+        toast({ 
+          title: "✅ PDF Ready!", 
+          description: "Choose where to save or share the report" 
+        });
+      } catch (err: any) {
+        // User cancelled share dialog - not an error
+        if (err?.message?.includes('cancel') || err?.message?.includes('dismissed')) {
+          return;
         }
-      } catch (err) {
         console.error("PDF save error:", err);
         // Final fallback: browser download
         doc.save(fileName);
