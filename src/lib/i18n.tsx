@@ -318,6 +318,8 @@ const T: Translations = {
   "zakat.calculateFirstDesc": { en: "Please calculate zakat before exporting.", ur: "ایکسپورٹ سے پہلے زکوٰۃ کا حساب لگائیں۔", hi: "निर्यात करने से पहले ज़कात की गणना करें।" },
   "zakat.pdfDownloaded": { en: "PDF Downloaded", ur: "PDF ڈاؤن لوڈ ہو گئی", hi: "PDF डाउनलोड हो गई" },
   "zakat.pdfSaved": { en: "Zakat calculation saved successfully.", ur: "زکوٰۃ کا حساب کامیابی سے محفوظ ہو گیا۔", hi: "ज़कात गणना सफलतापूर्वक सहेजी गई।" },
+  "zakat.yourName": { en: "Your Name", ur: "آپ کا نام", hi: "आपका नाम" },
+  "common.optional": { en: "Optional", ur: "اختیاری", hi: "वैकल्पिक" },
   "zakat.nisabInfo": { en: "Nisab Information", ur: "نصاب کی معلومات", hi: "निसाब की जानकारी" },
   "zakat.goldNisab": { en: "Gold Nisab: 87.48g (7.5 tola)", ur: "سونے کا نصاب: 87.48 گرام (7.5 تولہ)", hi: "सोने का निसाब: 87.48 ग्राम (7.5 तोला)" },
   "zakat.silverNisab": { en: "Silver Nisab: 612.36g (52.5 tola)", ur: "چاندی کا نصاب: 612.36 گرام (52.5 تولہ)", hi: "चांदी का निसाब: 612.36 ग्राम (52.5 तोला)" },
