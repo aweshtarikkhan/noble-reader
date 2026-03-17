@@ -96,6 +96,34 @@ const ZakatCalculator: React.FC = () => {
     updateRatesFromManual();
   }, [manualGold22, manualSilver]);
 
+  const fetchLiveRates = useCallback(async () => {
+    setFetchingRates(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("fetch-gold-rates");
+      if (error) throw error;
+      if (data?.success && data.rates) {
+        const r = data.rates;
+        setManualGold22(String(r.gold22ct));
+        setManualSilver(String(r.silver));
+        setRates({
+          gold24ct: r.gold24ct,
+          gold22ct: r.gold22ct,
+          gold18ct: r.gold18ct,
+          silver: r.silver,
+          lastUpdated: `Live - ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
+        });
+        toast({ title: "✅ Live Rates Fetched!", description: `Gold 22K: ₹${r.gold22ct}/gm | Silver: ₹${r.silver}/gm` });
+      } else {
+        throw new Error(data?.error || "Failed to fetch rates");
+      }
+    } catch (err: any) {
+      console.error("Failed to fetch live rates:", err);
+      toast({ title: "❌ Failed to fetch rates", description: "Using manual rates. Try again later." });
+    } finally {
+      setFetchingRates(false);
+    }
+  }, [toast]);
+
   const getGoldRateByCarat = (carat: "22" | "24" | "18") => {
     switch (carat) {
       case "24": return rates.gold24ct;
