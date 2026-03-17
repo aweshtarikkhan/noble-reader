@@ -550,6 +550,7 @@ const ZakatCalculator: React.FC = () => {
                 className="mt-1"
               />
             </div>
+            <div>
               <Label className="text-xs">{t("zakat.cashInHand")} (نقد رقم)</Label>
               <Input
                 type="number"
