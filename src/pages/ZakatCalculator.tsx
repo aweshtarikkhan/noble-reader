@@ -541,6 +541,15 @@ const ZakatCalculator: React.FC = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
+              <Label className="text-xs">👤 {t("zakat.yourName") || "Your Name"} ({t("common.optional") || "Optional"})</Label>
+              <Input
+                type="text"
+                placeholder="Enter your name (optional)"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                className="mt-1"
+              />
+            </div>
               <Label className="text-xs">{t("zakat.cashInHand")} (نقد رقم)</Label>
               <Input
                 type="number"
