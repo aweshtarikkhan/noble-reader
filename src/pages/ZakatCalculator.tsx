@@ -195,12 +195,18 @@ const ZakatCalculator: React.FC = () => {
     doc.setTextColor(6, 78, 59);
     doc.text("Zakat Calculation Report", pageWidth / 2, 25, { align: "center" });
     
+    if (userName.trim()) {
+      doc.setFontSize(12);
+      doc.setTextColor(60);
+      doc.text(`Name: ${userName.trim()}`, pageWidth / 2, 33, { align: "center" });
+    }
+
     doc.setFontSize(10);
     doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}`, pageWidth / 2, 33, { align: "center" });
+    doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}`, pageWidth / 2, userName.trim() ? 40 : 33, { align: "center" });
     
     doc.setDrawColor(6, 78, 59);
-    doc.line(20, 40, pageWidth - 20, 40);
+    doc.line(20, userName.trim() ? 46 : 40, pageWidth - 20, userName.trim() ? 46 : 40);
     
     let y = 55;
     
