@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Calculator, Download, Plus, Trash2, RefreshCw } from "lucide-react";
 import jsPDF from "jspdf";
 import { Filesystem, Directory } from "@capacitor/filesystem";
-import { Share } from "@capacitor/share";
+
 import { Capacitor } from "@capacitor/core";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
