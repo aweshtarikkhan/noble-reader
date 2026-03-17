@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Calculator, Download, Plus, Trash2 } from "lucide-react";
 import jsPDF from "jspdf";
 import { Filesystem, Directory } from "@capacitor/filesystem";
