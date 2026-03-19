@@ -212,6 +212,37 @@ const ZakatCalculator: React.FC = () => {
     }).format(amount);
   };
 
+  const ensureAndroidStoragePermission = async () => {
+    if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") {
+      return true;
+    }
+
+    try {
+      const currentPermission = await Filesystem.checkPermissions();
+      if (currentPermission.publicStorage === "granted") {
+        return true;
+      }
+
+      const requestedPermission = await Filesystem.requestPermissions();
+      if (requestedPermission.publicStorage === "granted") {
+        return true;
+      }
+
+      toast({
+        title: "❌ Storage permission needed",
+        description: "Downloads folder mein PDF save karne ke liye permission allow karein.",
+      });
+      return false;
+    } catch (permissionError) {
+      console.error("Storage permission check failed:", permissionError);
+      toast({
+        title: "❌ Permission check failed",
+        description: "Storage permission check nahi ho paayi. Dobara try karein.",
+      });
+      return false;
+    }
+  };
+
   const exportToPDF = async () => {
     if (!zakatResult) {
       toast({ title: t("zakat.calculateFirst"), description: t("zakat.calculateFirstDesc") });
@@ -337,12 +368,13 @@ const ZakatCalculator: React.FC = () => {
     
     const fileName = `Zakat_Calculation_${new Date().toISOString().split('T')[0]}.pdf`;
 
-    // If running inside Capacitor native app, save to Downloads and auto-open
     if (Capacitor.isNativePlatform()) {
+      const hasStoragePermission = await ensureAndroidStoragePermission();
+      if (!hasStoragePermission) return;
+
       try {
         const base64Data = doc.output('datauristring').split(',')[1];
-        
-        // Save to Documents directory (accessible to user)
+
         const savedFile = await Filesystem.writeFile({
           path: `Download/${fileName}`,
           data: base64Data,
@@ -350,38 +382,35 @@ const ZakatCalculator: React.FC = () => {
           recursive: true,
         });
 
-        toast({ 
-          title: "✅ PDF Downloaded!", 
-          description: `Saved to Downloads/${fileName}` 
+        toast({
+          title: "✅ PDF Downloaded!",
+          description: `Saved to Downloads/${fileName}`,
         });
 
-        // Auto-open the PDF using the file URI
-        const fileUri = savedFile.uri;
-        window.open(fileUri, '_system');
+        window.open(savedFile.uri, '_system');
       } catch (storageErr: any) {
         console.warn("ExternalStorage failed, trying Cache fallback:", storageErr);
+
         try {
           const base64Data = doc.output('datauristring').split(',')[1];
-          
-          // Fallback: Save to cache and open
           const savedFile = await Filesystem.writeFile({
             path: fileName,
             data: base64Data,
             directory: Directory.Cache,
           });
 
-          toast({ 
-            title: "✅ PDF Ready!", 
-            description: "Opening PDF..." 
+          toast({
+            title: "✅ PDF Ready!",
+            description: "Opening PDF...",
           });
 
-          // Open from cache
           window.open(savedFile.uri, '_system');
         } catch (cacheErr: any) {
           console.error("PDF save error:", cacheErr);
-          // Final fallback: browser download
-          doc.save(fileName);
-          toast({ title: t("zakat.pdfDownloaded"), description: t("zakat.pdfSaved") });
+          toast({
+            title: "❌ PDF save failed",
+            description: "Storage permission/settings check karke dobara try karein.",
+          });
         }
       }
     } else {

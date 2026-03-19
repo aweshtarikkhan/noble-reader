@@ -16,9 +16,6 @@
       "iconColor": "#CE7553",
       "sound": "adhan-makkah.mp3"
     },
-      "smallIcon": "ic_stat_icon_config_sample",
-      "iconColor": "#CE7553"
-    },
     "CapacitorHttp": {
       "enabled": true
     }
