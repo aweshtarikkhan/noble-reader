@@ -68,7 +68,31 @@ const ZakatCalculator: React.FC = () => {
   const [liabilities, setLiabilities] = useState("");
   const [userName, setUserName] = useState("");
   const [fetchingRates, setFetchingRates] = useState(false);
-  
+  const [storagePermission, setStoragePermission] = useState<"unknown" | "granted" | "denied">("unknown");
+
+  // Check storage permission on mount (native only)
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    Filesystem.checkPermissions().then((status) => {
+      setStoragePermission(status.publicStorage === "granted" ? "granted" : "denied");
+    }).catch(() => setStoragePermission("unknown"));
+  }, []);
+
+  const requestStoragePermission = async () => {
+    try {
+      const result = await Filesystem.requestPermissions();
+      const granted = result.publicStorage === "granted";
+      setStoragePermission(granted ? "granted" : "denied");
+      if (granted) {
+        toast({ title: "✅ Storage permission granted!" });
+      } else {
+        toast({ title: "❌ Permission denied", description: "App settings se manually allow karein." });
+      }
+    } catch {
+      setStoragePermission("denied");
+    }
+  };
+
   const [zakatResult, setZakatResult] = useState<{
     totalAssets: number;
     netAssets: number;
@@ -482,6 +506,29 @@ const ZakatCalculator: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Storage Permission Status (Native only) */}
+        {Capacitor.isNativePlatform() && (
+          <div className={`flex items-center justify-between p-3 rounded-lg border ${
+            storagePermission === "granted" 
+              ? "border-green-500/30 bg-green-500/10" 
+              : storagePermission === "denied"
+              ? "border-destructive/30 bg-destructive/10"
+              : "border-muted bg-muted/50"
+          }`}>
+            <div className="flex items-center gap-2 text-sm">
+              <span>{storagePermission === "granted" ? "🟢" : storagePermission === "denied" ? "🔴" : "⚪"}</span>
+              <span className="text-foreground font-medium">
+                Storage Permission: {storagePermission === "granted" ? "Allowed" : storagePermission === "denied" ? "Denied" : "Unknown"}
+              </span>
+            </div>
+            {storagePermission !== "granted" && (
+              <Button variant="outline" size="sm" onClick={requestStoragePermission} className="h-7 text-xs">
+                Allow
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* Gold Input - Multiple Entries */}
         <Card>
