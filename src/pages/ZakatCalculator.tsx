@@ -507,6 +507,29 @@ const ZakatCalculator: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Storage Permission Status (Native only) */}
+        {Capacitor.isNativePlatform() && (
+          <div className={`flex items-center justify-between p-3 rounded-lg border ${
+            storagePermission === "granted" 
+              ? "border-green-500/30 bg-green-500/10" 
+              : storagePermission === "denied"
+              ? "border-destructive/30 bg-destructive/10"
+              : "border-muted bg-muted/50"
+          }`}>
+            <div className="flex items-center gap-2 text-sm">
+              <span>{storagePermission === "granted" ? "🟢" : storagePermission === "denied" ? "🔴" : "⚪"}</span>
+              <span className="text-foreground font-medium">
+                Storage Permission: {storagePermission === "granted" ? "Allowed" : storagePermission === "denied" ? "Denied" : "Unknown"}
+              </span>
+            </div>
+            {storagePermission !== "granted" && (
+              <Button variant="outline" size="sm" onClick={requestStoragePermission} className="h-7 text-xs">
+                Allow
+              </Button>
+            )}
+          </div>
+        )}
+
         {/* Gold Input - Multiple Entries */}
         <Card>
           <CardHeader className="pb-3">
