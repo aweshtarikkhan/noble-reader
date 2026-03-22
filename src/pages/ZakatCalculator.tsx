@@ -88,6 +88,11 @@ const ZakatCalculator: React.FC = () => {
       return saved ? JSON.parse(saved) : [];
     } catch { return []; }
   });
+  const [pdfViewer, setPdfViewer] = useState<{ open: boolean; url: string; title: string }>({
+    open: false,
+    url: "",
+    title: "",
+  });
 
   const saveHistory = (history: DownloadHistoryItem[]) => {
     setDownloadHistory(history);
