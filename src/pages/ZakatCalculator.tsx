@@ -512,7 +512,7 @@ const ZakatCalculator: React.FC = () => {
             date: dateStr,
             zakatAmount: zakatResult.zakatDue,
             uri: savedFile.uri,
-          });
+          }, base64Data);
 
           toast({
             title: "✅ PDF Ready!",
