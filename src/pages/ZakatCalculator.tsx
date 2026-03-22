@@ -215,6 +215,14 @@ const ZakatCalculator: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    return () => {
+      if (pdfViewer.url) {
+        URL.revokeObjectURL(pdfViewer.url);
+      }
+    };
+  }, [pdfViewer.url]);
+
   // Check storage permission on mount (native only)
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
