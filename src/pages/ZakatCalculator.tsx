@@ -123,18 +123,43 @@ const ZakatCalculator: React.FC = () => {
     toast({ title: "🗑️ History cleared" });
   };
 
+  const base64ToPdfBlob = (base64: string) => {
+    const byteChars = atob(base64);
+    const byteNums = new Array(byteChars.length);
+    for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
+    return new Blob([new Uint8Array(byteNums)], { type: "application/pdf" });
+  };
+
+  const closePdfViewer = () => {
+    setPdfViewer((prev) => {
+      if (prev.url) URL.revokeObjectURL(prev.url);
+      return { open: false, url: "", title: "" };
+    });
+  };
+
+  const openPdfInAppViewer = (base64: string, title: string) => {
+    const blob = base64ToPdfBlob(base64);
+    const url = URL.createObjectURL(blob);
+
+    setPdfViewer((prev) => {
+      if (prev.url) URL.revokeObjectURL(prev.url);
+      return { open: true, url, title };
+    });
+  };
+
   const getBase64FromHistory = async (item: DownloadHistoryItem): Promise<string | null> => {
-    // Try localforage first
     const base64: string | null = await localforage.getItem(`zakat_pdf_${item.id}`);
     if (base64) return base64;
 
-    // Try native file if available
     if (Capacitor.isNativePlatform() && item.uri) {
       try {
         const fileData = await Filesystem.readFile({ path: item.uri });
-        if (typeof fileData.data === 'string') return fileData.data;
-      } catch { /* ignore */ }
+        if (typeof fileData.data === "string") return fileData.data;
+      } catch {
+        // ignore
+      }
     }
+
     return null;
   };
 
@@ -147,25 +172,7 @@ const ZakatCalculator: React.FC = () => {
         return;
       }
 
-      if (Capacitor.isNativePlatform()) {
-        // Write to cache and open with system viewer
-        const tempPath = `zakat_view_${Date.now()}.pdf`;
-        const tempFile = await Filesystem.writeFile({
-          path: tempPath,
-          data: base64,
-          directory: Directory.Cache,
-        });
-        window.open(tempFile.uri, '_system');
-      } else {
-        // Web: open PDF in new tab
-        const byteChars = atob(base64);
-        const byteNums = new Array(byteChars.length);
-        for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
-        const blob = new Blob([new Uint8Array(byteNums)], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        window.open(url, '_blank');
-        setTimeout(() => URL.revokeObjectURL(url), 30000);
-      }
+      openPdfInAppViewer(base64, item.displayName);
     } catch {
       toast({ title: "❌ Could not open PDF" });
     }
@@ -179,11 +186,8 @@ const ZakatCalculator: React.FC = () => {
         return;
       }
 
-      const byteChars = atob(base64);
-      const byteNums = new Array(byteChars.length);
-      for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
-      const blob = new Blob([new Uint8Array(byteNums)], { type: 'application/pdf' });
-      const file = new File([blob], item.fileName, { type: 'application/pdf' });
+      const blob = base64ToPdfBlob(base64);
+      const file = new File([blob], item.fileName, { type: "application/pdf" });
 
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({
@@ -193,12 +197,11 @@ const ZakatCalculator: React.FC = () => {
       } else if (navigator.share) {
         await navigator.share({
           title: `Zakat Report - ${item.displayName}`,
-          text: `Zakat Calculation Report for ${item.displayName}\nZakat Due: ₹${item.zakatAmount.toLocaleString('en-IN')}\nDate: ${item.date}`,
+          text: `Zakat Calculation Report for ${item.displayName}\nZakat Due: ₹${item.zakatAmount.toLocaleString("en-IN")}\nDate: ${item.date}`,
         });
       } else {
-        // Fallback: download
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
         a.download = item.fileName;
         a.click();
@@ -206,7 +209,7 @@ const ZakatCalculator: React.FC = () => {
         toast({ title: "📄 PDF downloaded for sharing" });
       }
     } catch (e: any) {
-      if (e?.name !== 'AbortError') {
+      if (e?.name !== "AbortError") {
         toast({ title: "❌ Share failed" });
       }
     }
