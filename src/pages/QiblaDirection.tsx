@@ -501,8 +501,13 @@ const QiblaDirection: React.FC = () => {
           </div>
 
           {/* Tips */}
-          <div className="mt-8 px-4 py-3 rounded-xl bg-card border border-border max-w-xs text-center animate-fade-in">
+          <div className="mt-8 px-4 py-3 rounded-xl bg-card border border-border max-w-xs text-center animate-fade-in space-y-2">
             <p className="text-xs text-muted-foreground">{t("qibla.keepDeviceFlat")}</p>
+            <div className="border-t border-border pt-2">
+              <p className="text-[10px] text-amber-500/90 leading-relaxed">
+                ⚠️ Direction mein error ho sakta hai mobile ki position ki wajah se. Best result ke liye mobile ko flat (seedha) rakhein. Ye sirf ek estimate hai, 100% accurate nahi ho sakta.
+              </p>
+            </div>
           </div>
         </>
       )}
