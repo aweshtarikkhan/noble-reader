@@ -79,6 +79,48 @@ const ZakatCalculator: React.FC = () => {
   const [fetchingRates, setFetchingRates] = useState(false);
   const [storagePermission, setStoragePermission] = useState<"unknown" | "granted" | "denied">("unknown");
 
+  // Download history
+  const [downloadHistory, setDownloadHistory] = useState<DownloadHistoryItem[]>(() => {
+    try {
+      const saved = localStorage.getItem("zakat_download_history");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+
+  const saveHistory = (history: DownloadHistoryItem[]) => {
+    setDownloadHistory(history);
+    localStorage.setItem("zakat_download_history", JSON.stringify(history));
+  };
+
+  const getNextUnknownName = () => {
+    const unknowns = downloadHistory.filter(h => h.displayName.startsWith("Unknown-"));
+    const nums = unknowns.map(h => parseInt(h.displayName.replace("Unknown-", "")) || 0);
+    const next = nums.length > 0 ? Math.max(...nums) + 1 : 1;
+    return `Unknown-${String(next).padStart(2, "0")}`;
+  };
+
+  const addToHistory = (item: DownloadHistoryItem) => {
+    const updated = [item, ...downloadHistory].slice(0, 50);
+    saveHistory(updated);
+  };
+
+  const removeFromHistory = (id: string) => {
+    saveHistory(downloadHistory.filter(h => h.id !== id));
+  };
+
+  const clearHistory = () => {
+    saveHistory([]);
+    toast({ title: "🗑️ History cleared" });
+  };
+
+  const openHistoryFile = async (item: DownloadHistoryItem) => {
+    if (Capacitor.isNativePlatform() && item.uri) {
+      window.open(item.uri, '_system');
+    } else {
+      toast({ title: "📄 " + item.displayName, description: `Zakat: ₹${item.zakatAmount.toLocaleString('en-IN')} — ${item.date}` });
+    }
+  };
+
   // Check storage permission on mount (native only)
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
