@@ -529,6 +529,7 @@ const ZakatCalculator: React.FC = () => {
         }
       }
     } else {
+      const pdfBase64 = doc.output('datauristring').split(',')[1];
       doc.save(fileName);
       addToHistory({
         id: Date.now().toString(),
@@ -536,7 +537,7 @@ const ZakatCalculator: React.FC = () => {
         displayName,
         date: dateStr,
         zakatAmount: zakatResult.zakatDue,
-      });
+      }, pdfBase64);
       toast({ title: t("zakat.pdfDownloaded"), description: `Saved as "${displayName}"` });
     }
   };
