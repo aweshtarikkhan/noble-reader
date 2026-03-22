@@ -545,7 +545,7 @@ const ZakatCalculator: React.FC = () => {
       if (!hasStoragePermission) return;
 
       try {
-        const base64Data = doc.output('datauristring').split(',')[1];
+        const base64Data = doc.output("datauristring").split(",")[1];
 
         const savedFile = await Filesystem.writeFile({
           path: `Download/${fileName}`,
@@ -554,47 +554,51 @@ const ZakatCalculator: React.FC = () => {
           recursive: true,
         });
 
-        addToHistory({
-          id: Date.now().toString(),
-          fileName,
-          displayName,
-          date: dateStr,
-          zakatAmount: zakatResult.zakatDue,
-          uri: savedFile.uri,
-        }, base64Data);
-
-        toast({
-          title: "✅ PDF Downloaded!",
-          description: `Saved as "${displayName}"`,
-        });
-
-        window.open(savedFile.uri, '_system');
-      } catch (storageErr: any) {
-        console.warn("ExternalStorage failed, trying Cache fallback:", storageErr);
-
-        try {
-          const base64Data = doc.output('datauristring').split(',')[1];
-          const savedFile = await Filesystem.writeFile({
-            path: fileName,
-            data: base64Data,
-            directory: Directory.Cache,
-          });
-
-          addToHistory({
+        addToHistory(
+          {
             id: Date.now().toString(),
             fileName,
             displayName,
             date: dateStr,
             zakatAmount: zakatResult.zakatDue,
             uri: savedFile.uri,
-          }, base64Data);
+          },
+          base64Data,
+        );
 
-          toast({
-            title: "✅ PDF Ready!",
-            description: "Opening PDF...",
+        toast({
+          title: "✅ PDF Saved",
+          description: `Opened in app as "${displayName}"`,
+        });
+        openPdfInAppViewer(base64Data, displayName);
+      } catch (storageErr: any) {
+        console.warn("ExternalStorage failed, trying Cache fallback:", storageErr);
+
+        try {
+          const base64Data = doc.output("datauristring").split(",")[1];
+          const savedFile = await Filesystem.writeFile({
+            path: fileName,
+            data: base64Data,
+            directory: Directory.Cache,
           });
 
-          window.open(savedFile.uri, '_system');
+          addToHistory(
+            {
+              id: Date.now().toString(),
+              fileName,
+              displayName,
+              date: dateStr,
+              zakatAmount: zakatResult.zakatDue,
+              uri: savedFile.uri,
+            },
+            base64Data,
+          );
+
+          toast({
+            title: "✅ PDF Ready",
+            description: "Opened in app viewer",
+          });
+          openPdfInAppViewer(base64Data, displayName);
         } catch (cacheErr: any) {
           console.error("PDF save error:", cacheErr);
           toast({
