@@ -841,6 +841,45 @@ const ZakatCalculator: React.FC = () => {
           </Card>
         )}
 
+        {/* Download History */}
+        {downloadHistory.length > 0 && (
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <Clock className="w-4 h-4" /> Download History
+                </CardTitle>
+                <Button variant="ghost" size="sm" onClick={clearHistory} className="h-7 text-xs text-destructive hover:text-destructive">
+                  Clear All
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {downloadHistory.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
+                  onClick={() => openHistoryFile(item)}
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <FileText className="w-5 h-5 text-primary shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{item.displayName}</p>
+                      <p className="text-xs text-muted-foreground">{item.date} • Zakat: ₹{item.zakatAmount.toLocaleString('en-IN')}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); removeFromHistory(item.id); }}
+                    className="p-1.5 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive shrink-0"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Info */}
         <div className="text-xs text-muted-foreground space-y-2 p-4 bg-muted/50 rounded-xl">
           <p className="font-semibold text-foreground">ℹ️ {t("zakat.nisabInfo")}:</p>
