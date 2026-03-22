@@ -14,6 +14,15 @@ import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
+interface DownloadHistoryItem {
+  id: string;
+  fileName: string;
+  displayName: string;
+  date: string;
+  zakatAmount: number;
+  uri?: string; // native file URI
+}
+
 interface GoldRates {
   gold22ct: number;
   gold24ct: number;
