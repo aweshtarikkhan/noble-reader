@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Calculator, Download, Plus, Trash2, RefreshCw, FileText, Clock, X } from "lucide-react";
+import { Calculator, Download, Plus, Trash2, RefreshCw, FileText, Clock, X, Share2, Eye } from "lucide-react";
 import jsPDF from "jspdf";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import localforage from "localforage";
