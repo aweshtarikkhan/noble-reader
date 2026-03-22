@@ -998,6 +998,25 @@ const ZakatCalculator: React.FC = () => {
           </Card>
         )}
 
+        <Dialog open={pdfViewer.open} onOpenChange={(open) => !open && closePdfViewer()}>
+          <DialogContent className="w-[95vw] max-w-4xl h-[85vh] p-0 overflow-hidden gap-0">
+            <DialogHeader className="px-4 py-3 border-b border-border">
+              <DialogTitle className="text-sm font-semibold truncate pr-6">
+                {pdfViewer.title ? `${pdfViewer.title} • PDF` : "PDF Viewer"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="h-[calc(85vh-52px)] bg-muted/20">
+              {pdfViewer.url ? (
+                <object data={pdfViewer.url} type="application/pdf" className="w-full h-full">
+                  <div className="h-full flex items-center justify-center px-4 text-center text-sm text-muted-foreground">
+                    PDF preview is not supported on this device.
+                  </div>
+                </object>
+              ) : null}
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {/* Info */}
         <div className="text-xs text-muted-foreground space-y-2 p-4 bg-muted/50 rounded-xl">
           <p className="font-semibold text-foreground">ℹ️ {t("zakat.nisabInfo")}:</p>
