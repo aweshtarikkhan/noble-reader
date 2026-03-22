@@ -117,49 +117,92 @@ const ZakatCalculator: React.FC = () => {
     toast({ title: "🗑️ History cleared" });
   };
 
-  const openHistoryFile = async (item: DownloadHistoryItem) => {
+  const getBase64FromHistory = async (item: DownloadHistoryItem): Promise<string | null> => {
+    // Try localforage first
+    const base64: string | null = await localforage.getItem(`zakat_pdf_${item.id}`);
+    if (base64) return base64;
+
+    // Try native file if available
     if (Capacitor.isNativePlatform() && item.uri) {
-      // Native: re-read file and trigger system viewer via Filesystem
       try {
         const fileData = await Filesystem.readFile({ path: item.uri });
-        // Create a temporary file in cache and open with system
-        const tempPath = `zakat_temp_${Date.now()}.pdf`;
-        const tempFile = await Filesystem.writeFile({
-          path: tempPath,
-          data: typeof fileData.data === 'string' ? fileData.data : '',
-          directory: Directory.Cache,
-        });
-        window.open(tempFile.uri, '_system');
-      } catch {
-        // Fallback: try direct URI
-        window.open(item.uri, '_system');
-      }
-      return;
+        if (typeof fileData.data === 'string') return fileData.data;
+      } catch { /* ignore */ }
     }
+    return null;
+  };
 
-    // Web: download as file using anchor tag (blob URLs get blocked)
+  const openHistoryFile = async (item: DownloadHistoryItem) => {
     try {
-      const base64: string | null = await localforage.getItem(`zakat_pdf_${item.id}`);
+      const base64 = await getBase64FromHistory(item);
       if (!base64) {
-        toast({ title: "⚠️ Purana record", description: "Ye entry purani hai. Clear karke dubara download karein." });
+        toast({ title: "⚠️ PDF not found", description: "This entry is old. Clear and re-download." });
         removeFromHistory(item.id);
         return;
       }
+
+      if (Capacitor.isNativePlatform()) {
+        // Write to cache and open with system viewer
+        const tempPath = `zakat_view_${Date.now()}.pdf`;
+        const tempFile = await Filesystem.writeFile({
+          path: tempPath,
+          data: base64,
+          directory: Directory.Cache,
+        });
+        window.open(tempFile.uri, '_system');
+      } else {
+        // Web: open PDF in new tab
+        const byteChars = atob(base64);
+        const byteNums = new Array(byteChars.length);
+        for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
+        const blob = new Blob([new Uint8Array(byteNums)], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+      }
+    } catch {
+      toast({ title: "❌ Could not open PDF" });
+    }
+  };
+
+  const shareHistoryFile = async (item: DownloadHistoryItem) => {
+    try {
+      const base64 = await getBase64FromHistory(item);
+      if (!base64) {
+        toast({ title: "⚠️ PDF not found", description: "This entry is old. Clear and re-download." });
+        return;
+      }
+
       const byteChars = atob(base64);
       const byteNums = new Array(byteChars.length);
       for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
       const blob = new Blob([new Uint8Array(byteNums)], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = item.fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
-      toast({ title: "📄 PDF downloading...", description: item.displayName });
-    } catch {
-      toast({ title: "❌ Could not open PDF" });
+      const file = new File([blob], item.fileName, { type: 'application/pdf' });
+
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({
+          title: `Zakat Report - ${item.displayName}`,
+          files: [file],
+        });
+      } else if (navigator.share) {
+        await navigator.share({
+          title: `Zakat Report - ${item.displayName}`,
+          text: `Zakat Calculation Report for ${item.displayName}\nZakat Due: ₹${item.zakatAmount.toLocaleString('en-IN')}\nDate: ${item.date}`,
+        });
+      } else {
+        // Fallback: download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = item.fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast({ title: "📄 PDF downloaded for sharing" });
+      }
+    } catch (e: any) {
+      if (e?.name !== 'AbortError') {
+        toast({ title: "❌ Share failed" });
+      }
     }
   };
 
