@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
@@ -87,6 +88,11 @@ const ZakatCalculator: React.FC = () => {
       return saved ? JSON.parse(saved) : [];
     } catch { return []; }
   });
+  const [pdfViewer, setPdfViewer] = useState<{ open: boolean; url: string; title: string }>({
+    open: false,
+    url: "",
+    title: "",
+  });
 
   const saveHistory = (history: DownloadHistoryItem[]) => {
     setDownloadHistory(history);
@@ -117,18 +123,43 @@ const ZakatCalculator: React.FC = () => {
     toast({ title: "🗑️ History cleared" });
   };
 
+  const base64ToPdfBlob = (base64: string) => {
+    const byteChars = atob(base64);
+    const byteNums = new Array(byteChars.length);
+    for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
+    return new Blob([new Uint8Array(byteNums)], { type: "application/pdf" });
+  };
+
+  const closePdfViewer = () => {
+    setPdfViewer((prev) => {
+      if (prev.url) URL.revokeObjectURL(prev.url);
+      return { open: false, url: "", title: "" };
+    });
+  };
+
+  const openPdfInAppViewer = (base64: string, title: string) => {
+    const blob = base64ToPdfBlob(base64);
+    const url = URL.createObjectURL(blob);
+
+    setPdfViewer((prev) => {
+      if (prev.url) URL.revokeObjectURL(prev.url);
+      return { open: true, url, title };
+    });
+  };
+
   const getBase64FromHistory = async (item: DownloadHistoryItem): Promise<string | null> => {
-    // Try localforage first
     const base64: string | null = await localforage.getItem(`zakat_pdf_${item.id}`);
     if (base64) return base64;
 
-    // Try native file if available
     if (Capacitor.isNativePlatform() && item.uri) {
       try {
         const fileData = await Filesystem.readFile({ path: item.uri });
-        if (typeof fileData.data === 'string') return fileData.data;
-      } catch { /* ignore */ }
+        if (typeof fileData.data === "string") return fileData.data;
+      } catch {
+        // ignore
+      }
     }
+
     return null;
   };
 
@@ -141,25 +172,7 @@ const ZakatCalculator: React.FC = () => {
         return;
       }
 
-      if (Capacitor.isNativePlatform()) {
-        // Write to cache and open with system viewer
-        const tempPath = `zakat_view_${Date.now()}.pdf`;
-        const tempFile = await Filesystem.writeFile({
-          path: tempPath,
-          data: base64,
-          directory: Directory.Cache,
-        });
-        window.open(tempFile.uri, '_system');
-      } else {
-        // Web: open PDF in new tab
-        const byteChars = atob(base64);
-        const byteNums = new Array(byteChars.length);
-        for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
-        const blob = new Blob([new Uint8Array(byteNums)], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        window.open(url, '_blank');
-        setTimeout(() => URL.revokeObjectURL(url), 30000);
-      }
+      openPdfInAppViewer(base64, item.displayName);
     } catch {
       toast({ title: "❌ Could not open PDF" });
     }
@@ -173,11 +186,8 @@ const ZakatCalculator: React.FC = () => {
         return;
       }
 
-      const byteChars = atob(base64);
-      const byteNums = new Array(byteChars.length);
-      for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
-      const blob = new Blob([new Uint8Array(byteNums)], { type: 'application/pdf' });
-      const file = new File([blob], item.fileName, { type: 'application/pdf' });
+      const blob = base64ToPdfBlob(base64);
+      const file = new File([blob], item.fileName, { type: "application/pdf" });
 
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({
@@ -187,12 +197,11 @@ const ZakatCalculator: React.FC = () => {
       } else if (navigator.share) {
         await navigator.share({
           title: `Zakat Report - ${item.displayName}`,
-          text: `Zakat Calculation Report for ${item.displayName}\nZakat Due: ₹${item.zakatAmount.toLocaleString('en-IN')}\nDate: ${item.date}`,
+          text: `Zakat Calculation Report for ${item.displayName}\nZakat Due: ₹${item.zakatAmount.toLocaleString("en-IN")}\nDate: ${item.date}`,
         });
       } else {
-        // Fallback: download
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
         a.download = item.fileName;
         a.click();
@@ -200,11 +209,19 @@ const ZakatCalculator: React.FC = () => {
         toast({ title: "📄 PDF downloaded for sharing" });
       }
     } catch (e: any) {
-      if (e?.name !== 'AbortError') {
+      if (e?.name !== "AbortError") {
         toast({ title: "❌ Share failed" });
       }
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (pdfViewer.url) {
+        URL.revokeObjectURL(pdfViewer.url);
+      }
+    };
+  }, [pdfViewer.url]);
 
   // Check storage permission on mount (native only)
   useEffect(() => {
@@ -536,7 +553,7 @@ const ZakatCalculator: React.FC = () => {
       if (!hasStoragePermission) return;
 
       try {
-        const base64Data = doc.output('datauristring').split(',')[1];
+        const base64Data = doc.output("datauristring").split(",")[1];
 
         const savedFile = await Filesystem.writeFile({
           path: `Download/${fileName}`,
@@ -545,47 +562,51 @@ const ZakatCalculator: React.FC = () => {
           recursive: true,
         });
 
-        addToHistory({
-          id: Date.now().toString(),
-          fileName,
-          displayName,
-          date: dateStr,
-          zakatAmount: zakatResult.zakatDue,
-          uri: savedFile.uri,
-        }, base64Data);
-
-        toast({
-          title: "✅ PDF Downloaded!",
-          description: `Saved as "${displayName}"`,
-        });
-
-        window.open(savedFile.uri, '_system');
-      } catch (storageErr: any) {
-        console.warn("ExternalStorage failed, trying Cache fallback:", storageErr);
-
-        try {
-          const base64Data = doc.output('datauristring').split(',')[1];
-          const savedFile = await Filesystem.writeFile({
-            path: fileName,
-            data: base64Data,
-            directory: Directory.Cache,
-          });
-
-          addToHistory({
+        addToHistory(
+          {
             id: Date.now().toString(),
             fileName,
             displayName,
             date: dateStr,
             zakatAmount: zakatResult.zakatDue,
             uri: savedFile.uri,
-          }, base64Data);
+          },
+          base64Data,
+        );
 
-          toast({
-            title: "✅ PDF Ready!",
-            description: "Opening PDF...",
+        toast({
+          title: "✅ PDF Saved",
+          description: `Opened in app as "${displayName}"`,
+        });
+        openPdfInAppViewer(base64Data, displayName);
+      } catch (storageErr: any) {
+        console.warn("ExternalStorage failed, trying Cache fallback:", storageErr);
+
+        try {
+          const base64Data = doc.output("datauristring").split(",")[1];
+          const savedFile = await Filesystem.writeFile({
+            path: fileName,
+            data: base64Data,
+            directory: Directory.Cache,
           });
 
-          window.open(savedFile.uri, '_system');
+          addToHistory(
+            {
+              id: Date.now().toString(),
+              fileName,
+              displayName,
+              date: dateStr,
+              zakatAmount: zakatResult.zakatDue,
+              uri: savedFile.uri,
+            },
+            base64Data,
+          );
+
+          toast({
+            title: "✅ PDF Ready",
+            description: "Opened in app viewer",
+          });
+          openPdfInAppViewer(base64Data, displayName);
         } catch (cacheErr: any) {
           console.error("PDF save error:", cacheErr);
           toast({
@@ -984,6 +1005,25 @@ const ZakatCalculator: React.FC = () => {
             </CardContent>
           </Card>
         )}
+
+        <Dialog open={pdfViewer.open} onOpenChange={(open) => !open && closePdfViewer()}>
+          <DialogContent className="w-[95vw] max-w-4xl h-[85vh] p-0 overflow-hidden gap-0">
+            <DialogHeader className="px-4 py-3 border-b border-border">
+              <DialogTitle className="text-sm font-semibold truncate pr-6">
+                {pdfViewer.title ? `${pdfViewer.title} • PDF` : "PDF Viewer"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="h-[calc(85vh-52px)] bg-muted/20">
+              {pdfViewer.url ? (
+                <object data={pdfViewer.url} type="application/pdf" className="w-full h-full">
+                  <div className="h-full flex items-center justify-center px-4 text-center text-sm text-muted-foreground">
+                    PDF preview is not supported on this device.
+                  </div>
+                </object>
+              ) : null}
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Info */}
         <div className="text-xs text-muted-foreground space-y-2 p-4 bg-muted/50 rounded-xl">
