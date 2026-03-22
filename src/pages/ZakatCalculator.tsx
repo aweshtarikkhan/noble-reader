@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Calculator, Download, Plus, Trash2, RefreshCw, FileText, Clock, X } from "lucide-react";
 import jsPDF from "jspdf";
 import { Filesystem, Directory } from "@capacitor/filesystem";
+import localforage from "localforage";
 
 import { Capacitor } from "@capacitor/core";
 import { useNavigate } from "react-router-dom";
@@ -99,16 +100,19 @@ const ZakatCalculator: React.FC = () => {
     return `Unknown-${String(next).padStart(2, "0")}`;
   };
 
-  const addToHistory = (item: DownloadHistoryItem) => {
+  const addToHistory = (item: DownloadHistoryItem, pdfBase64: string) => {
     const updated = [item, ...downloadHistory].slice(0, 50);
     saveHistory(updated);
+    localforage.setItem(`zakat_pdf_${item.id}`, pdfBase64).catch(console.error);
   };
 
   const removeFromHistory = (id: string) => {
     saveHistory(downloadHistory.filter(h => h.id !== id));
+    localforage.removeItem(`zakat_pdf_${id}`).catch(console.error);
   };
 
   const clearHistory = () => {
+    downloadHistory.forEach(h => localforage.removeItem(`zakat_pdf_${h.id}`).catch(console.error));
     saveHistory([]);
     toast({ title: "🗑️ History cleared" });
   };
@@ -116,8 +120,23 @@ const ZakatCalculator: React.FC = () => {
   const openHistoryFile = async (item: DownloadHistoryItem) => {
     if (Capacitor.isNativePlatform() && item.uri) {
       window.open(item.uri, '_system');
-    } else {
-      toast({ title: "📄 " + item.displayName, description: `Zakat: ₹${item.zakatAmount.toLocaleString('en-IN')} — ${item.date}` });
+      return;
+    }
+    try {
+      const base64: string | null = await localforage.getItem(`zakat_pdf_${item.id}`);
+      if (!base64) {
+        toast({ title: "❌ PDF not found", description: "File data expired or cleared." });
+        return;
+      }
+      const byteChars = atob(base64);
+      const byteNums = new Array(byteChars.length);
+      for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
+      const blob = new Blob([new Uint8Array(byteNums)], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch {
+      toast({ title: "❌ Could not open PDF" });
     }
   };
 
@@ -467,7 +486,7 @@ const ZakatCalculator: React.FC = () => {
           date: dateStr,
           zakatAmount: zakatResult.zakatDue,
           uri: savedFile.uri,
-        });
+        }, base64Data);
 
         toast({
           title: "✅ PDF Downloaded!",
@@ -493,7 +512,7 @@ const ZakatCalculator: React.FC = () => {
             date: dateStr,
             zakatAmount: zakatResult.zakatDue,
             uri: savedFile.uri,
-          });
+          }, base64Data);
 
           toast({
             title: "✅ PDF Ready!",
@@ -510,6 +529,7 @@ const ZakatCalculator: React.FC = () => {
         }
       }
     } else {
+      const pdfBase64 = doc.output('datauristring').split(',')[1];
       doc.save(fileName);
       addToHistory({
         id: Date.now().toString(),
@@ -517,7 +537,7 @@ const ZakatCalculator: React.FC = () => {
         displayName,
         date: dateStr,
         zakatAmount: zakatResult.zakatDue,
-      });
+      }, pdfBase64);
       toast({ title: t("zakat.pdfDownloaded"), description: `Saved as "${displayName}"` });
     }
   };
