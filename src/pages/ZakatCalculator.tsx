@@ -125,7 +125,8 @@ const ZakatCalculator: React.FC = () => {
     try {
       const base64: string | null = await localforage.getItem(`zakat_pdf_${item.id}`);
       if (!base64) {
-        toast({ title: "❌ PDF not found", description: "File data expired or cleared." });
+        toast({ title: "⚠️ Purana record", description: "Ye entry purani hai. Clear karke dubara download karein." });
+        removeFromHistory(item.id);
         return;
       }
       const byteChars = atob(base64);
