@@ -944,22 +944,41 @@ const ZakatCalculator: React.FC = () => {
               {downloadHistory.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
-                  onClick={() => openHistoryFile(item)}
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
                 >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div
+                    className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
+                    onClick={() => openHistoryFile(item)}
+                  >
                     <FileText className="w-5 h-5 text-primary shrink-0" />
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">{item.displayName}</p>
                       <p className="text-xs text-muted-foreground">{item.date} • Zakat: ₹{item.zakatAmount.toLocaleString('en-IN')}</p>
                     </div>
                   </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); removeFromHistory(item.id); }}
-                    className="p-1.5 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive shrink-0"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => openHistoryFile(item)}
+                      className="p-1.5 rounded-full hover:bg-primary/10 text-muted-foreground hover:text-primary"
+                      title="View PDF"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => shareHistoryFile(item)}
+                      className="p-1.5 rounded-full hover:bg-primary/10 text-muted-foreground hover:text-primary"
+                      title="Share PDF"
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => removeFromHistory(item.id)}
+                      className="p-1.5 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                      title="Remove"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </CardContent>
