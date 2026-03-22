@@ -119,9 +119,25 @@ const ZakatCalculator: React.FC = () => {
 
   const openHistoryFile = async (item: DownloadHistoryItem) => {
     if (Capacitor.isNativePlatform() && item.uri) {
-      window.open(item.uri, '_system');
+      // Native: re-read file and trigger system viewer via Filesystem
+      try {
+        const fileData = await Filesystem.readFile({ path: item.uri });
+        // Create a temporary file in cache and open with system
+        const tempPath = `zakat_temp_${Date.now()}.pdf`;
+        const tempFile = await Filesystem.writeFile({
+          path: tempPath,
+          data: typeof fileData.data === 'string' ? fileData.data : '',
+          directory: Directory.Cache,
+        });
+        window.open(tempFile.uri, '_system');
+      } catch {
+        // Fallback: try direct URI
+        window.open(item.uri, '_system');
+      }
       return;
     }
+
+    // Web: download as file using anchor tag (blob URLs get blocked)
     try {
       const base64: string | null = await localforage.getItem(`zakat_pdf_${item.id}`);
       if (!base64) {
@@ -134,8 +150,14 @@ const ZakatCalculator: React.FC = () => {
       for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
       const blob = new Blob([new Uint8Array(byteNums)], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
-      window.open(url, '_blank');
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = item.fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      toast({ title: "📄 PDF downloading...", description: item.displayName });
     } catch {
       toast({ title: "❌ Could not open PDF" });
     }
