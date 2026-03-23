@@ -1223,90 +1223,167 @@ const ZakatCalculator: React.FC = () => {
 
         {/* Quran & Hadith References */}
         <Card className="border-primary/20">
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <CardTitle className="text-sm font-semibold">{t("zakat.references")}</CardTitle>
+            <div className="flex items-center gap-1">
+              <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+              {(["en", "ur", "roman"] as const).map((l) => (
+                <button
+                  key={l}
+                  onClick={() => setRefLang(l)}
+                  className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                    refLang === l
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  {l === "en" ? "EN" : l === "ur" ? "اردو" : "Roman"}
+                </button>
+              ))}
+            </div>
           </CardHeader>
           <CardContent className="pt-0">
             <Accordion type="multiple" className="w-full">
               <AccordionItem value="general">
                 <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refGeneral")}</AccordionTrigger>
                 <AccordionContent>
-                  <div className="space-y-2 text-xs text-muted-foreground">
-                    <p><strong>Surah Al-Baqarah 2:43</strong></p>
-                    <p>"And establish prayer and give Zakah and bow with those who bow [in worship]."</p>
-                    <p className="text-right font-arabic">"اور نماز قائم کرو اور زکوٰۃ ادا کرو اور رکوع کرنے والوں کے ساتھ رکوع کرو۔"</p>
-                    <p className="italic">Aur namaaz qaayam karo aur zakaat ada karo aur ruku karne walon ke saath ruku karo.</p>
-                    <p className="mt-2"><strong>Surah At-Tawbah 9:103</strong></p>
-                    <p>"Take from their wealth a charity by which you purify them and cause them increase."</p>
-                    <p className="text-right font-arabic">"ان کے مالوں میں سے صدقہ لو جس سے تم انہیں پاک کرو اور ان کو بڑھاؤ۔"</p>
-                    <p className="italic">Unke maalon mein se sadqa lo jis se tum unhe paak karo aur unko badhaao.</p>
+                  <div className="space-y-3 text-xs text-muted-foreground">
+                    <div>
+                      <p className="font-semibold text-foreground">📖 Surah Al-Baqarah 2:43</p>
+                      {refLang === "en" && <p>"And establish prayer and give Zakah and bow with those who bow [in worship]."</p>}
+                      {refLang === "ur" && <p className="text-right font-arabic leading-relaxed">"اور نماز قائم کرو اور زکوٰۃ ادا کرو اور رکوع کرنے والوں کے ساتھ رکوع کرو۔"</p>}
+                      {refLang === "roman" && <p className="italic">"Aur namaaz qaayam karo aur zakaat ada karo aur ruku karne walon ke saath ruku karo."</p>}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">📖 Surah At-Tawbah 9:103</p>
+                      {refLang === "en" && <p>"Take from their wealth a charity by which you purify them and cause them increase."</p>}
+                      {refLang === "ur" && <p className="text-right font-arabic leading-relaxed">"ان کے مالوں میں سے صدقہ لو جس سے تم انہیں پاک کرو اور ان کو بڑھاؤ۔"</p>}
+                      {refLang === "roman" && <p className="italic">"Unke maalon mein se sadqa lo jis se tum unhe paak karo aur unko badhaao."</p>}
+                    </div>
+                    <div className="bg-muted/50 rounded p-2 border-l-2 border-primary/40">
+                      <p className="font-semibold text-foreground text-[11px] mb-1">📜 {refLang === "en" ? "Historical Context" : refLang === "ur" ? "تاریخی واقعہ" : "Taareekhi Waqiya"}</p>
+                      {refLang === "en" && <p>When Abu Bakr (RA) became Caliph, some tribes refused to pay Zakat. He declared: "By Allah, I will fight anyone who differentiates between Salah and Zakat. Zakat is the right due on wealth. By Allah, if they withhold even a young goat that they used to pay to the Prophet ﷺ, I will fight them for it." (Sahih Bukhari 1400). This incident shows that Zakat is as obligatory as Salah itself.</p>}
+                      {refLang === "ur" && <p className="text-right font-arabic leading-relaxed">جب ابوبکر صدیق (رضی اللہ عنہ) خلیفہ بنے تو کچھ قبائل نے زکوٰۃ دینے سے انکار کر دیا۔ آپ نے فرمایا: "اللہ کی قسم! میں ہر اس شخص سے لڑوں گا جو نماز اور زکوٰۃ میں فرق کرے۔ زکوٰۃ مال کا حق ہے۔ اللہ کی قسم! اگر وہ ایک بکری کا بچہ بھی روکیں جو وہ نبی ﷺ کو دیا کرتے تھے، تو میں ان سے اس کے لیے جنگ کروں گا۔" (صحیح بخاری 1400)۔ یہ واقعہ ثابت کرتا ہے کہ زکوٰۃ نماز کی طرح فرض ہے۔</p>}
+                      {refLang === "roman" && <p className="italic">Jab Abu Bakr Siddiq (RA) khalifa bane to kuch qabaail ne zakaat dene se inkaar kar diya. Aap ne farmaya: "Allah ki qasam! Main har us shakhs se ladunga jo namaaz aur zakaat mein farq kare. Zakaat maal ka haq hai. Allah ki qasam! Agar woh ek bakri ka bachcha bhi rokein jo woh Nabi ﷺ ko diya karte the, to main un se us ke liye jang karunga." (Sahih Bukhari 1400). Yeh waqiya saabit karta hai ke zakaat namaaz ki tarah farz hai.</p>}
+                    </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>
+
               <AccordionItem value="goldsilver">
                 <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refGoldSilver")}</AccordionTrigger>
                 <AccordionContent>
-                  <div className="space-y-2 text-xs text-muted-foreground">
-                    <p><strong>Surah At-Tawbah 9:34</strong></p>
-                    <p>"And those who hoard gold and silver and spend it not in the way of Allah — give them tidings of a painful punishment."</p>
-                    <p className="text-right font-arabic">"اور جو لوگ سونا اور چاندی جمع کرکے رکھتے ہیں اور اسے اللہ کی راہ میں خرچ نہیں کرتے انہیں دردناک عذاب کی خبر دے دو۔"</p>
-                    <p className="italic">Aur jo log sona aur chandi jama karke rakhte hain aur use Allah ki raah mein kharch nahi karte unhe dardnaak azaab ki khabar de do.</p>
-                    <p className="mt-2"><strong>Sahih Muslim 979</strong></p>
-                    <p>The Prophet ﷺ said: "There is no owner of gold or silver who does not pay Zakat on it, except that plates of fire will be heated for him on the Day of Judgment."</p>
-                    <p className="text-right font-arabic">نبی ﷺ نے فرمایا: "سونے اور چاندی کا کوئی مالک جو اس کی زکوٰۃ ادا نہ کرے، قیامت کے دن اس کے لیے آگ کی تختیاں گرم کی جائیں گی۔"</p>
-                    <p className="italic">Nabi ﷺ ne farmaya: "Sone aur chandi ka koi maalik jo us ki zakaat ada na kare, Qayamat ke din us ke liye aag ki takhtiyan garm ki jaayengi."</p>
+                  <div className="space-y-3 text-xs text-muted-foreground">
+                    <div>
+                      <p className="font-semibold text-foreground">📖 Surah At-Tawbah 9:34</p>
+                      {refLang === "en" && <p>"And those who hoard gold and silver and spend it not in the way of Allah — give them tidings of a painful punishment."</p>}
+                      {refLang === "ur" && <p className="text-right font-arabic leading-relaxed">"اور جو لوگ سونا اور چاندی جمع کرکے رکھتے ہیں اور اسے اللہ کی راہ میں خرچ نہیں کرتے انہیں دردناک عذاب کی خبر دے دو۔"</p>}
+                      {refLang === "roman" && <p className="italic">"Aur jo log sona aur chandi jama karke rakhte hain aur use Allah ki raah mein kharch nahi karte unhe dardnaak azaab ki khabar de do."</p>}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">📚 Sahih Muslim 979</p>
+                      {refLang === "en" && <p>The Prophet ﷺ said: "There is no owner of gold or silver who does not pay Zakat on it, except that plates of fire will be heated for him on the Day of Judgment. His sides, forehead and back will be branded with them."</p>}
+                      {refLang === "ur" && <p className="text-right font-arabic leading-relaxed">نبی ﷺ نے فرمایا: "سونے اور چاندی کا کوئی مالک جو اس کی زکوٰۃ ادا نہ کرے، قیامت کے دن اس کے لیے آگ کی تختیاں گرم کی جائیں گی اور ان سے اس کے پہلو، پیشانی اور پیٹھ کو داغا جائے گا۔"</p>}
+                      {refLang === "roman" && <p className="italic">Nabi ﷺ ne farmaya: "Sone aur chandi ka koi maalik jo us ki zakaat ada na kare, Qayamat ke din us ke liye aag ki takhtiyan garm ki jaayengi aur un se us ke pehlu, peshaani aur peeth ko daagha jayega."</p>}
+                    </div>
+                    <div className="bg-muted/50 rounded p-2 border-l-2 border-primary/40">
+                      <p className="font-semibold text-foreground text-[11px] mb-1">📜 {refLang === "en" ? "Incident" : refLang === "ur" ? "واقعہ" : "Waqiya"}</p>
+                      {refLang === "en" && <p>Tha'labah ibn Hatib (RA) asked the Prophet ﷺ to pray that Allah give him wealth. The Prophet ﷺ warned him, but he insisted. When he became wealthy, he started missing prayers and refused to pay Zakat, saying "This is like Jizyah!" Allah then revealed Surah At-Tawbah 9:75-77 about those who break their promise to Allah regarding charity. (Tafseer Ibn Kathir)</p>}
+                      {refLang === "ur" && <p className="text-right font-arabic leading-relaxed">ثعلبہ بن حاطب (رضی اللہ عنہ) نے نبی ﷺ سے دعا کی درخواست کی کہ اللہ انہیں مالدار بنائے۔ نبی ﷺ نے انہیں خبردار کیا لیکن وہ اصرار کرتے رہے۔ جب مالدار ہوئے تو نمازیں چھوڑنے لگے اور زکوٰۃ دینے سے انکار کر دیا اور کہا "یہ تو جزیہ جیسا ہے!" تب اللہ نے سورۃ التوبہ 9:75-77 نازل فرمائی ان لوگوں کے بارے میں جو صدقے کے معاملے میں اللہ سے وعدہ توڑتے ہیں۔ (تفسیر ابن کثیر)</p>}
+                      {refLang === "roman" && <p className="italic">Tha'labah bin Hatib (RA) ne Nabi ﷺ se dua ki darkhwast ki ke Allah unhe maaldaar banaye. Nabi ﷺ ne unhe khabardaar kiya lekin woh israar karte rahe. Jab maaldaar hue to namaazein chhodne lage aur zakaat dene se inkaar kar diya aur kaha "Yeh to jizyah jaisa hai!" Tab Allah ne Surah At-Tawbah 9:75-77 naazil farmai un logon ke baare mein jo sadqe ke maamle mein Allah se waada todte hain. (Tafseer Ibn Kathir)</p>}
+                    </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>
+
               <AccordionItem value="wealth">
                 <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refWealth")}</AccordionTrigger>
                 <AccordionContent>
-                  <div className="space-y-2 text-xs text-muted-foreground">
-                    <p><strong>Surah Al-Baqarah 2:267</strong></p>
-                    <p>"O you who have believed, spend from the good things which you have earned and from that which We have produced for you from the earth."</p>
-                    <p className="text-right font-arabic">"اے ایمان والو! جو پاکیزہ چیزیں تم نے کمائی ہیں اور جو ہم نے تمہارے لیے زمین سے نکالا ہے اس میں سے خرچ کرو۔"</p>
-                    <p className="italic">Aye imaan walo! Jo paakiza cheezein tum ne kamaai hain aur jo hum ne tumhare liye zameen se nikaala hai us mein se kharch karo.</p>
+                  <div className="space-y-3 text-xs text-muted-foreground">
+                    <div>
+                      <p className="font-semibold text-foreground">📖 Surah Al-Baqarah 2:267</p>
+                      {refLang === "en" && <p>"O you who have believed, spend from the good things which you have earned and from that which We have produced for you from the earth. And do not aim toward the defective therefrom, spending [from that] while you would not take it [yourself] except with closed eyes."</p>}
+                      {refLang === "ur" && <p className="text-right font-arabic leading-relaxed">"اے ایمان والو! جو پاکیزہ چیزیں تم نے کمائی ہیں اور جو ہم نے تمہارے لیے زمین سے نکالا ہے اس میں سے خرچ کرو۔ اور خراب چیزیں خرچ کرنے کا ارادہ نہ کرو جنہیں تم خود آنکھیں بند کیے بغیر نہ لو۔"</p>}
+                      {refLang === "roman" && <p className="italic">"Aye imaan walo! Jo paakiza cheezein tum ne kamaai hain aur jo hum ne tumhare liye zameen se nikaala hai us mein se kharch karo. Aur kharaab cheezein kharch karne ka iraada na karo jinhe tum khud aankhein band kiye baghair na lo."</p>}
+                    </div>
+                    <div className="bg-muted/50 rounded p-2 border-l-2 border-primary/40">
+                      <p className="font-semibold text-foreground text-[11px] mb-1">📜 {refLang === "en" ? "Context & Explanation" : refLang === "ur" ? "سیاق و سباق" : "Siyaaq o Sabaaq"}</p>
+                      {refLang === "en" && <p>This verse was revealed when some Companions would give low-quality dates as Zakat. Allah commanded that only good quality wealth should be spent in His path. The scholars explain this means Zakat should be calculated on all forms of wealth including cash savings, bank deposits, and investments — not just gold and silver. (Tafseer Al-Qurtubi)</p>}
+                      {refLang === "ur" && <p className="text-right font-arabic leading-relaxed">یہ آیت اس وقت نازل ہوئی جب بعض صحابہ خراب کھجوریں زکوٰۃ میں دیتے تھے۔ اللہ نے حکم دیا کہ صرف اچھے مال اللہ کی راہ میں خرچ کرو۔ علماء بیان کرتے ہیں کہ اس کا مطلب ہے کہ زکوٰۃ کا حساب ہر طرح کے مال پر ہے جن میں نقد بچت، بینک جمع اور سرمایہ کاری شامل ہے — صرف سونا چاندی نہیں۔ (تفسیر القرطبی)</p>}
+                      {refLang === "roman" && <p className="italic">Yeh aayat us waqt naazil hui jab baaz Sahaba kharaab khajurein zakaat mein dete the. Allah ne hukm diya ke sirf achhe maal Allah ki raah mein kharch karo. Ulama bayaan karte hain ke is ka matlab hai ke zakaat ka hisaab har tarah ke maal par hai jin mein naqd bachat, bank jama aur sarmaaya kaari shaamil hai — sirf sona chandi nahi. (Tafseer Al-Qurtubi)</p>}
+                    </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>
+
               <AccordionItem value="agriculture">
                 <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refAgriculture")}</AccordionTrigger>
                 <AccordionContent>
-                  <div className="space-y-2 text-xs text-muted-foreground">
-                    <p><strong>Surah Al-An'am 6:141</strong></p>
-                    <p>"...and give its due [Zakah] on the day of its harvest."</p>
-                    <p className="text-right font-arabic">"...اور فصل کاٹنے کے دن اس کا حق (زکوٰۃ) ادا کرو۔"</p>
-                    <p className="italic">...aur fasal kaatne ke din us ka haq (zakaat) ada karo.</p>
-                    <p className="mt-2"><strong>Sahih Bukhari 1483</strong></p>
-                    <p>The Prophet ﷺ said: "On that which is watered by rain or springs, one-tenth (10%). On that which is watered by irrigation, half of one-tenth (5%)."</p>
-                    <p className="text-right font-arabic">نبی ﷺ نے فرمایا: "بارش یا چشمے کے پانی سے سینچی ہوئی فصل میں دسواں حصہ (10%) اور سینچائی کے پانی سے سینچی ہوئی فصل میں بیسواں حصہ (5%) زکوٰۃ ہے۔"</p>
-                    <p className="italic">Nabi ﷺ ne farmaya: "Baarish ya chashme ke paani se sinchi hui fasal mein daswaan hissa (10%) aur sinchai ke paani se sinchi hui fasal mein beeswaan hissa (5%) zakaat hai."</p>
+                  <div className="space-y-3 text-xs text-muted-foreground">
+                    <div>
+                      <p className="font-semibold text-foreground">📖 Surah Al-An'am 6:141</p>
+                      {refLang === "en" && <p>"He it is who produces gardens trellised and untrellised, and date palms, and crops of different shape and taste, and olives, and pomegranates... Eat of their fruit when they ripen, and give its due [Zakah] on the day of its harvest."</p>}
+                      {refLang === "ur" && <p className="text-right font-arabic leading-relaxed">"وہی ہے جس نے باغ پیدا کیے چھپروں والے اور بغیر چھپروں والے، کھجور کے درخت اور مختلف ذائقوں کی فصلیں، زیتون اور انار... جب پھل لگیں تو کھاؤ اور فصل کاٹنے کے دن اس کا حق (زکوٰۃ) ادا کرو۔"</p>}
+                      {refLang === "roman" && <p className="italic">"Wohi hai jis ne baagh paida kiye chhapron wale aur baghair chhapron wale, khajur ke darakht aur mukhtalif zaiqon ki faslein, zaitun aur anaar... Jab phal lagein to khaao aur fasal kaatne ke din us ka haq (zakaat) ada karo."</p>}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">📚 Sahih Bukhari 1483</p>
+                      {refLang === "en" && <p>The Prophet ﷺ said: "On that which is watered by rain, springs, or natural moisture — one-tenth (10% / Ushr). On that which is watered by irrigation — half of one-tenth (5% / Nisf Ushr)."</p>}
+                      {refLang === "ur" && <p className="text-right font-arabic leading-relaxed">نبی ﷺ نے فرمایا: "جو فصل بارش، چشمے یا قدرتی نمی سے سینچی جائے — اس میں دسواں حصہ (10% / عشر)۔ اور جو سینچائی کے ذریعے سینچی جائے — اس میں بیسواں حصہ (5% / نصف عشر)۔"</p>}
+                      {refLang === "roman" && <p className="italic">Nabi ﷺ ne farmaya: "Jo fasal baarish, chashme ya qudrati nami se sinchi jaye — us mein daswaan hissa (10% / Ushr). Aur jo sinchai ke zariye sinchi jaye — us mein beeswaan hissa (5% / Nisf Ushr)."</p>}
+                    </div>
+                    <div className="bg-muted/50 rounded p-2 border-l-2 border-primary/40">
+                      <p className="font-semibold text-foreground text-[11px] mb-1">📜 {refLang === "en" ? "Why the Difference?" : refLang === "ur" ? "فرق کیوں؟" : "Farq kyun?"}</p>
+                      {refLang === "en" && <p>The wisdom behind 10% vs 5% is that rain-fed farming has lower costs (Allah provides the water freely), so the farmer gives more. Irrigated farming requires the farmer to spend on wells, canals, and labor, so the zakat rate is halved to ease his burden. This shows Islam's consideration for the farmer's effort and expenses. (Fiqh As-Sunnah, Sayyid Sabiq)</p>}
+                      {refLang === "ur" && <p className="text-right font-arabic leading-relaxed">10% اور 5% میں فرق کی حکمت یہ ہے کہ بارانی کھیتی میں خرچ کم ہوتا ہے (اللہ مفت پانی دیتا ہے) تو کسان زیادہ دیتا ہے۔ سینچائی والی کھیتی میں کسان کنوئیں، نہریں اور مزدوری پر خرچ کرتا ہے، اس لیے زکوٰۃ کی شرح آدھی ہے تاکہ اس پر بوجھ کم ہو۔ یہ اسلام کی کسان کی محنت اور اخراجات کی رعایت ظاہر کرتا ہے۔ (فقہ السنۃ، سید سابق)</p>}
+                      {refLang === "roman" && <p className="italic">10% aur 5% mein farq ki hikmat yeh hai ke baarani kheti mein kharch kam hota hai (Allah muft paani deta hai) to kisaan zyada deta hai. Sinchai wali kheti mein kisaan kunwein, nahrein aur mazdoori par kharch karta hai, is liye zakaat ki sharah aadhi hai taake us par bojh kam ho. Yeh Islam ki kisaan ki mehnat aur akhraajaat ki riaayat zaahir karta hai. (Fiqh As-Sunnah, Sayyid Sabiq)</p>}
+                    </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>
+
               <AccordionItem value="livestock">
                 <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refLivestock")}</AccordionTrigger>
                 <AccordionContent>
-                  <div className="space-y-2 text-xs text-muted-foreground">
-                    <p><strong>Sahih Bukhari 1454</strong></p>
-                    <p>Abu Bakr (RA) narrated the detailed zakat rates on camels, cattle, and sheep as instructed by the Prophet ﷺ.</p>
-                    <p className="text-right font-arabic">ابوبکر (رضی اللہ عنہ) نے نبی ﷺ کی ہدایت کے مطابق اونٹوں، گائے اور بکریوں کی زکوٰۃ کی تفصیلی شرحیں بیان کیں۔</p>
-                    <p className="italic">Abu Bakr (RA) ne Nabi ﷺ ki hidaayat ke mutaabiq ounton, gaaye aur bakriyon ki zakaat ki tafseeli sharhein bayaan keen.</p>
-                    <p className="mt-2"><strong>Abu Dawud 1572</strong></p>
-                    <p>Detailed nisab and zakat amounts for livestock including sheep, cattle, and camels.</p>
-                    <p className="text-right font-arabic">بکریوں، گائے اور اونٹوں سمیت مویشیوں کے نصاب اور زکوٰۃ کی مقدار کی تفصیل۔</p>
-                    <p className="italic">Bakriyon, gaaye aur ounton samait maweshiyon ke nisaab aur zakaat ki miqdaar ki tafseel.</p>
+                  <div className="space-y-3 text-xs text-muted-foreground">
+                    <div>
+                      <p className="font-semibold text-foreground">📚 Sahih Bukhari 1454</p>
+                      {refLang === "en" && <p>Abu Bakr (RA) narrated the detailed zakat rates on camels, cattle, and sheep as instructed by the Prophet ﷺ. This is one of the most comprehensive hadiths on livestock zakat, specifying exact numbers for each tier.</p>}
+                      {refLang === "ur" && <p className="text-right font-arabic leading-relaxed">ابوبکر (رضی اللہ عنہ) نے نبی ﷺ کی ہدایت کے مطابق اونٹوں، گائے اور بکریوں کی زکوٰۃ کی تفصیلی شرحیں بیان کیں۔ یہ مویشیوں کی زکوٰۃ پر سب سے جامع احادیث میں سے ہے جس میں ہر درجے کے لیے صحیح تعداد بتائی گئی ہے۔</p>}
+                      {refLang === "roman" && <p className="italic">Abu Bakr (RA) ne Nabi ﷺ ki hidaayat ke mutaabiq ounton, gaaye aur bakriyon ki zakaat ki tafseeli sharhein bayaan keen. Yeh maweshiyon ki zakaat par sab se jaami ahaadees mein se hai jis mein har darje ke liye sahih tadaad bataai gayi hai.</p>}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">📚 Abu Dawud 1572</p>
+                      {refLang === "en" && <p>Detailed nisab and zakat amounts for livestock including sheep, cattle, and camels with specific thresholds.</p>}
+                      {refLang === "ur" && <p className="text-right font-arabic leading-relaxed">بکریوں، گائے اور اونٹوں سمیت مویشیوں کے نصاب اور زکوٰۃ کی مقدار مخصوص حدود کے ساتھ تفصیل سے بیان کی گئی۔</p>}
+                      {refLang === "roman" && <p className="italic">Bakriyon, gaaye aur ounton samait maweshiyon ke nisaab aur zakaat ki miqdaar makhsoos hudood ke saath tafseel se bayaan ki gayi.</p>}
+                    </div>
+                    <div className="bg-muted/50 rounded p-2 border-l-2 border-primary/40">
+                      <p className="font-semibold text-foreground text-[11px] mb-1">📜 {refLang === "en" ? "Incident — Warning for Not Paying" : refLang === "ur" ? "واقعہ — زکوٰۃ نہ دینے کا انجام" : "Waqiya — Zakaat Na Dene Ka Anjaam"}</p>
+                      {refLang === "en" && <p>The Prophet ﷺ said: "Whoever owns camels, cattle, or sheep and does not pay their Zakat — on the Day of Judgment, those animals will come in their largest and fattest form and will gore him with their horns and trample him with their hooves. Every time the last one passes, the first will return, until judgment is passed among the people." (Sahih Bukhari 1460, Sahih Muslim 987)</p>}
+                      {refLang === "ur" && <p className="text-right font-arabic leading-relaxed">نبی ﷺ نے فرمایا: "جس کے پاس اونٹ، گائے یا بکریاں ہوں اور وہ ان کی زکوٰۃ ادا نہ کرے — قیامت کے دن وہ جانور سب سے بڑی اور موٹی شکل میں آئیں گے اور اپنے سینگوں سے اسے ماریں گے اور کھروں سے روندیں گے۔ جب آخری جانور گزر جائے تو پہلا واپس آ جائے گا، یہاں تک کہ لوگوں کے درمیان فیصلہ ہو جائے۔" (صحیح بخاری 1460، صحیح مسلم 987)</p>}
+                      {refLang === "roman" && <p className="italic">Nabi ﷺ ne farmaya: "Jis ke paas oont, gaaye ya bakriyan hon aur woh un ki zakaat ada na kare — Qayamat ke din woh jaanwar sab se badi aur moti shakl mein aayenge aur apne seenghon se use maarenge aur khuron se rondenge. Jab aakhri jaanwar guzar jaye to pehla waapas aa jayega, yahan tak ke logon ke darmiyaan faisla ho jaye." (Sahih Bukhari 1460, Sahih Muslim 987)</p>}
+                    </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>
+
               <AccordionItem value="trade">
                 <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refTrade")}</AccordionTrigger>
                 <AccordionContent>
-                  <div className="space-y-2 text-xs text-muted-foreground">
-                    <p><strong>Abu Dawud 1562</strong></p>
-                    <p>Samurah ibn Jundub said: "The Prophet ﷺ used to order us to give Sadaqah (Zakat) from what we prepared for trade."</p>
-                    <p className="text-right font-arabic">سمرہ بن جندب نے کہا: "نبی ﷺ ہمیں حکم دیتے تھے کہ جو مال ہم تجارت کے لیے تیار کرتے ہیں اس میں سے صدقہ (زکوٰۃ) ادا کریں۔"</p>
-                    <p className="italic">Samurah bin Jundub ne kaha: "Nabi ﷺ hamein hukm dete the ke jo maal hum tijarat ke liye tayyar karte hain us mein se sadqa (zakaat) ada karein."</p>
+                  <div className="space-y-3 text-xs text-muted-foreground">
+                    <div>
+                      <p className="font-semibold text-foreground">📚 Abu Dawud 1562</p>
+                      {refLang === "en" && <p>Samurah ibn Jundub (RA) said: "The Prophet ﷺ used to order us to give Sadaqah (Zakat) from what we prepared for trade." This is the primary hadith establishing Zakat on business inventory and trade goods at 2.5%.</p>}
+                      {refLang === "ur" && <p className="text-right font-arabic leading-relaxed">سمرہ بن جندب (رضی اللہ عنہ) نے کہا: "نبی ﷺ ہمیں حکم دیتے تھے کہ جو مال ہم تجارت کے لیے تیار کرتے ہیں اس میں سے صدقہ (زکوٰۃ) ادا کریں۔" یہ بنیادی حدیث ہے جو کاروباری مال اور تجارتی سامان پر 2.5% زکوٰۃ ثابت کرتی ہے۔</p>}
+                      {refLang === "roman" && <p className="italic">Samurah bin Jundub (RA) ne kaha: "Nabi ﷺ hamein hukm dete the ke jo maal hum tijarat ke liye tayyar karte hain us mein se sadqa (zakaat) ada karein." Yeh bunyaadi hadees hai jo kaarobaari maal aur tijarati saamaan par 2.5% zakaat saabit karti hai.</p>}
+                    </div>
+                    <div className="bg-muted/50 rounded p-2 border-l-2 border-primary/40">
+                      <p className="font-semibold text-foreground text-[11px] mb-1">📜 {refLang === "en" ? "Scholarly Explanation" : refLang === "ur" ? "علمی وضاحت" : "Ilmi Wazaahat"}</p>
+                      {refLang === "en" && <p>Imam Abu Hanifa, Imam Shafi'i, Imam Malik, and Imam Ahmad — all four major Imams of Fiqh — agree that Zakat is obligatory on trade goods. The merchant should calculate the market value of all goods at the end of the year and pay 2.5% Zakat if it exceeds the nisab. This includes shop inventory, raw materials, and any goods purchased with the intention of resale. (Al-Mughni, Ibn Qudamah)</p>}
+                      {refLang === "ur" && <p className="text-right font-arabic leading-relaxed">امام ابو حنیفہ، امام شافعی، امام مالک اور امام احمد — چاروں بڑے فقہی ائمہ — اس بات پر متفق ہیں کہ تجارتی مال پر زکوٰۃ واجب ہے۔ تاجر کو سال کے آخر میں تمام مال کی مارکیٹ ویلیو لگانی چاہیے اور اگر وہ نصاب سے زیادہ ہو تو 2.5% زکوٰۃ ادا کرنی چاہیے۔ اس میں دکان کا سامان، خام مال اور وہ تمام اشیاء شامل ہیں جو دوبارہ فروخت کی نیت سے خریدی گئی ہوں۔ (المغنی، ابن قدامہ)</p>}
+                      {refLang === "roman" && <p className="italic">Imam Abu Hanifa, Imam Shafi'i, Imam Malik aur Imam Ahmad — chaaron bade fiqhi aimma — is baat par muttafiq hain ke tijarati maal par zakaat waajib hai. Taajir ko saal ke aakhir mein tamaam maal ki market value lagani chahiye aur agar woh nisaab se zyada ho to 2.5% zakaat ada karni chahiye. Is mein dukaan ka saamaan, khaam maal aur woh tamaam ashyaa shaamil hain jo dobaara farokht ki niyyat se khareedi gayi hon. (Al-Mughni, Ibn Qudamah)</p>}
+                    </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>
