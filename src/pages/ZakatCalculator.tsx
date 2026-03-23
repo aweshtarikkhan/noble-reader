@@ -62,7 +62,7 @@ const ZakatCalculator: React.FC = () => {
     gold22ct: 15000,
     gold18ct: 12273,
     silver: 278,
-    lastUpdated: "Chennai Rates (Editable)"
+    lastUpdated: "Manual Rates"
   });
   
   const [manualGold22, setManualGold22] = useState("15000");
