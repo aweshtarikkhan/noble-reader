@@ -1232,8 +1232,14 @@ const ZakatCalculator: React.FC = () => {
                 <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refGeneral")}</AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-2 text-xs text-muted-foreground">
-                    <p><strong>Surah Al-Baqarah 2:43</strong> — "And establish prayer and give Zakah and bow with those who bow [in worship]."</p>
-                    <p><strong>Surah At-Tawbah 9:103</strong> — "Take from their wealth a charity by which you purify them and cause them increase."</p>
+                    <p><strong>Surah Al-Baqarah 2:43</strong></p>
+                    <p>"And establish prayer and give Zakah and bow with those who bow [in worship]."</p>
+                    <p className="text-right font-arabic">"اور نماز قائم کرو اور زکوٰۃ ادا کرو اور رکوع کرنے والوں کے ساتھ رکوع کرو۔"</p>
+                    <p className="italic">Aur namaaz qaayam karo aur zakaat ada karo aur ruku karne walon ke saath ruku karo.</p>
+                    <p className="mt-2"><strong>Surah At-Tawbah 9:103</strong></p>
+                    <p>"Take from their wealth a charity by which you purify them and cause them increase."</p>
+                    <p className="text-right font-arabic">"ان کے مالوں میں سے صدقہ لو جس سے تم انہیں پاک کرو اور ان کو بڑھاؤ۔"</p>
+                    <p className="italic">Unke maalon mein se sadqa lo jis se tum unhe paak karo aur unko badhaao.</p>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -1241,8 +1247,14 @@ const ZakatCalculator: React.FC = () => {
                 <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refGoldSilver")}</AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-2 text-xs text-muted-foreground">
-                    <p><strong>Surah At-Tawbah 9:34</strong> — "And those who hoard gold and silver and spend it not in the way of Allah — give them tidings of a painful punishment."</p>
-                    <p><strong>Sahih Muslim 979</strong> — The Prophet ﷺ said: "There is no owner of gold or silver who does not pay Zakat on it, except that plates of fire will be heated for him on the Day of Judgment."</p>
+                    <p><strong>Surah At-Tawbah 9:34</strong></p>
+                    <p>"And those who hoard gold and silver and spend it not in the way of Allah — give them tidings of a painful punishment."</p>
+                    <p className="text-right font-arabic">"اور جو لوگ سونا اور چاندی جمع کرکے رکھتے ہیں اور اسے اللہ کی راہ میں خرچ نہیں کرتے انہیں دردناک عذاب کی خبر دے دو۔"</p>
+                    <p className="italic">Aur jo log sona aur chandi jama karke rakhte hain aur use Allah ki raah mein kharch nahi karte unhe dardnaak azaab ki khabar de do.</p>
+                    <p className="mt-2"><strong>Sahih Muslim 979</strong></p>
+                    <p>The Prophet ﷺ said: "There is no owner of gold or silver who does not pay Zakat on it, except that plates of fire will be heated for him on the Day of Judgment."</p>
+                    <p className="text-right font-arabic">نبی ﷺ نے فرمایا: "سونے اور چاندی کا کوئی مالک جو اس کی زکوٰۃ ادا نہ کرے، قیامت کے دن اس کے لیے آگ کی تختیاں گرم کی جائیں گی۔"</p>
+                    <p className="italic">Nabi ﷺ ne farmaya: "Sone aur chandi ka koi maalik jo us ki zakaat ada na kare, Qayamat ke din us ke liye aag ki takhtiyan garm ki jaayengi."</p>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -1250,7 +1262,10 @@ const ZakatCalculator: React.FC = () => {
                 <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refWealth")}</AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-2 text-xs text-muted-foreground">
-                    <p><strong>Surah Al-Baqarah 2:267</strong> — "O you who have believed, spend from the good things which you have earned and from that which We have produced for you from the earth."</p>
+                    <p><strong>Surah Al-Baqarah 2:267</strong></p>
+                    <p>"O you who have believed, spend from the good things which you have earned and from that which We have produced for you from the earth."</p>
+                    <p className="text-right font-arabic">"اے ایمان والو! جو پاکیزہ چیزیں تم نے کمائی ہیں اور جو ہم نے تمہارے لیے زمین سے نکالا ہے اس میں سے خرچ کرو۔"</p>
+                    <p className="italic">Aye imaan walo! Jo paakiza cheezein tum ne kamaai hain aur jo hum ne tumhare liye zameen se nikaala hai us mein se kharch karo.</p>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -1258,8 +1273,14 @@ const ZakatCalculator: React.FC = () => {
                 <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refAgriculture")}</AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-2 text-xs text-muted-foreground">
-                    <p><strong>Surah Al-An'am 6:141</strong> — "...and give its due [Zakah] on the day of its harvest."</p>
-                    <p><strong>Sahih Bukhari 1483</strong> — The Prophet ﷺ said: "On that which is watered by rain or springs, one-tenth (10%). On that which is watered by irrigation, half of one-tenth (5%)."</p>
+                    <p><strong>Surah Al-An'am 6:141</strong></p>
+                    <p>"...and give its due [Zakah] on the day of its harvest."</p>
+                    <p className="text-right font-arabic">"...اور فصل کاٹنے کے دن اس کا حق (زکوٰۃ) ادا کرو۔"</p>
+                    <p className="italic">...aur fasal kaatne ke din us ka haq (zakaat) ada karo.</p>
+                    <p className="mt-2"><strong>Sahih Bukhari 1483</strong></p>
+                    <p>The Prophet ﷺ said: "On that which is watered by rain or springs, one-tenth (10%). On that which is watered by irrigation, half of one-tenth (5%)."</p>
+                    <p className="text-right font-arabic">نبی ﷺ نے فرمایا: "بارش یا چشمے کے پانی سے سینچی ہوئی فصل میں دسواں حصہ (10%) اور سینچائی کے پانی سے سینچی ہوئی فصل میں بیسواں حصہ (5%) زکوٰۃ ہے۔"</p>
+                    <p className="italic">Nabi ﷺ ne farmaya: "Baarish ya chashme ke paani se sinchi hui fasal mein daswaan hissa (10%) aur sinchai ke paani se sinchi hui fasal mein beeswaan hissa (5%) zakaat hai."</p>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -1267,8 +1288,14 @@ const ZakatCalculator: React.FC = () => {
                 <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refLivestock")}</AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-2 text-xs text-muted-foreground">
-                    <p><strong>Sahih Bukhari 1454</strong> — Abu Bakr (RA) narrated the detailed zakat rates on camels, cattle, and sheep as instructed by the Prophet ﷺ.</p>
-                    <p><strong>Abu Dawud 1572</strong> — Detailed nisab and zakat amounts for livestock including sheep, cattle, and camels.</p>
+                    <p><strong>Sahih Bukhari 1454</strong></p>
+                    <p>Abu Bakr (RA) narrated the detailed zakat rates on camels, cattle, and sheep as instructed by the Prophet ﷺ.</p>
+                    <p className="text-right font-arabic">ابوبکر (رضی اللہ عنہ) نے نبی ﷺ کی ہدایت کے مطابق اونٹوں، گائے اور بکریوں کی زکوٰۃ کی تفصیلی شرحیں بیان کیں۔</p>
+                    <p className="italic">Abu Bakr (RA) ne Nabi ﷺ ki hidaayat ke mutaabiq ounton, gaaye aur bakriyon ki zakaat ki tafseeli sharhein bayaan keen.</p>
+                    <p className="mt-2"><strong>Abu Dawud 1572</strong></p>
+                    <p>Detailed nisab and zakat amounts for livestock including sheep, cattle, and camels.</p>
+                    <p className="text-right font-arabic">بکریوں، گائے اور اونٹوں سمیت مویشیوں کے نصاب اور زکوٰۃ کی مقدار کی تفصیل۔</p>
+                    <p className="italic">Bakriyon, gaaye aur ounton samait maweshiyon ke nisaab aur zakaat ki miqdaar ki tafseel.</p>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -1276,7 +1303,10 @@ const ZakatCalculator: React.FC = () => {
                 <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refTrade")}</AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-2 text-xs text-muted-foreground">
-                    <p><strong>Abu Dawud 1562</strong> — Samurah ibn Jundub said: "The Prophet ﷺ used to order us to give Sadaqah (Zakat) from what we prepared for trade."</p>
+                    <p><strong>Abu Dawud 1562</strong></p>
+                    <p>Samurah ibn Jundub said: "The Prophet ﷺ used to order us to give Sadaqah (Zakat) from what we prepared for trade."</p>
+                    <p className="text-right font-arabic">سمرہ بن جندب نے کہا: "نبی ﷺ ہمیں حکم دیتے تھے کہ جو مال ہم تجارت کے لیے تیار کرتے ہیں اس میں سے صدقہ (زکوٰۃ) ادا کریں۔"</p>
+                    <p className="italic">Samurah bin Jundub ne kaha: "Nabi ﷺ hamein hukm dete the ke jo maal hum tijarat ke liye tayyar karte hain us mein se sadqa (zakaat) ada karein."</p>
                   </div>
                 </AccordionContent>
               </AccordionItem>
