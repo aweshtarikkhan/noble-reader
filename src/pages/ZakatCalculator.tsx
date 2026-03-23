@@ -550,6 +550,42 @@ const ZakatCalculator: React.FC = () => {
       doc.text(`Other Assets: Rs ${otherAssets}`, 25, y);
       y += 6;
     }
+
+    if (showOtherZakat) {
+      const business = parseFloat(businessInventory) || 0;
+      const rental = parseFloat(rentalIncome) || 0;
+      if (business > 0) {
+        doc.text(`Business Inventory: Rs ${business.toLocaleString('en-IN')}`, 25, y);
+        y += 6;
+      }
+      if (rental > 0) {
+        doc.text(`Rental Income: Rs ${rental.toLocaleString('en-IN')}`, 25, y);
+        y += 6;
+      }
+      const crop = parseFloat(cropValue) || 0;
+      if (crop > 0) {
+        const agriRate = irrigationType === "rainfed" ? "10% (Ushr)" : "5% (Nisf Ushr)";
+        doc.text(`Crop Value: Rs ${crop.toLocaleString('en-IN')} — ${agriRate}`, 25, y);
+        y += 6;
+        doc.text(`Agricultural Zakat: Rs ${Math.round(calculateAgriZakat()).toLocaleString('en-IN')}`, 25, y);
+        y += 6;
+      }
+      const goats = parseInt(goatCount) || 0;
+      if (goats > 0) {
+        doc.text(`Goats/Sheep: ${goats} ${getGoatZakatText(goats)}`, 25, y);
+        y += 6;
+      }
+      const cows = parseInt(cowCount) || 0;
+      if (cows > 0) {
+        doc.text(`Cows/Buffalo: ${cows} ${getCowZakatText(cows)}`, 25, y);
+        y += 6;
+      }
+      const camels = parseInt(camelCount) || 0;
+      if (camels > 0) {
+        doc.text(`Camels: ${camels} ${getCamelZakatText(camels)}`, 25, y);
+        y += 6;
+      }
+    }
     
     if (liabilities) {
       doc.text(`Liabilities/Debts: Rs ${liabilities}`, 25, y);
