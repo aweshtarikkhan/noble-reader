@@ -174,12 +174,22 @@ const ZakatCalculator: React.FC = () => {
     const base64: string | null = await localforage.getItem(`zakat_pdf_${item.id}`);
     if (base64) return base64;
 
-    if (Capacitor.isNativePlatform() && item.uri) {
+    if (Capacitor.isNativePlatform()) {
+      // Try reading from internal app storage
       try {
-        const fileData = await Filesystem.readFile({ path: item.uri });
+        const fileData = await Filesystem.readFile({
+          path: `zakat_pdfs/${item.fileName}`,
+          directory: Directory.Data,
+        });
         if (typeof fileData.data === "string") return fileData.data;
-      } catch {
-        // ignore
+      } catch {}
+
+      // Legacy fallback: try old URI
+      if (item.uri) {
+        try {
+          const fileData = await Filesystem.readFile({ path: item.uri });
+          if (typeof fileData.data === "string") return fileData.data;
+        } catch {}
       }
     }
 
