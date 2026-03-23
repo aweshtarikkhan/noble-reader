@@ -1,40 +1,60 @@
 
-Goal: APK me PDF history files hamesha app ke andar khulni chahiye (browser nahi), aur Share button reliably file share kare.
 
-1) Root cause confirm + direction
-- Do I know what the issue is? Yes.
-- Current viewer `<object type="application/pdf">` Android WebView me reliable nahi hai, isliye blank/external Chrome behavior aa raha hai.
-- `navigator.share` Web API APK WebView me file attachment ke liye unreliable hai.
-- `Directory.ExternalStorage` Android 11+ me restricted hai; isi wajah se history entries kabhi inaccessible ho rahi hain.
+## Zakat Calculator - "Other Assets" Section + Quranic/Hadith References
 
-2) Storage flow ko reliable banana (ZakatCalculator)
-- `DownloadHistoryItem` me native-safe fields add karna: `appPath` (internal app file path), optional `publicPath/uri`.
-- PDF generate hote hi **pehle** `Directory.Data` me save karna (always accessible, permission-independent).
-- Public copy (Documents/Download) optional banana; fail ho to bhi history + in-app open ka flow break na ho.
-- `clear/remove` me localforage ke sath internal files bhi delete karna.
-- Old history migration: agar item me `appPath` nahi hai to localforage/legacy uri se recover karke new internal file create karna.
+### What will be added
 
-3) True in-app PDF viewer (browser-free)
-- Existing `<object>` viewer remove.
-- PDF.js based viewer add (via `react-pdf` + `pdfjs-dist`) inside existing Dialog.
-- Base64 -> Uint8Array feed karke pages canvas me render karna.
-- Basic controls: previous/next page + zoom +/- so mobile me readable rahe.
-- Open action me sirf in-app viewer trigger hoga, no `window.open`.
+**1. Collapsible "Other Zakat Assets" Section** (hidden by default, toggle to expand)
+When enabled, shows fields for:
 
-4) Share button fix (native + web)
-- Native (APK): `@capacitor/share` use karna (not `navigator.share`), file ko `Directory.Cache` me write karke `files: [fileUri]` ke through share sheet open karna.
-- Web: current Web Share + download fallback maintain karna.
-- Cancelled share vs actual error ke liye clear toast handling.
+- **Agricultural Zakat (Kheti/Fasal)**
+  - Crop value field (₹)
+  - Irrigation type selector:
+    - Rain-fed / Natural water (Barani) → Zakat = 10% (Ushr)
+    - Irrigated / Artificial water (Sinchi) → Zakat = 5% (Nisf Ushr)
+  - Auto-calculated zakat shown below
 
-5) Validation checklist
-- Android APK:
-  - new PDF download -> history -> view (must open inside app)
-  - app restart ke baad same file view
-  - Unknown-01 style auto-name + open
-  - Share to WhatsApp/Drive/Gmail from history
-- Permission denied case: app-internal open/share still work kare; sirf public export optional warning de.
-- Legacy history entry recovery verify.
+- **Livestock Zakat (Maweshi)**
+  - Goats/Sheep (Bakri/Bhed) — count field with nisab rules displayed:
+    - 40-120 → 1 goat; 121-200 → 2 goats; 201-399 → 3 goats
+  - Cows/Buffalo (Gaay/Bhains) — count field:
+    - 30-39 → 1 calf (1 yr); 40-59 → 1 cow (2 yr); 60+ → 2 calves
+  - Camels (Oont) — count field:
+    - 5-9 → 1 sheep; 10-14 → 2 sheep; 25-35 → 1 camel (1yr)
+  - Each shows the applicable zakat in text below the count
 
-Technical notes
-- Files: mainly `src/pages/ZakatCalculator.tsx`, plus ek reusable in-app PDF viewer component (e.g. `src/components/InAppPdfViewer.tsx`).
-- Native capability change ke baad user side: latest code pull karke `npx cap sync` required hoga before APK retest.
+- **Business Inventory / Trade Goods** — value field (₹), 2.5% zakat
+- **Rental Income** — value field (₹), 2.5% zakat
+
+All these amounts will be included in the total zakat calculation and PDF report.
+
+**2. Quran & Hadith References Section** (always visible at bottom)
+A styled reference card listing the Islamic proofs for each zakat category:
+- Gold/Silver zakat → Surah At-Tawbah 9:34
+- Cash/Wealth zakat → Surah Al-Baqarah 2:267
+- Agricultural zakat (Ushr) → Surah Al-An'am 6:141, Sahih Bukhari 1483
+- Livestock zakat → Sahih Bukhari 1454, Abu Dawud 1572
+- General zakat obligation → Surah Al-Baqarah 2:43, Surah At-Tawbah 9:103
+- Trade goods → Abu Dawud 1562
+
+Each reference with the actual text snippet in English + Arabic context.
+
+### Technical approach
+
+**Files to modify:**
+- `src/pages/ZakatCalculator.tsx` — Add state for other zakat fields, toggle switch, calculation logic, PDF generation update, references section
+- `src/lib/i18n.tsx` — Add ~30 translation keys for new labels (en/ur/hi)
+
+**State additions:**
+- `showOtherZakat: boolean` (toggle)
+- `cropValue: string`, `irrigationType: "rainfed" | "irrigated"`
+- `goatCount: string`, `cowCount: string`, `camelCount: string`
+- `businessInventory: string`, `rentalIncome: string`
+
+**Calculation updates:**
+- Agricultural zakat: `cropValue * (irrigationType === "rainfed" ? 0.10 : 0.05)`
+- Livestock: Display text-based nisab rules (not added to ₹ total since zakat is in animals)
+- Business/Rental: Added to totalAssets at 2.5%
+
+**UI:** Switch toggle labeled "Other Zakat Assets" using existing Switch component. Collapsible card below cash section. References card at the very bottom with an accordion or static list.
+
