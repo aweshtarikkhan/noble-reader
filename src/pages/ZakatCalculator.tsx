@@ -1042,13 +1042,9 @@ const ZakatCalculator: React.FC = () => {
                 {pdfViewer.title ? `${pdfViewer.title} • PDF` : "PDF Viewer"}
               </DialogTitle>
             </DialogHeader>
-            <div className="h-[calc(85vh-52px)] bg-muted/20">
-              {pdfViewer.url ? (
-                <object data={pdfViewer.url} type="application/pdf" className="w-full h-full">
-                  <div className="h-full flex items-center justify-center px-4 text-center text-sm text-muted-foreground">
-                    PDF preview is not supported on this device.
-                  </div>
-                </object>
+            <div className="h-[calc(85vh-52px)]">
+              {pdfViewer.base64 ? (
+                <InAppPdfViewer pdfBase64={pdfViewer.base64} title={pdfViewer.title} />
               ) : null}
             </div>
           </DialogContent>
