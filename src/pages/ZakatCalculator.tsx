@@ -90,9 +90,9 @@ const ZakatCalculator: React.FC = () => {
       return saved ? JSON.parse(saved) : [];
     } catch { return []; }
   });
-  const [pdfViewer, setPdfViewer] = useState<{ open: boolean; url: string; title: string }>({
+  const [pdfViewer, setPdfViewer] = useState<{ open: boolean; base64: string; title: string }>({
     open: false,
-    url: "",
+    base64: "",
     title: "",
   });
 
@@ -108,45 +108,66 @@ const ZakatCalculator: React.FC = () => {
     return `Unknown-${String(next).padStart(2, "0")}`;
   };
 
-  const addToHistory = (item: DownloadHistoryItem, pdfBase64: string) => {
+  const addToHistory = async (item: DownloadHistoryItem, pdfBase64: string) => {
+    // Always save to localforage
+    await localforage.setItem(`zakat_pdf_${item.id}`, pdfBase64).catch(console.error);
+
+    // On native, also save to Directory.Data (always accessible, no permission needed)
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const saved = await Filesystem.writeFile({
+          path: `zakat_pdfs/${item.fileName}`,
+          data: pdfBase64,
+          directory: Directory.Data,
+          recursive: true,
+        });
+        item.uri = saved.uri;
+      } catch (e) {
+        console.warn("Directory.Data save failed:", e);
+      }
+    }
+
     const updated = [item, ...downloadHistory].slice(0, 50);
     saveHistory(updated);
-    localforage.setItem(`zakat_pdf_${item.id}`, pdfBase64).catch(console.error);
   };
 
-  const removeFromHistory = (id: string) => {
-    saveHistory(downloadHistory.filter(h => h.id !== id));
+  const removeFromHistory = async (id: string) => {
+    const item = downloadHistory.find(h => h.id === id);
+    // Clean up stored files
     localforage.removeItem(`zakat_pdf_${id}`).catch(console.error);
+    if (Capacitor.isNativePlatform() && item) {
+      try {
+        await Filesystem.deleteFile({
+          path: `zakat_pdfs/${item.fileName}`,
+          directory: Directory.Data,
+        });
+      } catch {}
+    }
+    saveHistory(downloadHistory.filter(h => h.id !== id));
   };
 
-  const clearHistory = () => {
-    downloadHistory.forEach(h => localforage.removeItem(`zakat_pdf_${h.id}`).catch(console.error));
+  const clearHistory = async () => {
+    for (const h of downloadHistory) {
+      localforage.removeItem(`zakat_pdf_${h.id}`).catch(console.error);
+      if (Capacitor.isNativePlatform()) {
+        try {
+          await Filesystem.deleteFile({
+            path: `zakat_pdfs/${h.fileName}`,
+            directory: Directory.Data,
+          });
+        } catch {}
+      }
+    }
     saveHistory([]);
     toast({ title: "🗑️ History cleared" });
   };
 
-  const base64ToPdfBlob = (base64: string) => {
-    const byteChars = atob(base64);
-    const byteNums = new Array(byteChars.length);
-    for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
-    return new Blob([new Uint8Array(byteNums)], { type: "application/pdf" });
-  };
-
   const closePdfViewer = () => {
-    setPdfViewer((prev) => {
-      if (prev.url) URL.revokeObjectURL(prev.url);
-      return { open: false, url: "", title: "" };
-    });
+    setPdfViewer({ open: false, base64: "", title: "" });
   };
 
   const openPdfInAppViewer = (base64: string, title: string) => {
-    const blob = base64ToPdfBlob(base64);
-    const url = URL.createObjectURL(blob);
-
-    setPdfViewer((prev) => {
-      if (prev.url) URL.revokeObjectURL(prev.url);
-      return { open: true, url, title };
-    });
+    setPdfViewer({ open: true, base64, title });
   };
 
   const getBase64FromHistory = async (item: DownloadHistoryItem): Promise<string | null> => {
