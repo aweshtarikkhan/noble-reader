@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Calculator, Download, Plus, Trash2, RefreshCw, FileText, Clock, X, Share2, Eye } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Calculator, Download, Plus, Trash2, FileText, Clock, X, Share2, Eye } from "lucide-react";
 import jsPDF from "jspdf";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
