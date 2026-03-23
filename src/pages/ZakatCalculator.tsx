@@ -462,7 +462,7 @@ const ZakatCalculator: React.FC = () => {
     
     doc.setFontSize(12);
     doc.setTextColor(0);
-    doc.text("Gold & Silver Rates (Chennai)", 20, y);
+    doc.text("Gold & Silver Rates", 20, y);
     y += 8;
     
     doc.setFontSize(10);
