@@ -614,17 +614,6 @@ const ZakatCalculator: React.FC = () => {
           description: "Please try again.",
         });
       }
-            description: "Opened in app viewer",
-          });
-          openPdfInAppViewer(base64Data, displayName);
-        } catch (cacheErr: any) {
-          console.error("PDF save error:", cacheErr);
-          toast({
-            title: "❌ PDF save failed",
-            description: "Storage permission/settings check karke dobara try karein.",
-          });
-        }
-      }
     } else {
       const pdfBase64 = doc.output('datauristring').split(',')[1];
       doc.save(fileName);
