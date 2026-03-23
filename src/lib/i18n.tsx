@@ -325,6 +325,55 @@ const T: Translations = {
   "zakat.silverNisab": { en: "Silver Nisab: 612.36g (52.5 tola)", ur: "چاندی کا نصاب: 612.36 گرام (52.5 تولہ)", hi: "चांदी का निसाब: 612.36 ग्राम (52.5 तोला)" },
   "zakat.zakatRate": { en: "Zakat Rate: 2.5% of total zakatable wealth", ur: "زکوٰۃ کی شرح: کل قابل زکوٰۃ دولت کا 2.5%", hi: "ज़कात दर: कुल ज़कात योग्य संपत्ति का 2.5%" },
   "zakat.silverNisabNote": { en: "Note: We use Silver Nisab as it results in lower threshold.", ur: "نوٹ: ہم چاندی کا نصاب استعمال کرتے ہیں کیونکہ یہ کم حد دیتا ہے۔", hi: "नोट: हम चांदी का निसाब उपयोग करते हैं क्योंकि यह कम सीमा देता है।" },
+
+  // Other Zakat Assets
+  "zakat.otherZakatAssets": { en: "Other Zakat Assets", ur: "دیگر زکوٰۃ اثاثے", hi: "अन्य ज़कात संपत्ति" },
+  "zakat.enableOtherAssets": { en: "Enable to add agricultural, livestock & business zakat", ur: "زرعی، مویشی اور کاروباری زکوٰۃ شامل کرنے کے لیے فعال کریں", hi: "कृषि, पशुधन और व्यापार ज़कात जोड़ने के लिए सक्षम करें" },
+  
+  "zakat.agriculture": { en: "🌾 Agricultural Zakat (Ushr)", ur: "🌾 زرعی زکوٰۃ (عشر)", hi: "🌾 कृषि ज़कात (उश्र)" },
+  "zakat.cropValue": { en: "Crop/Produce Value (₹)", ur: "فصل/پیداوار کی قیمت (₹)", hi: "फसल/उपज मूल्य (₹)" },
+  "zakat.irrigationType": { en: "Irrigation Type", ur: "آبپاشی کی قسم", hi: "सिंचाई का प्रकार" },
+  "zakat.rainfed": { en: "Rain-fed / Natural Water (10% Ushr)", ur: "بارانی / قدرتی پانی (10% عشر)", hi: "वर्षा / प्राकृतिक पानी (10% उश्र)" },
+  "zakat.irrigated": { en: "Irrigated / Artificial Water (5% Nisf Ushr)", ur: "سنچائی / مصنوعی پانی (5% نصف عشر)", hi: "सिंचित / कृत्रिम पानी (5% निस्फ़ उश्र)" },
+  "zakat.agriZakatNote": { en: "Agricultural zakat is due on every harvest, not annually.", ur: "زرعی زکوٰۃ ہر فصل پر واجب ہے، سالانہ نہیں۔", hi: "कृषि ज़कात हर फसल पर देय है, सालाना नहीं।" },
+
+  "zakat.livestock": { en: "🐐 Livestock Zakat (Maweshi)", ur: "🐐 مویشی زکوٰۃ", hi: "🐐 पशुधन ज़कात (मवेशी)" },
+  "zakat.goatSheep": { en: "Goats / Sheep (Bakri/Bhed)", ur: "بکری / بھیڑ", hi: "बकरी / भेड़" },
+  "zakat.goatCount": { en: "Number of Goats/Sheep", ur: "بکریوں/بھیڑوں کی تعداد", hi: "बकरियों/भेड़ों की संख्या" },
+  "zakat.goatNisab": { en: "Nisab: 40+ grazing animals owned for 1 year", ur: "نصاب: 40+ چرنے والے جانور جو 1 سال سے ملکیت میں ہوں", hi: "निसाब: 40+ चरने वाले जानवर जो 1 साल से स्वामित्व में हों" },
+  "zakat.goat40": { en: "40-120 → 1 goat/sheep", ur: "40-120 → 1 بکری/بھیڑ", hi: "40-120 → 1 बकरी/भेड़" },
+  "zakat.goat121": { en: "121-200 → 2 goats/sheep", ur: "121-200 → 2 بکری/بھیڑ", hi: "121-200 → 2 बकरी/भेड़" },
+  "zakat.goat201": { en: "201-399 → 3 goats/sheep", ur: "201-399 → 3 بکری/بھیڑ", hi: "201-399 → 3 बकरी/भेड़" },
+  "zakat.goat400": { en: "400+ → 1 for every 100", ur: "400+ → ہر 100 پر 1", hi: "400+ → हर 100 पर 1" },
+
+  "zakat.cowBuffalo": { en: "Cows / Buffalo (Gaay/Bhains)", ur: "گائے / بھینس", hi: "गाय / भैंस" },
+  "zakat.cowCount": { en: "Number of Cows/Buffalo", ur: "گائے/بھینس کی تعداد", hi: "गाय/भैंस की संख्या" },
+  "zakat.cow30": { en: "30-39 → 1 calf (1 year old)", ur: "30-39 → 1 بچھڑا (1 سال)", hi: "30-39 → 1 बछड़ा (1 साल)" },
+  "zakat.cow40": { en: "40-59 → 1 cow (2 years old)", ur: "40-59 → 1 گائے (2 سال)", hi: "40-59 → 1 गाय (2 साल)" },
+  "zakat.cow60": { en: "60+ → 2 calves (1 year each)", ur: "60+ → 2 بچھڑے (ہر ایک 1 سال)", hi: "60+ → 2 बछड़े (प्रत्येक 1 साल)" },
+
+  "zakat.camel": { en: "Camels (Oont)", ur: "اونٹ", hi: "ऊंट" },
+  "zakat.camelCount": { en: "Number of Camels", ur: "اونٹوں کی تعداد", hi: "ऊंटों की संख्या" },
+  "zakat.camel5": { en: "5-9 → 1 sheep/goat", ur: "5-9 → 1 بھیڑ/بکری", hi: "5-9 → 1 भेड़/बकरी" },
+  "zakat.camel10": { en: "10-14 → 2 sheep/goats", ur: "10-14 → 2 بھیڑ/بکری", hi: "10-14 → 2 भेड़/बकरी" },
+  "zakat.camel15": { en: "15-19 → 3 sheep/goats", ur: "15-19 → 3 بھیڑ/بکری", hi: "15-19 → 3 भेड़/बकरी" },
+  "zakat.camel20": { en: "20-24 → 4 sheep/goats", ur: "20-24 → 4 بھیڑ/بکری", hi: "20-24 → 4 भेड़/बकरी" },
+  "zakat.camel25": { en: "25-35 → 1 she-camel (1 year)", ur: "25-35 → 1 اونٹنی (1 سال)", hi: "25-35 → 1 ऊंटनी (1 साल)" },
+
+  "zakat.businessInventory": { en: "🏪 Business Inventory / Trade Goods", ur: "🏪 کاروباری سامان / تجارتی مال", hi: "🏪 व्यापार सूची / व्यापारिक माल" },
+  "zakat.businessValue": { en: "Business Inventory Value (₹)", ur: "کاروباری سامان کی قیمت (₹)", hi: "व्यापार सूची का मूल्य (₹)" },
+  "zakat.rentalIncome": { en: "🏠 Rental Income", ur: "🏠 کرائے کی آمدنی", hi: "🏠 किराये की आमदनी" },
+  "zakat.rentalValue": { en: "Annual Rental Income (₹)", ur: "سالانہ کرائے کی آمدنی (₹)", hi: "वार्षिक किराये की आमदनी (₹)" },
+  "zakat.businessRentalNote": { en: "2.5% zakat applies on business goods & saved rental income", ur: "کاروباری سامان اور محفوظ کرائے کی آمدنی پر 2.5% زکوٰۃ لاگو ہے", hi: "व्यापारिक सामान और बचत किराये की आमदनी पर 2.5% ज़कात लागू" },
+
+  // Quran & Hadith References
+  "zakat.references": { en: "📚 Quran & Hadith References", ur: "📚 قرآن و حدیث حوالہ جات", hi: "📚 क़ुरआन व हदीस संदर्भ" },
+  "zakat.refGeneral": { en: "General Zakat Obligation", ur: "عمومی فرضیت زکوٰۃ", hi: "सामान्य ज़कात फ़र्ज़ीयत" },
+  "zakat.refGoldSilver": { en: "Gold & Silver Zakat", ur: "سونے چاندی کی زکوٰۃ", hi: "सोने-चांदी की ज़कात" },
+  "zakat.refWealth": { en: "Wealth / Cash Zakat", ur: "مال / نقدی کی زکوٰۃ", hi: "धन / नकद ज़कात" },
+  "zakat.refAgriculture": { en: "Agricultural Zakat (Ushr)", ur: "زرعی زکوٰۃ (عشر)", hi: "कृषि ज़कात (उश्र)" },
+  "zakat.refLivestock": { en: "Livestock Zakat", ur: "مویشی زکوٰۃ", hi: "पशुधन ज़कात" },
+  "zakat.refTrade": { en: "Trade Goods Zakat", ur: "تجارتی مال کی زکوٰۃ", hi: "व्यापारिक माल की ज़कात" },
 };
 
 type I18nContextType = {
