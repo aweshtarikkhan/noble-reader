@@ -1,44 +1,40 @@
 
+Goal: APK me PDF history files hamesha app ke andar khulni chahiye (browser nahi), aur Share button reliably file share kare.
 
-## Automatic Donation Tracking with Payment Gateway
+1) Root cause confirm + direction
+- Do I know what the issue is? Yes.
+- Current viewer `<object type="application/pdf">` Android WebView me reliable nahi hai, isliye blank/external Chrome behavior aa raha hai.
+- `navigator.share` Web API APK WebView me file attachment ke liye unreliable hai.
+- `Directory.ExternalStorage` Android 11+ me restricted hai; isi wajah se history entries kabhi inaccessible ho rahi hain.
 
-Since the current setup uses raw UPI links (which don't provide callbacks), we need to integrate a proper payment gateway to automatically track donations. **Razorpay** is the best fit here — it supports UPI, cards, and provides webhooks to record every successful payment.
+2) Storage flow ko reliable banana (ZakatCalculator)
+- `DownloadHistoryItem` me native-safe fields add karna: `appPath` (internal app file path), optional `publicPath/uri`.
+- PDF generate hote hi **pehle** `Directory.Data` me save karna (always accessible, permission-independent).
+- Public copy (Documents/Download) optional banana; fail ho to bhi history + in-app open ka flow break na ho.
+- `clear/remove` me localforage ke sath internal files bhi delete karna.
+- Old history migration: agar item me `appPath` nahi hai to localforage/legacy uri se recover karke new internal file create karna.
 
-### Architecture
+3) True in-app PDF viewer (browser-free)
+- Existing `<object>` viewer remove.
+- PDF.js based viewer add (via `react-pdf` + `pdfjs-dist`) inside existing Dialog.
+- Base64 -> Uint8Array feed karke pages canvas me render karna.
+- Basic controls: previous/next page + zoom +/- so mobile me readable rahe.
+- Open action me sirf in-app viewer trigger hoga, no `window.open`.
 
-```text
-User clicks "Pay" → Razorpay Checkout opens → User pays via UPI/Card
-                                                      ↓
-Razorpay webhook → Edge Function → Saves to "donations" table
-                                                      ↓
-Donate page loads → Fetches donation stats → Shows total raised + count
-```
+4) Share button fix (native + web)
+- Native (APK): `@capacitor/share` use karna (not `navigator.share`), file ko `Directory.Cache` me write karke `files: [fileUri]` ke through share sheet open karna.
+- Web: current Web Share + download fallback maintain karna.
+- Cancelled share vs actual error ke liye clear toast handling.
 
-### Steps
+5) Validation checklist
+- Android APK:
+  - new PDF download -> history -> view (must open inside app)
+  - app restart ke baad same file view
+  - Unknown-01 style auto-name + open
+  - Share to WhatsApp/Drive/Gmail from history
+- Permission denied case: app-internal open/share still work kare; sirf public export optional warning de.
+- Legacy history entry recovery verify.
 
-1. **Create a `donations` table** in the database with columns: `id`, `amount`, `currency`, `razorpay_payment_id`, `status`, `donor_name` (optional), `created_at`. Public read access (RLS) so the stats can be displayed without auth.
-
-2. **Set up Razorpay integration**:
-   - You'll need a Razorpay account (free to create at razorpay.com)
-   - Store `RAZORPAY_KEY_ID` (publishable, used in frontend) and `RAZORPAY_KEY_SECRET` as secrets
-   - Create an edge function `create-razorpay-order` to generate orders server-side
-   - Create an edge function `razorpay-webhook` to receive payment confirmations and insert into the `donations` table
-
-3. **Update the Donate page**:
-   - Replace raw UPI link with Razorpay Checkout (loads their JS SDK)
-   - Add a "Community Support" stats section at the top showing:
-     - Total donations received (count)
-     - Total amount raised (sum)
-     - Optional: recent donor names (if provided)
-   - Keep the QR code as a fallback for manual UPI (those won't be tracked)
-
-4. **Display donation stats on the Donate page** by querying the `donations` table for aggregated count and sum.
-
-### Important Notes
-
-- You will need to create a free Razorpay account and provide two keys (one public, one secret)
-- Razorpay test mode can be used first to verify everything works before going live
-- Manual UPI payments (via QR) won't be automatically tracked — only payments through the Razorpay checkout will be recorded
-
-Would you like to proceed with this approach? I'll need you to set up a Razorpay account first so we can store the API keys.
-
+Technical notes
+- Files: mainly `src/pages/ZakatCalculator.tsx`, plus ek reusable in-app PDF viewer component (e.g. `src/components/InAppPdfViewer.tsx`).
+- Native capability change ke baad user side: latest code pull karke `npx cap sync` required hoga before APK retest.
