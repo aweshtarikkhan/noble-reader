@@ -304,7 +304,7 @@ const ZakatCalculator: React.FC = () => {
       gold22ct: gold22,
       gold18ct: gold18,
       silver: silver,
-      lastUpdated: "Chennai Rates (Manual)"
+      lastUpdated: "Manual Rates"
     });
   };
 
