@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Calculator, Download, Plus, Trash2, RefreshCw, FileText, Clock, X, Share2, Eye } from "lucide-react";
 import jsPDF from "jspdf";
 import { Filesystem, Directory } from "@capacitor/filesystem";
+import { Share } from "@capacitor/share";
 import localforage from "localforage";
 
 import { Capacitor } from "@capacitor/core";
@@ -15,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import InAppPdfViewer from "@/components/InAppPdfViewer";
 
 interface DownloadHistoryItem {
   id: string;
