@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Calculator, Download, Plus, Trash2, RefreshCw, FileText, Clock, X, Share2, Eye } from "lucide-react";
 import jsPDF from "jspdf";
 import { Filesystem, Directory } from "@capacitor/filesystem";
+import { Share } from "@capacitor/share";
 import localforage from "localforage";
 
 import { Capacitor } from "@capacitor/core";
@@ -15,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import InAppPdfViewer from "@/components/InAppPdfViewer";
 
 interface DownloadHistoryItem {
   id: string;
@@ -88,9 +90,9 @@ const ZakatCalculator: React.FC = () => {
       return saved ? JSON.parse(saved) : [];
     } catch { return []; }
   });
-  const [pdfViewer, setPdfViewer] = useState<{ open: boolean; url: string; title: string }>({
+  const [pdfViewer, setPdfViewer] = useState<{ open: boolean; base64: string; title: string }>({
     open: false,
-    url: "",
+    base64: "",
     title: "",
   });
 
@@ -106,57 +108,88 @@ const ZakatCalculator: React.FC = () => {
     return `Unknown-${String(next).padStart(2, "0")}`;
   };
 
-  const addToHistory = (item: DownloadHistoryItem, pdfBase64: string) => {
+  const addToHistory = async (item: DownloadHistoryItem, pdfBase64: string) => {
+    // Always save to localforage
+    await localforage.setItem(`zakat_pdf_${item.id}`, pdfBase64).catch(console.error);
+
+    // On native, also save to Directory.Data (always accessible, no permission needed)
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const saved = await Filesystem.writeFile({
+          path: `zakat_pdfs/${item.fileName}`,
+          data: pdfBase64,
+          directory: Directory.Data,
+          recursive: true,
+        });
+        item.uri = saved.uri;
+      } catch (e) {
+        console.warn("Directory.Data save failed:", e);
+      }
+    }
+
     const updated = [item, ...downloadHistory].slice(0, 50);
     saveHistory(updated);
-    localforage.setItem(`zakat_pdf_${item.id}`, pdfBase64).catch(console.error);
   };
 
-  const removeFromHistory = (id: string) => {
-    saveHistory(downloadHistory.filter(h => h.id !== id));
+  const removeFromHistory = async (id: string) => {
+    const item = downloadHistory.find(h => h.id === id);
+    // Clean up stored files
     localforage.removeItem(`zakat_pdf_${id}`).catch(console.error);
+    if (Capacitor.isNativePlatform() && item) {
+      try {
+        await Filesystem.deleteFile({
+          path: `zakat_pdfs/${item.fileName}`,
+          directory: Directory.Data,
+        });
+      } catch {}
+    }
+    saveHistory(downloadHistory.filter(h => h.id !== id));
   };
 
-  const clearHistory = () => {
-    downloadHistory.forEach(h => localforage.removeItem(`zakat_pdf_${h.id}`).catch(console.error));
+  const clearHistory = async () => {
+    for (const h of downloadHistory) {
+      localforage.removeItem(`zakat_pdf_${h.id}`).catch(console.error);
+      if (Capacitor.isNativePlatform()) {
+        try {
+          await Filesystem.deleteFile({
+            path: `zakat_pdfs/${h.fileName}`,
+            directory: Directory.Data,
+          });
+        } catch {}
+      }
+    }
     saveHistory([]);
     toast({ title: "🗑️ History cleared" });
   };
 
-  const base64ToPdfBlob = (base64: string) => {
-    const byteChars = atob(base64);
-    const byteNums = new Array(byteChars.length);
-    for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
-    return new Blob([new Uint8Array(byteNums)], { type: "application/pdf" });
-  };
-
   const closePdfViewer = () => {
-    setPdfViewer((prev) => {
-      if (prev.url) URL.revokeObjectURL(prev.url);
-      return { open: false, url: "", title: "" };
-    });
+    setPdfViewer({ open: false, base64: "", title: "" });
   };
 
   const openPdfInAppViewer = (base64: string, title: string) => {
-    const blob = base64ToPdfBlob(base64);
-    const url = URL.createObjectURL(blob);
-
-    setPdfViewer((prev) => {
-      if (prev.url) URL.revokeObjectURL(prev.url);
-      return { open: true, url, title };
-    });
+    setPdfViewer({ open: true, base64, title });
   };
 
   const getBase64FromHistory = async (item: DownloadHistoryItem): Promise<string | null> => {
     const base64: string | null = await localforage.getItem(`zakat_pdf_${item.id}`);
     if (base64) return base64;
 
-    if (Capacitor.isNativePlatform() && item.uri) {
+    if (Capacitor.isNativePlatform()) {
+      // Try reading from internal app storage
       try {
-        const fileData = await Filesystem.readFile({ path: item.uri });
+        const fileData = await Filesystem.readFile({
+          path: `zakat_pdfs/${item.fileName}`,
+          directory: Directory.Data,
+        });
         if (typeof fileData.data === "string") return fileData.data;
-      } catch {
-        // ignore
+      } catch {}
+
+      // Legacy fallback: try old URI
+      if (item.uri) {
+        try {
+          const fileData = await Filesystem.readFile({ path: item.uri });
+          if (typeof fileData.data === "string") return fileData.data;
+        } catch {}
       }
     }
 
@@ -186,27 +219,41 @@ const ZakatCalculator: React.FC = () => {
         return;
       }
 
-      const blob = base64ToPdfBlob(base64);
-      const file = new File([blob], item.fileName, { type: "application/pdf" });
-
-      if (navigator.share && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({
-          title: `Zakat Report - ${item.displayName}`,
-          files: [file],
-        });
-      } else if (navigator.share) {
-        await navigator.share({
-          title: `Zakat Report - ${item.displayName}`,
-          text: `Zakat Calculation Report for ${item.displayName}\nZakat Due: ₹${item.zakatAmount.toLocaleString("en-IN")}\nDate: ${item.date}`,
-        });
+      if (Capacitor.isNativePlatform()) {
+        // Write temp file and use native Share plugin
+        try {
+          const tempFile = await Filesystem.writeFile({
+            path: `share_${item.fileName}`,
+            data: base64,
+            directory: Directory.Cache,
+          });
+          await Share.share({
+            title: `Zakat Report - ${item.displayName}`,
+            files: [tempFile.uri],
+          });
+        } catch (e: any) {
+          if (e?.message?.includes("canceled") || e?.message?.includes("cancelled")) return;
+          throw e;
+        }
       } else {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = item.fileName;
-        a.click();
-        URL.revokeObjectURL(url);
-        toast({ title: "📄 PDF downloaded for sharing" });
+        // Web fallback
+        const byteChars = atob(base64);
+        const byteArray = new Uint8Array(byteChars.length);
+        for (let i = 0; i < byteChars.length; i++) byteArray[i] = byteChars.charCodeAt(i);
+        const blob = new Blob([byteArray], { type: "application/pdf" });
+        const file = new File([blob], item.fileName, { type: "application/pdf" });
+
+        if (navigator.share && navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ title: `Zakat Report - ${item.displayName}`, files: [file] });
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = item.fileName;
+          a.click();
+          URL.revokeObjectURL(url);
+          toast({ title: "📄 PDF downloaded for sharing" });
+        }
       }
     } catch (e: any) {
       if (e?.name !== "AbortError") {
@@ -214,14 +261,6 @@ const ZakatCalculator: React.FC = () => {
       }
     }
   };
-
-  useEffect(() => {
-    return () => {
-      if (pdfViewer.url) {
-        URL.revokeObjectURL(pdfViewer.url);
-      }
-    };
-  }, [pdfViewer.url]);
 
   // Check storage permission on mount (native only)
   useEffect(() => {
@@ -549,71 +588,41 @@ const ZakatCalculator: React.FC = () => {
     const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
     if (Capacitor.isNativePlatform()) {
-      const hasStoragePermission = await ensureAndroidStoragePermission();
-      if (!hasStoragePermission) return;
-
       try {
         const base64Data = doc.output("datauristring").split(",")[1];
+        const historyItem: DownloadHistoryItem = {
+          id: Date.now().toString(),
+          fileName,
+          displayName,
+          date: dateStr,
+          zakatAmount: zakatResult.zakatDue,
+        };
 
-        const savedFile = await Filesystem.writeFile({
-          path: `Download/${fileName}`,
-          data: base64Data,
-          directory: Directory.ExternalStorage,
-          recursive: true,
-        });
-
-        addToHistory(
-          {
-            id: Date.now().toString(),
-            fileName,
-            displayName,
-            date: dateStr,
-            zakatAmount: zakatResult.zakatDue,
-            uri: savedFile.uri,
-          },
-          base64Data,
-        );
+        await addToHistory(historyItem, base64Data);
 
         toast({
           title: "✅ PDF Saved",
           description: `Opened in app as "${displayName}"`,
         });
         openPdfInAppViewer(base64Data, displayName);
-      } catch (storageErr: any) {
-        console.warn("ExternalStorage failed, trying Cache fallback:", storageErr);
 
+        // Also try saving to public Downloads (optional, best-effort)
         try {
-          const base64Data = doc.output("datauristring").split(",")[1];
-          const savedFile = await Filesystem.writeFile({
-            path: fileName,
+          await Filesystem.writeFile({
+            path: `Download/${fileName}`,
             data: base64Data,
-            directory: Directory.Cache,
+            directory: Directory.ExternalStorage,
+            recursive: true,
           });
-
-          addToHistory(
-            {
-              id: Date.now().toString(),
-              fileName,
-              displayName,
-              date: dateStr,
-              zakatAmount: zakatResult.zakatDue,
-              uri: savedFile.uri,
-            },
-            base64Data,
-          );
-
-          toast({
-            title: "✅ PDF Ready",
-            description: "Opened in app viewer",
-          });
-          openPdfInAppViewer(base64Data, displayName);
-        } catch (cacheErr: any) {
-          console.error("PDF save error:", cacheErr);
-          toast({
-            title: "❌ PDF save failed",
-            description: "Storage permission/settings check karke dobara try karein.",
-          });
+        } catch {
+          // Public copy failed - that's fine, internal copy is saved
         }
+      } catch (err: any) {
+        console.error("PDF save error:", err);
+        toast({
+          title: "❌ PDF save failed",
+          description: "Please try again.",
+        });
       }
     } else {
       const pdfBase64 = doc.output('datauristring').split(',')[1];
@@ -1013,13 +1022,9 @@ const ZakatCalculator: React.FC = () => {
                 {pdfViewer.title ? `${pdfViewer.title} • PDF` : "PDF Viewer"}
               </DialogTitle>
             </DialogHeader>
-            <div className="h-[calc(85vh-52px)] bg-muted/20">
-              {pdfViewer.url ? (
-                <object data={pdfViewer.url} type="application/pdf" className="w-full h-full">
-                  <div className="h-full flex items-center justify-center px-4 text-center text-sm text-muted-foreground">
-                    PDF preview is not supported on this device.
-                  </div>
-                </object>
+            <div className="h-[calc(85vh-52px)]">
+              {pdfViewer.base64 ? (
+                <InAppPdfViewer pdfBase64={pdfViewer.base64} title={pdfViewer.title} />
               ) : null}
             </div>
           </DialogContent>
