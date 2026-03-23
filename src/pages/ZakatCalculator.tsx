@@ -1015,20 +1015,19 @@ const ZakatCalculator: React.FC = () => {
           </Card>
         )}
 
-        <Dialog open={pdfViewer.open} onOpenChange={(open) => !open && closePdfViewer()}>
-          <DialogContent className="w-[95vw] max-w-4xl h-[85vh] p-0 overflow-hidden gap-0">
-            <DialogHeader className="px-4 py-3 border-b border-border">
-              <DialogTitle className="text-sm font-semibold truncate pr-6">
-                {pdfViewer.title ? `${pdfViewer.title} • PDF` : "PDF Viewer"}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="h-[calc(85vh-52px)]">
-              {pdfViewer.base64 ? (
-                <InAppPdfViewer pdfBase64={pdfViewer.base64} title={pdfViewer.title} />
-              ) : null}
-            </div>
-          </DialogContent>
-        </Dialog>
+        {pdfViewer.open && pdfViewer.base64 && (
+          <div className="fixed inset-0 z-[100] bg-background flex flex-col">
+            <InAppPdfViewer
+              pdfBase64={pdfViewer.base64}
+              title={pdfViewer.title}
+              onClose={closePdfViewer}
+              onShare={() => {
+                const item = downloadHistory.find(h => h.displayName === pdfViewer.title);
+                if (item) shareHistoryFile(item);
+              }}
+            />
+          </div>
+        )}
 
         {/* Info */}
         <div className="text-xs text-muted-foreground space-y-2 p-4 bg-muted/50 rounded-xl">
