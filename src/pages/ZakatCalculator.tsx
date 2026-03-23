@@ -80,7 +80,7 @@ const ZakatCalculator: React.FC = () => {
   const [otherAssets, setOtherAssets] = useState("");
   const [liabilities, setLiabilities] = useState("");
   const [userName, setUserName] = useState("");
-  const [fetchingRates, setFetchingRates] = useState(false);
+  
   const [storagePermission, setStoragePermission] = useState<"unknown" | "granted" | "denied">("unknown");
 
   // Download history
