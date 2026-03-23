@@ -209,27 +209,41 @@ const ZakatCalculator: React.FC = () => {
         return;
       }
 
-      const blob = base64ToPdfBlob(base64);
-      const file = new File([blob], item.fileName, { type: "application/pdf" });
-
-      if (navigator.share && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({
-          title: `Zakat Report - ${item.displayName}`,
-          files: [file],
-        });
-      } else if (navigator.share) {
-        await navigator.share({
-          title: `Zakat Report - ${item.displayName}`,
-          text: `Zakat Calculation Report for ${item.displayName}\nZakat Due: ₹${item.zakatAmount.toLocaleString("en-IN")}\nDate: ${item.date}`,
-        });
+      if (Capacitor.isNativePlatform()) {
+        // Write temp file and use native Share plugin
+        try {
+          const tempFile = await Filesystem.writeFile({
+            path: `share_${item.fileName}`,
+            data: base64,
+            directory: Directory.Cache,
+          });
+          await Share.share({
+            title: `Zakat Report - ${item.displayName}`,
+            files: [tempFile.uri],
+          });
+        } catch (e: any) {
+          if (e?.message?.includes("canceled") || e?.message?.includes("cancelled")) return;
+          throw e;
+        }
       } else {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = item.fileName;
-        a.click();
-        URL.revokeObjectURL(url);
-        toast({ title: "📄 PDF downloaded for sharing" });
+        // Web fallback
+        const byteChars = atob(base64);
+        const byteArray = new Uint8Array(byteChars.length);
+        for (let i = 0; i < byteChars.length; i++) byteArray[i] = byteChars.charCodeAt(i);
+        const blob = new Blob([byteArray], { type: "application/pdf" });
+        const file = new File([blob], item.fileName, { type: "application/pdf" });
+
+        if (navigator.share && navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ title: `Zakat Report - ${item.displayName}`, files: [file] });
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = item.fileName;
+          a.click();
+          URL.revokeObjectURL(url);
+          toast({ title: "📄 PDF downloaded for sharing" });
+        }
       }
     } catch (e: any) {
       if (e?.name !== "AbortError") {
@@ -237,14 +251,6 @@ const ZakatCalculator: React.FC = () => {
       }
     }
   };
-
-  useEffect(() => {
-    return () => {
-      if (pdfViewer.url) {
-        URL.revokeObjectURL(pdfViewer.url);
-      }
-    };
-  }, [pdfViewer.url]);
 
   // Check storage permission on mount (native only)
   useEffect(() => {
