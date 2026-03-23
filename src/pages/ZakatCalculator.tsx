@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Calculator, Download, Plus, Trash2, FileText, Clock, X, Share2, Eye } from "lucide-react";
+import { Calculator, Download, Plus, Trash2, FileText, Clock, X, Share2, Eye, ChevronDown } from "lucide-react";
 import jsPDF from "jspdf";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
@@ -15,6 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
+import { Switch } from "@/components/ui/switch";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 import InAppPdfViewer from "@/components/InAppPdfViewer";
 
@@ -80,6 +82,16 @@ const ZakatCalculator: React.FC = () => {
   const [otherAssets, setOtherAssets] = useState("");
   const [liabilities, setLiabilities] = useState("");
   const [userName, setUserName] = useState("");
+  
+  // Other Zakat Assets state
+  const [showOtherZakat, setShowOtherZakat] = useState(false);
+  const [cropValue, setCropValue] = useState("");
+  const [irrigationType, setIrrigationType] = useState<"rainfed" | "irrigated">("rainfed");
+  const [goatCount, setGoatCount] = useState("");
+  const [cowCount, setCowCount] = useState("");
+  const [camelCount, setCamelCount] = useState("");
+  const [businessInventory, setBusinessInventory] = useState("");
+  const [rentalIncome, setRentalIncome] = useState("");
   
   const [storagePermission, setStoragePermission] = useState<"unknown" | "granted" | "denied">("unknown");
 
@@ -371,18 +383,53 @@ const ZakatCalculator: React.FC = () => {
     }, 0);
   };
 
+  const calculateAgriZakat = () => {
+    const crop = parseFloat(cropValue) || 0;
+    if (crop <= 0) return 0;
+    return crop * (irrigationType === "rainfed" ? 0.10 : 0.05);
+  };
+
+  const getGoatZakatText = (count: number): string => {
+    if (count < 40) return "";
+    if (count <= 120) return "→ 1 goat/sheep";
+    if (count <= 200) return "→ 2 goats/sheep";
+    if (count <= 399) return "→ 3 goats/sheep";
+    return `→ ${Math.floor(count / 100)} goats/sheep`;
+  };
+
+  const getCowZakatText = (count: number): string => {
+    if (count < 30) return "";
+    if (count <= 39) return "→ 1 calf (1 yr)";
+    if (count <= 59) return "→ 1 cow (2 yr)";
+    return "→ 2 calves (1 yr each)";
+  };
+
+  const getCamelZakatText = (count: number): string => {
+    if (count < 5) return "";
+    if (count <= 9) return "→ 1 sheep/goat";
+    if (count <= 14) return "→ 2 sheep/goats";
+    if (count <= 19) return "→ 3 sheep/goats";
+    if (count <= 24) return "→ 4 sheep/goats";
+    if (count <= 35) return "→ 1 she-camel (1 yr)";
+    return "→ See detailed nisab tables";
+  };
+
   const calculateZakat = () => {
     const goldInRupees = calculateGoldTotal();
     const silverInRupees = calculateSilverTotal();
     const cash = parseFloat(cashValue) || 0;
     const other = parseFloat(otherAssets) || 0;
     const debts = parseFloat(liabilities) || 0;
+    const business = showOtherZakat ? (parseFloat(businessInventory) || 0) : 0;
+    const rental = showOtherZakat ? (parseFloat(rentalIncome) || 0) : 0;
 
-    const totalAssets = goldInRupees + silverInRupees + cash + other;
+    const totalAssets = goldInRupees + silverInRupees + cash + other + business + rental;
     const netAssets = totalAssets - debts;
     const nisabValue = NISAB_SILVER_GRAMS * rates.silver;
     const isEligible = netAssets >= nisabValue;
-    const zakatDue = isEligible ? netAssets * ZAKAT_RATE : 0;
+    const zakatOnWealth = isEligible ? netAssets * ZAKAT_RATE : 0;
+    const agriZakat = showOtherZakat ? calculateAgriZakat() : 0;
+    const zakatDue = zakatOnWealth + agriZakat;
 
     setZakatResult({
       totalAssets: Math.round(totalAssets),
@@ -502,6 +549,42 @@ const ZakatCalculator: React.FC = () => {
     if (otherAssets) {
       doc.text(`Other Assets: Rs ${otherAssets}`, 25, y);
       y += 6;
+    }
+
+    if (showOtherZakat) {
+      const business = parseFloat(businessInventory) || 0;
+      const rental = parseFloat(rentalIncome) || 0;
+      if (business > 0) {
+        doc.text(`Business Inventory: Rs ${business.toLocaleString('en-IN')}`, 25, y);
+        y += 6;
+      }
+      if (rental > 0) {
+        doc.text(`Rental Income: Rs ${rental.toLocaleString('en-IN')}`, 25, y);
+        y += 6;
+      }
+      const crop = parseFloat(cropValue) || 0;
+      if (crop > 0) {
+        const agriRate = irrigationType === "rainfed" ? "10% (Ushr)" : "5% (Nisf Ushr)";
+        doc.text(`Crop Value: Rs ${crop.toLocaleString('en-IN')} — ${agriRate}`, 25, y);
+        y += 6;
+        doc.text(`Agricultural Zakat: Rs ${Math.round(calculateAgriZakat()).toLocaleString('en-IN')}`, 25, y);
+        y += 6;
+      }
+      const goats = parseInt(goatCount) || 0;
+      if (goats > 0) {
+        doc.text(`Goats/Sheep: ${goats} ${getGoatZakatText(goats)}`, 25, y);
+        y += 6;
+      }
+      const cows = parseInt(cowCount) || 0;
+      if (cows > 0) {
+        doc.text(`Cows/Buffalo: ${cows} ${getCowZakatText(cows)}`, 25, y);
+        y += 6;
+      }
+      const camels = parseInt(camelCount) || 0;
+      if (camels > 0) {
+        doc.text(`Camels: ${camels} ${getCamelZakatText(camels)}`, 25, y);
+        y += 6;
+      }
     }
     
     if (liabilities) {
@@ -867,6 +950,148 @@ const ZakatCalculator: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Other Zakat Assets Toggle */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-sm font-semibold">🔄 {t("zakat.otherZakatAssets")}</CardTitle>
+                <p className="text-xs text-muted-foreground mt-1">{t("zakat.enableOtherAssets")}</p>
+              </div>
+              <Switch checked={showOtherZakat} onCheckedChange={setShowOtherZakat} />
+            </div>
+          </CardHeader>
+          {showOtherZakat && (
+            <CardContent className="space-y-6 pt-0">
+              {/* Agricultural Zakat */}
+              <div className="space-y-3 p-3 rounded-lg bg-muted/50">
+                <p className="text-sm font-semibold">{t("zakat.agriculture")}</p>
+                <div>
+                  <Label className="text-xs">{t("zakat.cropValue")}</Label>
+                  <Input
+                    type="number"
+                    placeholder={t("zakat.enterAmount")}
+                    value={cropValue}
+                    onChange={(e) => setCropValue(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">{t("zakat.irrigationType")}</Label>
+                  <Select value={irrigationType} onValueChange={(v: "rainfed" | "irrigated") => setIrrigationType(v)}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="rainfed">{t("zakat.rainfed")}</SelectItem>
+                      <SelectItem value="irrigated">{t("zakat.irrigated")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {cropValue && parseFloat(cropValue) > 0 && (
+                  <div className="text-sm font-medium text-primary">
+                    Zakat: {formatCurrency(parseFloat(cropValue) * (irrigationType === "rainfed" ? 0.10 : 0.05))}
+                  </div>
+                )}
+                <p className="text-[10px] text-muted-foreground">{t("zakat.agriZakatNote")}</p>
+              </div>
+
+              {/* Livestock Zakat */}
+              <div className="space-y-3 p-3 rounded-lg bg-muted/50">
+                <p className="text-sm font-semibold">{t("zakat.livestock")}</p>
+                
+                {/* Goats/Sheep */}
+                <div>
+                  <Label className="text-xs">{t("zakat.goatCount")}</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={goatCount}
+                    onChange={(e) => setGoatCount(e.target.value)}
+                    className="mt-1"
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1">{t("zakat.goatNisab")}</p>
+                  {parseInt(goatCount) >= 40 && (
+                    <p className="text-xs font-medium text-primary mt-1">{getGoatZakatText(parseInt(goatCount))}</p>
+                  )}
+                  <div className="text-[10px] text-muted-foreground mt-1 space-y-0.5">
+                    <p>{t("zakat.goat40")}</p>
+                    <p>{t("zakat.goat121")}</p>
+                    <p>{t("zakat.goat201")}</p>
+                    <p>{t("zakat.goat400")}</p>
+                  </div>
+                </div>
+
+                {/* Cows/Buffalo */}
+                <div className="pt-2 border-t border-border">
+                  <Label className="text-xs">{t("zakat.cowCount")}</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={cowCount}
+                    onChange={(e) => setCowCount(e.target.value)}
+                    className="mt-1"
+                  />
+                  {parseInt(cowCount) >= 30 && (
+                    <p className="text-xs font-medium text-primary mt-1">{getCowZakatText(parseInt(cowCount))}</p>
+                  )}
+                  <div className="text-[10px] text-muted-foreground mt-1 space-y-0.5">
+                    <p>{t("zakat.cow30")}</p>
+                    <p>{t("zakat.cow40")}</p>
+                    <p>{t("zakat.cow60")}</p>
+                  </div>
+                </div>
+
+                {/* Camels */}
+                <div className="pt-2 border-t border-border">
+                  <Label className="text-xs">{t("zakat.camelCount")}</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={camelCount}
+                    onChange={(e) => setCamelCount(e.target.value)}
+                    className="mt-1"
+                  />
+                  {parseInt(camelCount) >= 5 && (
+                    <p className="text-xs font-medium text-primary mt-1">{getCamelZakatText(parseInt(camelCount))}</p>
+                  )}
+                  <div className="text-[10px] text-muted-foreground mt-1 space-y-0.5">
+                    <p>{t("zakat.camel5")}</p>
+                    <p>{t("zakat.camel10")}</p>
+                    <p>{t("zakat.camel25")}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Business & Rental */}
+              <div className="space-y-3 p-3 rounded-lg bg-muted/50">
+                <p className="text-sm font-semibold">{t("zakat.businessInventory")}</p>
+                <div>
+                  <Label className="text-xs">{t("zakat.businessValue")}</Label>
+                  <Input
+                    type="number"
+                    placeholder={t("zakat.enterAmount")}
+                    value={businessInventory}
+                    onChange={(e) => setBusinessInventory(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">{t("zakat.rentalValue")}</Label>
+                  <Input
+                    type="number"
+                    placeholder={t("zakat.enterAmount")}
+                    value={rentalIncome}
+                    onChange={(e) => setRentalIncome(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground">{t("zakat.businessRentalNote")}</p>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+
         {/* Calculate Button */}
         <Button onClick={calculateZakat} className="w-full h-12 text-base font-semibold">
           <Calculator className="w-5 h-5 mr-2" />
@@ -995,6 +1220,69 @@ const ZakatCalculator: React.FC = () => {
           <p>• {t("zakat.zakatRate")}</p>
           <p className="pt-2 text-[10px]">{t("zakat.silverNisabNote")}</p>
         </div>
+
+        {/* Quran & Hadith References */}
+        <Card className="border-primary/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold">{t("zakat.references")}</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <Accordion type="multiple" className="w-full">
+              <AccordionItem value="general">
+                <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refGeneral")}</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2 text-xs text-muted-foreground">
+                    <p><strong>Surah Al-Baqarah 2:43</strong> — "And establish prayer and give Zakah and bow with those who bow [in worship]."</p>
+                    <p><strong>Surah At-Tawbah 9:103</strong> — "Take from their wealth a charity by which you purify them and cause them increase."</p>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="goldsilver">
+                <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refGoldSilver")}</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2 text-xs text-muted-foreground">
+                    <p><strong>Surah At-Tawbah 9:34</strong> — "And those who hoard gold and silver and spend it not in the way of Allah — give them tidings of a painful punishment."</p>
+                    <p><strong>Sahih Muslim 979</strong> — The Prophet ﷺ said: "There is no owner of gold or silver who does not pay Zakat on it, except that plates of fire will be heated for him on the Day of Judgment."</p>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="wealth">
+                <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refWealth")}</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2 text-xs text-muted-foreground">
+                    <p><strong>Surah Al-Baqarah 2:267</strong> — "O you who have believed, spend from the good things which you have earned and from that which We have produced for you from the earth."</p>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="agriculture">
+                <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refAgriculture")}</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2 text-xs text-muted-foreground">
+                    <p><strong>Surah Al-An'am 6:141</strong> — "...and give its due [Zakah] on the day of its harvest."</p>
+                    <p><strong>Sahih Bukhari 1483</strong> — The Prophet ﷺ said: "On that which is watered by rain or springs, one-tenth (10%). On that which is watered by irrigation, half of one-tenth (5%)."</p>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="livestock">
+                <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refLivestock")}</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2 text-xs text-muted-foreground">
+                    <p><strong>Sahih Bukhari 1454</strong> — Abu Bakr (RA) narrated the detailed zakat rates on camels, cattle, and sheep as instructed by the Prophet ﷺ.</p>
+                    <p><strong>Abu Dawud 1572</strong> — Detailed nisab and zakat amounts for livestock including sheep, cattle, and camels.</p>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="trade">
+                <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refTrade")}</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2 text-xs text-muted-foreground">
+                    <p><strong>Abu Dawud 1562</strong> — Samurah ibn Jundub said: "The Prophet ﷺ used to order us to give Sadaqah (Zakat) from what we prepared for trade."</p>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
