@@ -84,6 +84,7 @@ const ZakatCalculator: React.FC = () => {
   const [userName, setUserName] = useState("");
   
   // Other Zakat Assets state
+  const [refLang, setRefLang] = useState<"en" | "ur" | "roman">("en");
   const [showOtherZakat, setShowOtherZakat] = useState(false);
   const [cropValue, setCropValue] = useState("");
   const [irrigationType, setIrrigationType] = useState<"rainfed" | "irrigated">("rainfed");
