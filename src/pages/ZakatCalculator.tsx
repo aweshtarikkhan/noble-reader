@@ -950,6 +950,148 @@ const ZakatCalculator: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Other Zakat Assets Toggle */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-sm font-semibold">🔄 {t("zakat.otherZakatAssets")}</CardTitle>
+                <p className="text-xs text-muted-foreground mt-1">{t("zakat.enableOtherAssets")}</p>
+              </div>
+              <Switch checked={showOtherZakat} onCheckedChange={setShowOtherZakat} />
+            </div>
+          </CardHeader>
+          {showOtherZakat && (
+            <CardContent className="space-y-6 pt-0">
+              {/* Agricultural Zakat */}
+              <div className="space-y-3 p-3 rounded-lg bg-muted/50">
+                <p className="text-sm font-semibold">{t("zakat.agriculture")}</p>
+                <div>
+                  <Label className="text-xs">{t("zakat.cropValue")}</Label>
+                  <Input
+                    type="number"
+                    placeholder={t("zakat.enterAmount")}
+                    value={cropValue}
+                    onChange={(e) => setCropValue(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">{t("zakat.irrigationType")}</Label>
+                  <Select value={irrigationType} onValueChange={(v: "rainfed" | "irrigated") => setIrrigationType(v)}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="rainfed">{t("zakat.rainfed")}</SelectItem>
+                      <SelectItem value="irrigated">{t("zakat.irrigated")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {cropValue && parseFloat(cropValue) > 0 && (
+                  <div className="text-sm font-medium text-primary">
+                    Zakat: {formatCurrency(parseFloat(cropValue) * (irrigationType === "rainfed" ? 0.10 : 0.05))}
+                  </div>
+                )}
+                <p className="text-[10px] text-muted-foreground">{t("zakat.agriZakatNote")}</p>
+              </div>
+
+              {/* Livestock Zakat */}
+              <div className="space-y-3 p-3 rounded-lg bg-muted/50">
+                <p className="text-sm font-semibold">{t("zakat.livestock")}</p>
+                
+                {/* Goats/Sheep */}
+                <div>
+                  <Label className="text-xs">{t("zakat.goatCount")}</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={goatCount}
+                    onChange={(e) => setGoatCount(e.target.value)}
+                    className="mt-1"
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1">{t("zakat.goatNisab")}</p>
+                  {parseInt(goatCount) >= 40 && (
+                    <p className="text-xs font-medium text-primary mt-1">{getGoatZakatText(parseInt(goatCount))}</p>
+                  )}
+                  <div className="text-[10px] text-muted-foreground mt-1 space-y-0.5">
+                    <p>{t("zakat.goat40")}</p>
+                    <p>{t("zakat.goat121")}</p>
+                    <p>{t("zakat.goat201")}</p>
+                    <p>{t("zakat.goat400")}</p>
+                  </div>
+                </div>
+
+                {/* Cows/Buffalo */}
+                <div className="pt-2 border-t border-border">
+                  <Label className="text-xs">{t("zakat.cowCount")}</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={cowCount}
+                    onChange={(e) => setCowCount(e.target.value)}
+                    className="mt-1"
+                  />
+                  {parseInt(cowCount) >= 30 && (
+                    <p className="text-xs font-medium text-primary mt-1">{getCowZakatText(parseInt(cowCount))}</p>
+                  )}
+                  <div className="text-[10px] text-muted-foreground mt-1 space-y-0.5">
+                    <p>{t("zakat.cow30")}</p>
+                    <p>{t("zakat.cow40")}</p>
+                    <p>{t("zakat.cow60")}</p>
+                  </div>
+                </div>
+
+                {/* Camels */}
+                <div className="pt-2 border-t border-border">
+                  <Label className="text-xs">{t("zakat.camelCount")}</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={camelCount}
+                    onChange={(e) => setCamelCount(e.target.value)}
+                    className="mt-1"
+                  />
+                  {parseInt(camelCount) >= 5 && (
+                    <p className="text-xs font-medium text-primary mt-1">{getCamelZakatText(parseInt(camelCount))}</p>
+                  )}
+                  <div className="text-[10px] text-muted-foreground mt-1 space-y-0.5">
+                    <p>{t("zakat.camel5")}</p>
+                    <p>{t("zakat.camel10")}</p>
+                    <p>{t("zakat.camel25")}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Business & Rental */}
+              <div className="space-y-3 p-3 rounded-lg bg-muted/50">
+                <p className="text-sm font-semibold">{t("zakat.businessInventory")}</p>
+                <div>
+                  <Label className="text-xs">{t("zakat.businessValue")}</Label>
+                  <Input
+                    type="number"
+                    placeholder={t("zakat.enterAmount")}
+                    value={businessInventory}
+                    onChange={(e) => setBusinessInventory(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">{t("zakat.rentalValue")}</Label>
+                  <Input
+                    type="number"
+                    placeholder={t("zakat.enterAmount")}
+                    value={rentalIncome}
+                    onChange={(e) => setRentalIncome(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground">{t("zakat.businessRentalNote")}</p>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+
         {/* Calculate Button */}
         <Button onClick={calculateZakat} className="w-full h-12 text-base font-semibold">
           <Calculator className="w-5 h-5 mr-2" />
