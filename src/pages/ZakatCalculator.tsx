@@ -1220,6 +1220,69 @@ const ZakatCalculator: React.FC = () => {
           <p>• {t("zakat.zakatRate")}</p>
           <p className="pt-2 text-[10px]">{t("zakat.silverNisabNote")}</p>
         </div>
+
+        {/* Quran & Hadith References */}
+        <Card className="border-primary/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold">{t("zakat.references")}</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <Accordion type="multiple" className="w-full">
+              <AccordionItem value="general">
+                <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refGeneral")}</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2 text-xs text-muted-foreground">
+                    <p><strong>Surah Al-Baqarah 2:43</strong> — "And establish prayer and give Zakah and bow with those who bow [in worship]."</p>
+                    <p><strong>Surah At-Tawbah 9:103</strong> — "Take from their wealth a charity by which you purify them and cause them increase."</p>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="goldsilver">
+                <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refGoldSilver")}</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2 text-xs text-muted-foreground">
+                    <p><strong>Surah At-Tawbah 9:34</strong> — "And those who hoard gold and silver and spend it not in the way of Allah — give them tidings of a painful punishment."</p>
+                    <p><strong>Sahih Muslim 979</strong> — The Prophet ﷺ said: "There is no owner of gold or silver who does not pay Zakat on it, except that plates of fire will be heated for him on the Day of Judgment."</p>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="wealth">
+                <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refWealth")}</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2 text-xs text-muted-foreground">
+                    <p><strong>Surah Al-Baqarah 2:267</strong> — "O you who have believed, spend from the good things which you have earned and from that which We have produced for you from the earth."</p>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="agriculture">
+                <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refAgriculture")}</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2 text-xs text-muted-foreground">
+                    <p><strong>Surah Al-An'am 6:141</strong> — "...and give its due [Zakah] on the day of its harvest."</p>
+                    <p><strong>Sahih Bukhari 1483</strong> — The Prophet ﷺ said: "On that which is watered by rain or springs, one-tenth (10%). On that which is watered by irrigation, half of one-tenth (5%)."</p>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="livestock">
+                <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refLivestock")}</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2 text-xs text-muted-foreground">
+                    <p><strong>Sahih Bukhari 1454</strong> — Abu Bakr (RA) narrated the detailed zakat rates on camels, cattle, and sheep as instructed by the Prophet ﷺ.</p>
+                    <p><strong>Abu Dawud 1572</strong> — Detailed nisab and zakat amounts for livestock including sheep, cattle, and camels.</p>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="trade">
+                <AccordionTrigger className="text-xs font-medium py-2">{t("zakat.refTrade")}</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2 text-xs text-muted-foreground">
+                    <p><strong>Abu Dawud 1562</strong> — Samurah ibn Jundub said: "The Prophet ﷺ used to order us to give Sadaqah (Zakat) from what we prepared for trade."</p>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
