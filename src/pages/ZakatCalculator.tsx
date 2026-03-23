@@ -383,18 +383,53 @@ const ZakatCalculator: React.FC = () => {
     }, 0);
   };
 
+  const calculateAgriZakat = () => {
+    const crop = parseFloat(cropValue) || 0;
+    if (crop <= 0) return 0;
+    return crop * (irrigationType === "rainfed" ? 0.10 : 0.05);
+  };
+
+  const getGoatZakatText = (count: number): string => {
+    if (count < 40) return "";
+    if (count <= 120) return "→ 1 goat/sheep";
+    if (count <= 200) return "→ 2 goats/sheep";
+    if (count <= 399) return "→ 3 goats/sheep";
+    return `→ ${Math.floor(count / 100)} goats/sheep`;
+  };
+
+  const getCowZakatText = (count: number): string => {
+    if (count < 30) return "";
+    if (count <= 39) return "→ 1 calf (1 yr)";
+    if (count <= 59) return "→ 1 cow (2 yr)";
+    return "→ 2 calves (1 yr each)";
+  };
+
+  const getCamelZakatText = (count: number): string => {
+    if (count < 5) return "";
+    if (count <= 9) return "→ 1 sheep/goat";
+    if (count <= 14) return "→ 2 sheep/goats";
+    if (count <= 19) return "→ 3 sheep/goats";
+    if (count <= 24) return "→ 4 sheep/goats";
+    if (count <= 35) return "→ 1 she-camel (1 yr)";
+    return "→ See detailed nisab tables";
+  };
+
   const calculateZakat = () => {
     const goldInRupees = calculateGoldTotal();
     const silverInRupees = calculateSilverTotal();
     const cash = parseFloat(cashValue) || 0;
     const other = parseFloat(otherAssets) || 0;
     const debts = parseFloat(liabilities) || 0;
+    const business = showOtherZakat ? (parseFloat(businessInventory) || 0) : 0;
+    const rental = showOtherZakat ? (parseFloat(rentalIncome) || 0) : 0;
 
-    const totalAssets = goldInRupees + silverInRupees + cash + other;
+    const totalAssets = goldInRupees + silverInRupees + cash + other + business + rental;
     const netAssets = totalAssets - debts;
     const nisabValue = NISAB_SILVER_GRAMS * rates.silver;
     const isEligible = netAssets >= nisabValue;
-    const zakatDue = isEligible ? netAssets * ZAKAT_RATE : 0;
+    const zakatOnWealth = isEligible ? netAssets * ZAKAT_RATE : 0;
+    const agriZakat = showOtherZakat ? calculateAgriZakat() : 0;
+    const zakatDue = zakatOnWealth + agriZakat;
 
     setZakatResult({
       totalAssets: Math.round(totalAssets),
