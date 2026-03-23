@@ -578,61 +578,42 @@ const ZakatCalculator: React.FC = () => {
     const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
     if (Capacitor.isNativePlatform()) {
-      const hasStoragePermission = await ensureAndroidStoragePermission();
-      if (!hasStoragePermission) return;
-
       try {
         const base64Data = doc.output("datauristring").split(",")[1];
+        const historyItem: DownloadHistoryItem = {
+          id: Date.now().toString(),
+          fileName,
+          displayName,
+          date: dateStr,
+          zakatAmount: zakatResult.zakatDue,
+        };
 
-        const savedFile = await Filesystem.writeFile({
-          path: `Download/${fileName}`,
-          data: base64Data,
-          directory: Directory.ExternalStorage,
-          recursive: true,
-        });
-
-        addToHistory(
-          {
-            id: Date.now().toString(),
-            fileName,
-            displayName,
-            date: dateStr,
-            zakatAmount: zakatResult.zakatDue,
-            uri: savedFile.uri,
-          },
-          base64Data,
-        );
+        await addToHistory(historyItem, base64Data);
 
         toast({
           title: "✅ PDF Saved",
           description: `Opened in app as "${displayName}"`,
         });
         openPdfInAppViewer(base64Data, displayName);
-      } catch (storageErr: any) {
-        console.warn("ExternalStorage failed, trying Cache fallback:", storageErr);
 
+        // Also try saving to public Downloads (optional, best-effort)
         try {
-          const base64Data = doc.output("datauristring").split(",")[1];
-          const savedFile = await Filesystem.writeFile({
-            path: fileName,
+          await Filesystem.writeFile({
+            path: `Download/${fileName}`,
             data: base64Data,
-            directory: Directory.Cache,
+            directory: Directory.ExternalStorage,
+            recursive: true,
           });
-
-          addToHistory(
-            {
-              id: Date.now().toString(),
-              fileName,
-              displayName,
-              date: dateStr,
-              zakatAmount: zakatResult.zakatDue,
-              uri: savedFile.uri,
-            },
-            base64Data,
-          );
-
-          toast({
-            title: "✅ PDF Ready",
+        } catch {
+          // Public copy failed - that's fine, internal copy is saved
+        }
+      } catch (err: any) {
+        console.error("PDF save error:", err);
+        toast({
+          title: "❌ PDF save failed",
+          description: "Please try again.",
+        });
+      }
             description: "Opened in app viewer",
           });
           openPdfInAppViewer(base64Data, displayName);
