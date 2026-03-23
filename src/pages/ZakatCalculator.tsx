@@ -83,6 +83,16 @@ const ZakatCalculator: React.FC = () => {
   const [liabilities, setLiabilities] = useState("");
   const [userName, setUserName] = useState("");
   
+  // Other Zakat Assets state
+  const [showOtherZakat, setShowOtherZakat] = useState(false);
+  const [cropValue, setCropValue] = useState("");
+  const [irrigationType, setIrrigationType] = useState<"rainfed" | "irrigated">("rainfed");
+  const [goatCount, setGoatCount] = useState("");
+  const [cowCount, setCowCount] = useState("");
+  const [camelCount, setCamelCount] = useState("");
+  const [businessInventory, setBusinessInventory] = useState("");
+  const [rentalIncome, setRentalIncome] = useState("");
+  
   const [storagePermission, setStoragePermission] = useState<"unknown" | "granted" | "denied">("unknown");
 
   // Download history
