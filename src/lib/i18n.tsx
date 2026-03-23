@@ -286,7 +286,7 @@ const T: Translations = {
   "donate.razorpayDesc": { en: "Razorpay payment gateway support with automatic donation tracking, multiple payment methods (UPI, Cards, Net Banking) & live donation stats.", ur: "Razorpay پیمنٹ گیٹ وے سپورٹ خودکار عطیات ٹریکنگ، متعدد ادائیگی طریقے (UPI، کارڈز، نیٹ بینکنگ) اور لائیو عطیات کے اعداد و شمار کے ساتھ۔", hi: "Razorpay पेमेंट गेटवे सपोर्ट ऑटोमैटिक डोनेशन ट्रैकिंग, कई पेमेंट तरीके (UPI, कार्ड, नेट बैंकिंग) और लाइव डोनेशन स्टैट्स।" },
 
   // Zakat Calculator
-  "zakat.goldSilverRates": { en: "Chennai Gold & Silver Rates", ur: "چنئی سونے اور چاندی کی قیمتیں", hi: "चेन्नई सोने और चांदी की दरें" },
+  "zakat.goldSilverRates": { en: "Gold & Silver Rates", ur: "سونے اور چاندی کی قیمتیں", hi: "सोने और चांदी की दरें" },
   "zakat.goldRate": { en: "Gold 22K Rate (₹/gm)", ur: "سونا 22K ریٹ (₹/گرام)", hi: "सोना 22K रेट (₹/ग्राम)" },
   "zakat.silverRate": { en: "Silver Rate (₹/gm)", ur: "چاندی ریٹ (₹/گرام)", hi: "चांदी रेट (₹/ग्राम)" },
   "zakat.gold": { en: "Gold", ur: "سونا", hi: "सोना" },
