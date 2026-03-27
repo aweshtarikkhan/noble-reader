@@ -851,7 +851,7 @@ const IslamicKnowledge: React.FC = () => {
 
       {/* Floating Audio Player */}
       {playingLecture && (
-        <div className="fixed bottom-16 left-0 right-0 z-30 px-4 pb-2">
+        <div className="fixed bottom-20 left-0 right-0 z-30 px-3 pb-1">
           <div className="bg-card border border-border rounded-2xl px-4 py-3 shadow-lg">
             <div className="flex items-center gap-3">
               <button onClick={() => playLecture(playingLecture)} className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shrink-0 active:scale-90 transition-all duration-150">
@@ -863,30 +863,52 @@ const IslamicKnowledge: React.FC = () => {
               </div>
               <button onClick={() => { 
                 if (playingLecture && playingSeriesId) saveAudioPosition(playingLecture.id, playingSeriesId, playingLecture.title, playingLecture.titleUr);
-                playRequestRef.current += 1; audioRef.current?.pause(); audioRef.current = null; setPlayingLecture(null); setIsPlaying(false); 
+                playRequestRef.current += 1; audioRef.current?.pause(); audioRef.current = null; setPlayingLecture(null); setIsPlaying(false); setCurrentTime(0); setDuration(0);
               }} className="text-[10px] text-muted-foreground px-2 py-1 rounded-lg">✕</button>
             </div>
-            {/* Speed Controls */}
-            <div className="flex items-center gap-1.5 mt-2 justify-center">
-              <span className="text-[10px] text-muted-foreground mr-1">{isUrdu ? "رفتار:" : "Speed:"}</span>
-              {[1, 1.25, 1.5, 2].map((speed) => (
-                <button
-                  key={speed}
-                  onClick={() => {
-                    if (audioRef.current) {
-                      audioRef.current.playbackRate = speed;
-                    }
-                    setPlaybackRate(speed);
-                  }}
-                  className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-all duration-150 active:scale-90 ${
-                    playbackRate === speed
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted/50 text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  {speed}x
-                </button>
-              ))}
+
+            {/* Seek Bar */}
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-[9px] text-muted-foreground w-8 text-right tabular-nums">{formatTime(currentTime)}</span>
+              <div className="flex-1 relative">
+                <input
+                  type="range"
+                  min={0}
+                  max={duration || 1}
+                  step={0.5}
+                  value={currentTime}
+                  onChange={handleSeek}
+                  className="w-full h-1.5 rounded-full appearance-none bg-muted cursor-pointer accent-primary [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary"
+                />
+              </div>
+              <span className="text-[9px] text-muted-foreground w-8 tabular-nums">{formatTime(duration)}</span>
+            </div>
+
+            {/* Skip & Speed Controls */}
+            <div className="flex items-center justify-between mt-1.5">
+              <div className="flex items-center gap-2">
+                <button onClick={skipBackward} className="text-[9px] text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded active:scale-90 transition-all">-10s</button>
+                <button onClick={skipForward} className="text-[9px] text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded active:scale-90 transition-all">+10s</button>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-[9px] text-muted-foreground mr-0.5">{isUrdu ? "رفتار:" : "Speed:"}</span>
+                {[1, 1.25, 1.5, 2].map((speed) => (
+                  <button
+                    key={speed}
+                    onClick={() => {
+                      if (audioRef.current) audioRef.current.playbackRate = speed;
+                      setPlaybackRate(speed);
+                    }}
+                    className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-all duration-150 active:scale-90 ${
+                      playbackRate === speed
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {speed}x
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
