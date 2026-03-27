@@ -40,7 +40,14 @@ const ReadQuran: React.FC = () => {
   const imageStyle: QuranStyle = readingStyle === "text" ? "indopak" : readingStyle;
 
   // Complete reading state
-  const [pages, setPages] = useState<number[]>([]);
+  const [pages, setPages] = useState<number[]>(() => {
+    if (isContinue && readingStyle !== "text") {
+      const start = getBookmark("complete", readingStyle);
+      const tp = readingStyle === "indopak" ? TOTAL_PAGES_INDIAN : TOTAL_PAGES;
+      return Array.from({ length: 5 }, (_, i) => start + i).filter((p) => p <= tp);
+    }
+    return [];
+  });
   const [jumpTo, setJumpTo] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
