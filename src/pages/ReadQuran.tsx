@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { QuranAPI } from "@/lib/quranApi";
 import { TOTAL_PAGES, JUZ_DATA, SURAHS } from "@/data/surahs";
 import { TOTAL_PAGES_INDIAN, getIndianPageImage, INDIAN_JUZ_DATA } from "@/data/indianMushaf";
