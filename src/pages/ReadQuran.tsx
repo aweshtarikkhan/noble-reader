@@ -28,12 +28,14 @@ const setBookmark = (mode: ReadMode, style: string, page: number) => {
 
 const ReadQuran: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useI18n();
-  const [step, setStep] = useState<WizardStep>("mode");
-  const [mode, setMode] = useState<ReadMode>("complete");
+  const isContinue = searchParams.get("continue") === "1";
   const [readingStyle, setReadingStyle] = useState<ReadingStyle>(
     () => (localStorage.getItem("read-quran-style-full") as ReadingStyle) || "indopak"
   );
+  const [step, setStep] = useState<WizardStep>(isContinue ? "reading" : "mode");
+  const [mode, setMode] = useState<ReadMode>("complete");
 
   const imageStyle: QuranStyle = readingStyle === "text" ? "indopak" : readingStyle;
 
