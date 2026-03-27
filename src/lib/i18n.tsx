@@ -11,6 +11,7 @@ const T: Translations = {
   "nav.knowledge": { en: "Knowledge", ur: "علم", hi: "ज्ञान" },
   "nav.continue": { en: "Continue", ur: "جاری", hi: "जारी" },
   "nav.translation": { en: "Tarjuma", ur: "ترجمہ", hi: "तर्जुमा" },
+  "nav.continueReading": { en: "Continue", ur: "جاری رکھیں", hi: "जारी रखें" },
   "nav.namaz": { en: "Namaz", ur: "نماز", hi: "नमाज़" },
 
   // Header
