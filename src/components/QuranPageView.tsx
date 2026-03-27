@@ -29,7 +29,7 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
   const [cachedSrc, setCachedSrc] = useState<string | null>(null);
   const [bookmarked, setBookmarked] = useState(false);
   const [showLongPressMenu, setShowLongPressMenu] = useState(false);
-  const { zoom, setZoom, onTouchStart: pinchStart, onTouchMove: pinchMove, onTouchEnd: pinchEnd } = usePinchZoom();
+  const { zoom, setZoom, origin, onTouchStart: pinchStart, onTouchMove: pinchMove, onTouchEnd: pinchEnd } = usePinchZoom(1, 1, 5);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggered = useRef(false);
 
