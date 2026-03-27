@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, BookOpen, Languages, Clock, GraduationCap, Globe } from "lucide-react";
+import { Home, BookOpen, Languages, GraduationCap, Globe, BookMarked } from "lucide-react";
 import ExitDialog from "./ExitDialog";
 import { useBackHandler } from "@/hooks/useBackHandler";
 import { useI18n } from "@/lib/i18n";
@@ -17,7 +17,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { path: "/read-quran", icon: BookOpen, label: t("nav.quran") },
     { path: "/islamic-knowledge", icon: GraduationCap, label: t("nav.knowledge") },
     { path: "/translation", icon: Languages, label: t("nav.translation") },
-    { path: "/prayer-times", icon: Clock, label: t("nav.namaz") },
+    { path: "/read-quran", icon: BookMarked, label: t("nav.continueReading") || "Continue" },
   ];
 
   const getTitle = () => {

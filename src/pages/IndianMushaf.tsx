@@ -51,7 +51,7 @@ const IndianMushaf: React.FC = () => {
       <div className="rounded-2xl overflow-auto border border-gold/10 shadow-gold bg-card min-h-[400px] flex items-center justify-center">
         {imgError ? (
           <div className="text-center py-12 px-4"><p className="text-muted-foreground text-sm mb-2">{t("indianMushaf.failedLoad")}</p><p className="text-muted-foreground text-[10px] mb-3">{t("indianMushaf.serverUnavailable")}</p><button onClick={() => { setImgError(false); setUseFallback(false); }} className="text-gold text-sm underline">{t("common.retry")}</button></div>
-        ) : <img src={imgSrc} alt={`Indian Quran Page ${page}`} className="transition-transform duration-200" style={{ width: `${zoom * 100}%`, maxWidth: "none", transformOrigin: "top center" }} onError={handleImgError} loading="lazy" />}
+        ) : <img src={imgSrc} alt={`Indian Quran Page ${page}`} className="transition-transform duration-200" style={{ transform: `scale(${zoom})`, transformOrigin: "center center", width: "100%", maxWidth: "none" }} onError={handleImgError} loading="lazy" />}
       </div>
       <div className="flex items-center justify-between mt-4 gap-3">
         <button onClick={() => goPage(page - 1)} disabled={page <= 1} className="flex-1 py-3 rounded-xl bg-card border border-gold/10 text-foreground text-sm font-medium transition-smooth hover:border-gold/30 disabled:opacity-30">{t("common.prev")}</button>
