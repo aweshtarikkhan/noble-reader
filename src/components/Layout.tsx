@@ -17,7 +17,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { path: "/read-quran", icon: BookOpen, label: t("nav.quran") },
     { path: "/islamic-knowledge", icon: GraduationCap, label: t("nav.knowledge") },
     { path: "/translation", icon: Languages, label: t("nav.translation") },
-    { path: "/read-quran", icon: BookMarked, label: t("nav.continueReading") || "Continue" },
+    { path: "/read-quran?continue=1", icon: BookMarked, label: t("nav.continueReading") || "Continue" },
   ];
 
   const getTitle = () => {
@@ -104,8 +104,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className="flex items-center justify-around h-[64px]">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path ||
-                (item.path !== "/" && location.pathname.startsWith(item.path));
+            const basePath = item.path.split("?")[0];
+            const isActive = location.pathname === basePath ||
+                (basePath !== "/" && location.pathname.startsWith(basePath));
 
             return (
               <button

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { QuranAPI } from "@/lib/quranApi";
 import { TOTAL_PAGES, JUZ_DATA, SURAHS } from "@/data/surahs";
 import { TOTAL_PAGES_INDIAN, getIndianPageImage, INDIAN_JUZ_DATA } from "@/data/indianMushaf";
@@ -28,17 +28,26 @@ const setBookmark = (mode: ReadMode, style: string, page: number) => {
 
 const ReadQuran: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useI18n();
-  const [step, setStep] = useState<WizardStep>("mode");
-  const [mode, setMode] = useState<ReadMode>("complete");
+  const isContinue = searchParams.get("continue") === "1";
   const [readingStyle, setReadingStyle] = useState<ReadingStyle>(
     () => (localStorage.getItem("read-quran-style-full") as ReadingStyle) || "indopak"
   );
+  const [step, setStep] = useState<WizardStep>(isContinue ? "reading" : "mode");
+  const [mode, setMode] = useState<ReadMode>("complete");
 
   const imageStyle: QuranStyle = readingStyle === "text" ? "indopak" : readingStyle;
 
   // Complete reading state
-  const [pages, setPages] = useState<number[]>([]);
+  const [pages, setPages] = useState<number[]>(() => {
+    if (isContinue && readingStyle !== "text") {
+      const start = getBookmark("complete", readingStyle);
+      const tp = readingStyle === "indopak" ? TOTAL_PAGES_INDIAN : TOTAL_PAGES;
+      return Array.from({ length: 5 }, (_, i) => start + i).filter((p) => p <= tp);
+    }
+    return [];
+  });
   const [jumpTo, setJumpTo] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
