@@ -142,7 +142,12 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
             src={src}
             alt={`Page ${page}`}
             className="transition-transform duration-100"
-            style={{ width: `${zoom * 100}%`, maxWidth: "none", transformOrigin: "top center" }}
+            style={{
+              transform: `scale(${zoom})`,
+              transformOrigin: `${origin.x}% ${origin.y}%`,
+              width: "100%",
+              maxWidth: "none",
+            }}
             loading="lazy"
             onError={handleError}
             onLoad={handleLoad}
