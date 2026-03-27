@@ -1,6 +1,6 @@
 // Islamic Lectures - Archive.org audio sources for in-app streaming
 import { RIYAD_LECTURES } from "./riyadSaliheen";
-import { QASAS_ANBIYA_LECTURES } from "./qasasAmbiyaAudio";
+import { MENK_PROPHETS_LECTURES, SAHABA_STORIES_LECTURES } from "./qasasAmbiyaAudio";
 import { DAILY_NASEEHAH_LECTURES } from "./dailyNaseehah";
 
 export interface LectureSeries {
