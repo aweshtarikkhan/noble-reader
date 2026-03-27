@@ -98,6 +98,47 @@ const IslamicKnowledge: React.FC = () => {
   const [playingSeriesId, setPlayingSeriesId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playRequestRef = useRef(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+
+  // Update current time periodically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (audioRef.current && isPlaying) {
+        setCurrentTime(audioRef.current.currentTime);
+        if (audioRef.current.duration && !isNaN(audioRef.current.duration)) {
+          setDuration(audioRef.current.duration);
+        }
+      }
+    }, 500);
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  const formatTime = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${String(s).padStart(2, "0")}`;
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseFloat(e.target.value);
+    if (audioRef.current) {
+      audioRef.current.currentTime = val;
+      setCurrentTime(val);
+    }
+  };
+
+  const skipForward = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = Math.min(audioRef.current.currentTime + 10, duration);
+    }
+  };
+
+  const skipBackward = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = Math.max(audioRef.current.currentTime - 10, 0);
+    }
+  };
 
   // Resume play state
   interface LastPlayed { lectureId: string; seriesId: string; currentTime: number; title: string; titleUr: string; }
