@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, BookOpen, Languages, Clock, GraduationCap, Globe } from "lucide-react";
+import { Home, BookOpen, Languages, GraduationCap, Globe, BookMarked } from "lucide-react";
 import ExitDialog from "./ExitDialog";
 import { useBackHandler } from "@/hooks/useBackHandler";
 import { useI18n } from "@/lib/i18n";
