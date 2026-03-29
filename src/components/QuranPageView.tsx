@@ -58,8 +58,10 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
   }, [page, style, mode, context, paraNum, surahNum]);
 
   const handleError = () => {
-    if ((style === "indopak" || style === "hifz") && !useFallback) {
-      setUseFallback(true);
+    if (style === "hifz" && fallbackLevel < 2) {
+      setFallbackLevel((l) => l + 1);
+    } else if (style === "indopak" && fallbackLevel < 1) {
+      setFallbackLevel(1);
     } else {
       setError(true);
     }
