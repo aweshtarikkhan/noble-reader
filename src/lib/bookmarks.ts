@@ -42,7 +42,7 @@ export function removeBookmark(id: string): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks));
 }
 
-export function isPageBookmarked(page: number, style: "indopak" | "saudi", mode: "complete" | "para" | "surah"): boolean {
+export function isPageBookmarked(page: number, style: "indopak" | "saudi" | "hifz", mode: "complete" | "para" | "surah"): boolean {
   return getBookmarks().some((b) => b.page === page && b.style === style && b.mode === mode);
 }
 
