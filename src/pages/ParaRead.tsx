@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { JUZ_DATA } from "@/data/surahs";
 import { INDIAN_JUZ_DATA, getIndianPageImage } from "@/data/indianMushaf";
+import { getHifzPageImage, getHifzPageImageFallback } from "@/data/hifzMushaf";
 import { QuranAPI } from "@/lib/quranApi";
 import { getCachedPage, setCachedPage, downloadImageAsDataUrl } from "@/lib/quranCache";
 import { getIndianPageImageFallback } from "@/data/indianMushaf";
@@ -63,6 +64,7 @@ const ParaRead: React.FC = () => {
 
   const getImgUrl = (p: number) => {
     if (imageStyle === "indopak") return getIndianPageImage(p);
+    if (imageStyle === "hifz") return getHifzPageImage(p);
     return QuranAPI.getMushafPageImage(p);
   };
 
@@ -188,10 +190,13 @@ const ParaPagesLoader: React.FC<{ pages: number[]; style: QuranStyle; getImgUrl:
       const key = getCacheKey(style, pages[i]);
       const existing = await getCachedPage(key);
       if (!existing) {
-        const primaryUrl = style === "indopak" ? getIndianPageImage(pages[i]) : QuranAPI.getMushafPageImage(pages[i]);
+        const primaryUrl = style === "indopak" ? getIndianPageImage(pages[i]) : (style === "hifz" ? getHifzPageImage(pages[i]) : QuranAPI.getMushafPageImage(pages[i]));
         let dataUrl = await downloadImageAsDataUrl(primaryUrl);
         if (!dataUrl && style === "indopak") {
           dataUrl = await downloadImageAsDataUrl(getIndianPageImageFallback(pages[i]));
+        }
+        if (!dataUrl && style === "hifz") {
+          dataUrl = await downloadImageAsDataUrl(getHifzPageImageFallback(pages[i]));
         }
         if (!dataUrl && style === "saudi") {
           for (const fb of QuranAPI.getMushafPageImageFallbacks(pages[i])) {

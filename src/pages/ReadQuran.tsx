@@ -3,8 +3,10 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { QuranAPI } from "@/lib/quranApi";
 import { TOTAL_PAGES, JUZ_DATA, SURAHS } from "@/data/surahs";
 import { TOTAL_PAGES_INDIAN, getIndianPageImage, INDIAN_JUZ_DATA } from "@/data/indianMushaf";
+import { getHifzPageImage, TOTAL_PAGES_HIFZ } from "@/data/hifzMushaf";
 import { getCachedCount, getCachedPage, setCachedPage, downloadImageAsDataUrl } from "@/lib/quranCache";
 import { getIndianPageImageFallback } from "@/data/indianMushaf";
+import { getHifzPageImageFallback } from "@/data/hifzMushaf";
 import QuranPageView, { type QuranStyle, getCacheKey } from "@/components/QuranPageView";
 import { BookOpen, BookMarked, Bookmark, ChevronRight } from "lucide-react";
 import CompleteTextReader from "@/components/CompleteTextReader";
@@ -61,7 +63,7 @@ const ReadQuran: React.FC = () => {
   // Surah/Para search
   const [surahSearch, setSurahSearch] = useState("");
 
-  const totalPages = imageStyle === "indopak" ? TOTAL_PAGES_INDIAN : TOTAL_PAGES;
+  const totalPages = imageStyle === "indopak" ? TOTAL_PAGES_INDIAN : (imageStyle === "hifz" ? TOTAL_PAGES_HIFZ : TOTAL_PAGES);
   const juzData = imageStyle === "indopak" ? INDIAN_JUZ_DATA : JUZ_DATA;
 
   const currentBookmark = getBookmark(mode, readingStyle);
@@ -157,6 +159,7 @@ const ReadQuran: React.FC = () => {
 
   const getImgUrl = (p: number) => {
     if (imageStyle === "indopak") return getIndianPageImage(p);
+    if (imageStyle === "hifz") return getHifzPageImage(p);
     return QuranAPI.getMushafPageImage(p);
   };
 
@@ -170,9 +173,10 @@ const ReadQuran: React.FC = () => {
       const key = getCacheKey(imageStyle, i);
       const existing = await getCachedPage(key);
       if (existing) { setDownloadProgress(i); continue; }
-      const primaryUrl = imageStyle === "indopak" ? getIndianPageImage(i) : QuranAPI.getMushafPageImage(i);
+      const primaryUrl = imageStyle === "indopak" ? getIndianPageImage(i) : (imageStyle === "hifz" ? getHifzPageImage(i) : QuranAPI.getMushafPageImage(i));
       let dataUrl = await downloadImageAsDataUrl(primaryUrl);
       if (!dataUrl && imageStyle === "indopak") dataUrl = await downloadImageAsDataUrl(getIndianPageImageFallback(i));
+      if (!dataUrl && imageStyle === "hifz") dataUrl = await downloadImageAsDataUrl(getHifzPageImageFallback(i));
       if (!dataUrl && imageStyle === "saudi") {
         for (const fb of QuranAPI.getMushafPageImageFallbacks(i)) { dataUrl = await downloadImageAsDataUrl(fb); if (dataUrl) break; }
       }

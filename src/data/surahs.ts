@@ -159,9 +159,10 @@ export const INDIAN_SURAH_START_PAGES: Record<number, number> = {
   111:557,112:558,113:558,114:559,
 };
 
-export function getSurahPageRange(surahNum: number, style: "saudi" | "indopak"): { startPage: number; endPage: number } {
-  const pages = style === "indopak" ? INDIAN_SURAH_START_PAGES : SURAH_START_PAGES;
-  const totalPages = style === "indopak" ? 559 : 604;
+export function getSurahPageRange(surahNum: number, style: "saudi" | "indopak" | "hifz"): { startPage: number; endPage: number } {
+  const effectiveStyle = style === "hifz" ? "saudi" : style;
+  const pages = effectiveStyle === "indopak" ? INDIAN_SURAH_START_PAGES : SURAH_START_PAGES;
+  const totalPages = effectiveStyle === "indopak" ? 559 : 604;
   const start = pages[surahNum] || 1;
   const end = surahNum < 114 ? (pages[surahNum + 1] || totalPages) - 1 : totalPages;
   return { startPage: start, endPage: Math.max(start, end) };

@@ -1,12 +1,13 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { getCachedPage, cacheImageFromElement } from "@/lib/quranCache";
 import { getIndianPageImageFallback } from "@/data/indianMushaf";
+import { getHifzPageImageFallback } from "@/data/hifzMushaf";
 import { usePinchZoom } from "@/hooks/usePinchZoom";
 import { isPageBookmarked, toggleBookmark } from "@/lib/bookmarks";
 import { Bookmark } from "lucide-react";
 import { toast } from "sonner";
 
-export type QuranStyle = "indopak" | "saudi";
+export type QuranStyle = "indopak" | "saudi" | "hifz";
 
 export const getCacheKey = (style: QuranStyle, page: number) => `${style}_page_${page}`;
 
@@ -57,7 +58,7 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
   }, [page, style, mode, context, paraNum, surahNum]);
 
   const handleError = () => {
-    if (style === "indopak" && !useFallback) {
+    if ((style === "indopak" || style === "hifz") && !useFallback) {
       setUseFallback(true);
     } else {
       setError(true);
@@ -102,7 +103,14 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
     setShowLongPressMenu(true);
   };
 
-  const networkSrc = style === "indopak" && useFallback ? getIndianPageImageFallback(page) : getImgUrl(page);
+  const getNetworkSrc = () => {
+    if (useFallback) {
+      if (style === "indopak") return getIndianPageImageFallback(page);
+      if (style === "hifz") return getHifzPageImageFallback(page);
+    }
+    return getImgUrl(page);
+  };
+  const networkSrc = getNetworkSrc();
   const src = cachedSrc || networkSrc;
 
   return (

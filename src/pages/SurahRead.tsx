@@ -3,12 +3,15 @@ import { useParams, useNavigate } from "react-router-dom";
 import { SURAHS, getSurahPageRange } from "@/data/surahs";
 import { QuranAPI } from "@/lib/quranApi";
 import { getIndianPageImage } from "@/data/indianMushaf";
+import { getHifzPageImage } from "@/data/hifzMushaf";
 import { getCachedPage, setCachedPage, downloadImageAsDataUrl } from "@/lib/quranCache";
 import { getIndianPageImageFallback } from "@/data/indianMushaf";
+import { getHifzPageImageFallback } from "@/data/hifzMushaf";
 import { Loader2, CheckCircle2, HardDriveDownload, Play, Pause } from "lucide-react";
 import QuranPageView, { type QuranStyle, getCacheKey } from "@/components/QuranPageView";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import StyleSwitcher, { type ReadingStyle } from "@/components/StyleSwitcher";
+import { QURAN_RECITERS, getAyahAudioUrl, DEFAULT_RECITER } from "@/data/quranReciters";
 
 const PAGES_PER_BATCH = 4;
 const BISMILLAH = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
@@ -19,11 +22,13 @@ interface Ayah {
   number: number; // global verse number
 }
 
-const useAyahAudio = (ayahs: Ayah[]) => {
+const useAyahAudio = (ayahs: Ayah[], reciterId: string) => {
   const [playingVerse, setPlayingVerse] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ayahsRef = useRef(ayahs);
+  const reciterRef = useRef(reciterId);
   ayahsRef.current = ayahs;
+  reciterRef.current = reciterId;
 
   const stopAudio = useCallback(() => {
     audioRef.current?.pause();
@@ -36,9 +41,8 @@ const useAyahAudio = (ayahs: Ayah[]) => {
       audioRef.current.pause();
       audioRef.current = null;
     }
-    const audio = new Audio(`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalNumber}.mp3`);
+    const audio = new Audio(getAyahAudioUrl(reciterRef.current, globalNumber));
     audio.onended = () => {
-      // Find next ayah and auto-play
       const currentIdx = ayahsRef.current.findIndex(a => a.number === globalNumber);
       if (currentIdx >= 0 && currentIdx < ayahsRef.current.length - 1) {
         const nextAyah = ayahsRef.current[currentIdx + 1];
@@ -62,6 +66,11 @@ const useAyahAudio = (ayahs: Ayah[]) => {
     playFromVerse(globalNumber);
   }, [playingVerse, stopAudio, playFromVerse]);
 
+  // Stop audio when reciter changes
+  useEffect(() => {
+    stopAudio();
+  }, [reciterId, stopAudio]);
+
   useEffect(() => {
     return () => { audioRef.current?.pause(); };
   }, []);
@@ -69,9 +78,25 @@ const useAyahAudio = (ayahs: Ayah[]) => {
   return { playingVerse, toggleAudio };
 };
 
+// Reciter selector
+const ReciterSelector: React.FC<{ reciterId: string; onChange: (id: string) => void }> = ({ reciterId, onChange }) => (
+  <div className="mb-4 animate-fade-in">
+    <label className="text-xs text-muted-foreground mb-1 block">🎙️ Reciter</label>
+    <select
+      value={reciterId}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full px-3 py-2.5 rounded-xl bg-card border border-primary/10 text-foreground text-sm focus:outline-none focus:border-primary/40"
+    >
+      {QURAN_RECITERS.map((r) => (
+        <option key={r.id} value={r.id}>{r.name} - {r.nameAr}</option>
+      ))}
+    </select>
+  </div>
+);
+
 // Text ayahs with audio buttons
-const TextAyahsView: React.FC<{ ayahs: Ayah[]; surahNum: number }> = ({ ayahs, surahNum }) => {
-  const { playingVerse, toggleAudio } = useAyahAudio(ayahs);
+const TextAyahsView: React.FC<{ ayahs: Ayah[]; surahNum: number; reciterId: string }> = ({ ayahs, surahNum, reciterId }) => {
+  const { playingVerse, toggleAudio } = useAyahAudio(ayahs, reciterId);
 
   return (
     <div className="animate-fade-in">
@@ -147,10 +172,13 @@ const SurahPagesLoader: React.FC<{ pages: number[]; style: QuranStyle; getImgUrl
       const key = getCacheKey(style, pages[i]);
       const existing = await getCachedPage(key);
       if (!existing) {
-        const primaryUrl = style === "indopak" ? getIndianPageImage(pages[i]) : QuranAPI.getMushafPageImage(pages[i]);
+        const primaryUrl = style === "indopak" ? getIndianPageImage(pages[i]) : (style === "hifz" ? getHifzPageImage(pages[i]) : QuranAPI.getMushafPageImage(pages[i]));
         let dataUrl = await downloadImageAsDataUrl(primaryUrl);
         if (!dataUrl && style === "indopak") {
           dataUrl = await downloadImageAsDataUrl(getIndianPageImageFallback(pages[i]));
+        }
+        if (!dataUrl && style === "hifz") {
+          dataUrl = await downloadImageAsDataUrl(getHifzPageImageFallback(pages[i]));
         }
         if (!dataUrl && style === "saudi") {
           for (const fb of QuranAPI.getMushafPageImageFallbacks(pages[i])) {
@@ -224,6 +252,10 @@ const SurahRead: React.FC = () => {
   );
   const imageStyle: QuranStyle = readingStyle === "text" ? "indopak" : readingStyle;
 
+  const [reciterId, setReciterId] = useState<string>(
+    () => localStorage.getItem("quran-reciter") || DEFAULT_RECITER
+  );
+
   const [ayahs, setAyahs] = useState<Ayah[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -246,11 +278,17 @@ const SurahRead: React.FC = () => {
     localStorage.setItem("read-quran-style-full", s);
   };
 
-  const { startPage, endPage } = getSurahPageRange(surahNum, imageStyle === "indopak" ? "indopak" : "saudi");
+  const handleReciterChange = (id: string) => {
+    setReciterId(id);
+    localStorage.setItem("quran-reciter", id);
+  };
+
+  const { startPage, endPage } = getSurahPageRange(surahNum, imageStyle);
   const pages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
   const getImgUrl = (p: number) => {
     if (imageStyle === "indopak") return getIndianPageImage(p);
+    if (imageStyle === "hifz") return getHifzPageImage(p);
     return QuranAPI.getMushafPageImage(p);
   };
 
@@ -266,6 +304,7 @@ const SurahRead: React.FC = () => {
 
       {readingStyle === "text" && (
         <>
+          <ReciterSelector reciterId={reciterId} onChange={handleReciterChange} />
           {loading && <LoadingSpinner />}
           {error && (
             <div className="text-center py-8">
@@ -274,7 +313,7 @@ const SurahRead: React.FC = () => {
             </div>
           )}
           {!loading && !error && (
-            <TextAyahsView ayahs={ayahs} surahNum={surahNum} />
+            <TextAyahsView ayahs={ayahs} surahNum={surahNum} reciterId={reciterId} />
           )}
         </>
       )}
