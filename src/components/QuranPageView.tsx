@@ -25,7 +25,7 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
   page, style, getImgUrl,
   mode = "complete", context = "Complete Quran", paraNum, surahNum,
 }) => {
-  const [useFallback, setUseFallback] = useState(false);
+  const [fallbackLevel, setFallbackLevel] = useState(0); // 0=primary, 1=fallback1, 2=fallback2
   const [error, setError] = useState(false);
   const [cachedSrc, setCachedSrc] = useState<string | null>(null);
   const [bookmarked, setBookmarked] = useState(false);
