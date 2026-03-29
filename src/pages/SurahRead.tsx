@@ -179,6 +179,7 @@ const SurahPagesLoader: React.FC<{ pages: number[]; style: QuranStyle; getImgUrl
         }
         if (!dataUrl && style === "hifz") {
           dataUrl = await downloadImageAsDataUrl(getHifzPageImageFallback(pages[i]));
+          if (!dataUrl) dataUrl = await downloadImageAsDataUrl(getHifzPageImageFallback2(pages[i]));
         }
         if (!dataUrl && style === "saudi") {
           for (const fb of QuranAPI.getMushafPageImageFallbacks(pages[i])) {
