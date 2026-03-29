@@ -78,9 +78,25 @@ const useAyahAudio = (ayahs: Ayah[], reciterId: string) => {
   return { playingVerse, toggleAudio };
 };
 
+// Reciter selector
+const ReciterSelector: React.FC<{ reciterId: string; onChange: (id: string) => void }> = ({ reciterId, onChange }) => (
+  <div className="mb-4 animate-fade-in">
+    <label className="text-xs text-muted-foreground mb-1 block">🎙️ Reciter</label>
+    <select
+      value={reciterId}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full px-3 py-2.5 rounded-xl bg-card border border-primary/10 text-foreground text-sm focus:outline-none focus:border-primary/40"
+    >
+      {QURAN_RECITERS.map((r) => (
+        <option key={r.id} value={r.id}>{r.name} - {r.nameAr}</option>
+      ))}
+    </select>
+  </div>
+);
+
 // Text ayahs with audio buttons
-const TextAyahsView: React.FC<{ ayahs: Ayah[]; surahNum: number }> = ({ ayahs, surahNum }) => {
-  const { playingVerse, toggleAudio } = useAyahAudio(ayahs);
+const TextAyahsView: React.FC<{ ayahs: Ayah[]; surahNum: number; reciterId: string }> = ({ ayahs, surahNum, reciterId }) => {
+  const { playingVerse, toggleAudio } = useAyahAudio(ayahs, reciterId);
 
   return (
     <div className="animate-fade-in">
