@@ -102,7 +102,17 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
     setShowLongPressMenu(true);
   };
 
-  const networkSrc = style === "indopak" && useFallback ? getIndianPageImageFallback(page) : getImgUrl(page);
+  const getNetworkSrc = () => {
+    if (useFallback) {
+      if (style === "indopak") return getIndianPageImageFallback(page);
+      if (style === "hifz") {
+        const { getHifzPageImageFallback } = require("@/data/hifzMushaf");
+        return getHifzPageImageFallback(page);
+      }
+    }
+    return getImgUrl(page);
+  };
+  const networkSrc = getNetworkSrc();
   const src = cachedSrc || networkSrc;
 
   return (

@@ -1,6 +1,6 @@
 import React from "react";
 
-export type ReadingStyle = "indopak" | "saudi" | "text";
+export type ReadingStyle = "indopak" | "saudi" | "hifz" | "text";
 
 interface StyleSwitcherProps {
   style: ReadingStyle;
@@ -9,9 +9,10 @@ interface StyleSwitcherProps {
 
 const StyleSwitcher: React.FC<StyleSwitcherProps> = ({ style, onChange }) => {
   const options: { key: ReadingStyle; label: string }[] = [
-    { key: "indopak", label: "🇮🇳 Indo-Pak (16 Line)" },
-    { key: "saudi", label: "🇸🇦 Saudi Style" },
-    { key: "text", label: "📝 Line by Line" },
+    { key: "indopak", label: "🇮🇳 Indo-Pak" },
+    { key: "saudi", label: "🇸🇦 Saudi" },
+    { key: "hifz", label: "🎨 Hifz Color" },
+    { key: "text", label: "📝 Text" },
   ];
 
   return (
@@ -20,7 +21,7 @@ const StyleSwitcher: React.FC<StyleSwitcherProps> = ({ style, onChange }) => {
         <button
           key={opt.key}
           onClick={() => onChange(opt.key)}
-          className={`flex-1 py-2 text-xs font-medium rounded-lg transition-smooth ${
+          className={`flex-1 py-2 text-[10px] sm:text-xs font-medium rounded-lg transition-smooth ${
             style === opt.key
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground"
