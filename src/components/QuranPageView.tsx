@@ -6,7 +6,7 @@ import { isPageBookmarked, toggleBookmark } from "@/lib/bookmarks";
 import { Bookmark } from "lucide-react";
 import { toast } from "sonner";
 
-export type QuranStyle = "indopak" | "saudi";
+export type QuranStyle = "indopak" | "saudi" | "hifz";
 
 export const getCacheKey = (style: QuranStyle, page: number) => `${style}_page_${page}`;
 
