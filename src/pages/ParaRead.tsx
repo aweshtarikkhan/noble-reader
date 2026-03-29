@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { JUZ_DATA } from "@/data/surahs";
 import { INDIAN_JUZ_DATA, getIndianPageImage } from "@/data/indianMushaf";
+import { getHifzPageImage, getHifzPageImageFallback } from "@/data/hifzMushaf";
 import { QuranAPI } from "@/lib/quranApi";
 import { getCachedPage, setCachedPage, downloadImageAsDataUrl } from "@/lib/quranCache";
 import { getIndianPageImageFallback } from "@/data/indianMushaf";
