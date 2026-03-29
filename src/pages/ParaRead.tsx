@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { JUZ_DATA } from "@/data/surahs";
 import { INDIAN_JUZ_DATA, getIndianPageImage } from "@/data/indianMushaf";
-import { getHifzPageImage, getHifzPageImageFallback } from "@/data/hifzMushaf";
+import { getHifzPageImage, getHifzPageImageFallback, getHifzPageImageFallback2 } from "@/data/hifzMushaf";
 import { QuranAPI } from "@/lib/quranApi";
 import { getCachedPage, setCachedPage, downloadImageAsDataUrl } from "@/lib/quranCache";
 import { getIndianPageImageFallback } from "@/data/indianMushaf";
@@ -197,6 +197,7 @@ const ParaPagesLoader: React.FC<{ pages: number[]; style: QuranStyle; getImgUrl:
         }
         if (!dataUrl && style === "hifz") {
           dataUrl = await downloadImageAsDataUrl(getHifzPageImageFallback(pages[i]));
+          if (!dataUrl) dataUrl = await downloadImageAsDataUrl(getHifzPageImageFallback2(pages[i]));
         }
         if (!dataUrl && style === "saudi") {
           for (const fb of QuranAPI.getMushafPageImageFallbacks(pages[i])) {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { getCachedPage, cacheImageFromElement } from "@/lib/quranCache";
 import { getIndianPageImageFallback } from "@/data/indianMushaf";
-import { getHifzPageImageFallback } from "@/data/hifzMushaf";
+import { getHifzPageImageFallback, getHifzPageImageFallback2 } from "@/data/hifzMushaf";
 import { usePinchZoom } from "@/hooks/usePinchZoom";
 import { isPageBookmarked, toggleBookmark } from "@/lib/bookmarks";
 import { Bookmark } from "lucide-react";
@@ -25,7 +25,7 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
   page, style, getImgUrl,
   mode = "complete", context = "Complete Quran", paraNum, surahNum,
 }) => {
-  const [useFallback, setUseFallback] = useState(false);
+  const [fallbackLevel, setFallbackLevel] = useState(0); // 0=primary, 1=fallback1, 2=fallback2
   const [error, setError] = useState(false);
   const [cachedSrc, setCachedSrc] = useState<string | null>(null);
   const [bookmarked, setBookmarked] = useState(false);
@@ -58,8 +58,10 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
   }, [page, style, mode, context, paraNum, surahNum]);
 
   const handleError = () => {
-    if ((style === "indopak" || style === "hifz") && !useFallback) {
-      setUseFallback(true);
+    if (style === "hifz" && fallbackLevel < 2) {
+      setFallbackLevel((l) => l + 1);
+    } else if (style === "indopak" && fallbackLevel < 1) {
+      setFallbackLevel(1);
     } else {
       setError(true);
     }
@@ -104,9 +106,10 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
   };
 
   const getNetworkSrc = () => {
-    if (useFallback) {
-      if (style === "indopak") return getIndianPageImageFallback(page);
-      if (style === "hifz") return getHifzPageImageFallback(page);
+    if (fallbackLevel === 0) return getImgUrl(page);
+    if (style === "indopak") return getIndianPageImageFallback(page);
+    if (style === "hifz") {
+      return fallbackLevel === 1 ? getHifzPageImageFallback(page) : getHifzPageImageFallback2(page);
     }
     return getImgUrl(page);
   };
@@ -114,7 +117,7 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
   const src = cachedSrc || networkSrc;
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-primary/10 shadow-gold bg-card relative">
+    <div className="rounded-2xl overflow-hidden border border-primary/10 shadow-gold bg-card relative snap-start snap-always" style={{ minHeight: "calc(100vh - 2rem)" }}>
       {/* Header bar */}
       <div className="flex items-center justify-between px-3 py-1.5 bg-surface">
         <div className="flex items-center gap-1.5">

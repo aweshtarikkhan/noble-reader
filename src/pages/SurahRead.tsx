@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { SURAHS, getSurahPageRange } from "@/data/surahs";
 import { QuranAPI } from "@/lib/quranApi";
 import { getIndianPageImage } from "@/data/indianMushaf";
-import { getHifzPageImage } from "@/data/hifzMushaf";
+import { getHifzPageImage, getHifzPageImageFallback2 } from "@/data/hifzMushaf";
 import { getCachedPage, setCachedPage, downloadImageAsDataUrl } from "@/lib/quranCache";
 import { getIndianPageImageFallback } from "@/data/indianMushaf";
 import { getHifzPageImageFallback } from "@/data/hifzMushaf";
@@ -179,6 +179,7 @@ const SurahPagesLoader: React.FC<{ pages: number[]; style: QuranStyle; getImgUrl
         }
         if (!dataUrl && style === "hifz") {
           dataUrl = await downloadImageAsDataUrl(getHifzPageImageFallback(pages[i]));
+          if (!dataUrl) dataUrl = await downloadImageAsDataUrl(getHifzPageImageFallback2(pages[i]));
         }
         if (!dataUrl && style === "saudi") {
           for (const fb of QuranAPI.getMushafPageImageFallbacks(pages[i])) {
@@ -225,7 +226,7 @@ const SurahPagesLoader: React.FC<{ pages: number[]; style: QuranStyle; getImgUrl
         )}
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 snap-y snap-mandatory">
         {visiblePages.map((p) => (
           <QuranPageView key={`${style}_${p}`} page={p} style={style} getImgUrl={getImgUrl} mode="surah" context={`Surah ${surahNum}`} surahNum={surahNum} />
         ))}
