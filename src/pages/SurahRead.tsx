@@ -249,6 +249,10 @@ const SurahRead: React.FC = () => {
   );
   const imageStyle: QuranStyle = readingStyle === "text" ? "indopak" : readingStyle;
 
+  const [reciterId, setReciterId] = useState<string>(
+    () => localStorage.getItem("quran-reciter") || DEFAULT_RECITER
+  );
+
   const [ayahs, setAyahs] = useState<Ayah[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -271,11 +275,17 @@ const SurahRead: React.FC = () => {
     localStorage.setItem("read-quran-style-full", s);
   };
 
+  const handleReciterChange = (id: string) => {
+    setReciterId(id);
+    localStorage.setItem("quran-reciter", id);
+  };
+
   const { startPage, endPage } = getSurahPageRange(surahNum, imageStyle === "indopak" ? "indopak" : "saudi");
   const pages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
   const getImgUrl = (p: number) => {
     if (imageStyle === "indopak") return getIndianPageImage(p);
+    if (imageStyle === "hifz") return getHifzPageImage(p);
     return QuranAPI.getMushafPageImage(p);
   };
 
@@ -291,6 +301,7 @@ const SurahRead: React.FC = () => {
 
       {readingStyle === "text" && (
         <>
+          <ReciterSelector reciterId={reciterId} onChange={handleReciterChange} />
           {loading && <LoadingSpinner />}
           {error && (
             <div className="text-center py-8">
@@ -299,7 +310,7 @@ const SurahRead: React.FC = () => {
             </div>
           )}
           {!loading && !error && (
-            <TextAyahsView ayahs={ayahs} surahNum={surahNum} />
+            <TextAyahsView ayahs={ayahs} surahNum={surahNum} reciterId={reciterId} />
           )}
         </>
       )}
