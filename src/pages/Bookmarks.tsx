@@ -166,7 +166,7 @@ const Bookmarks: React.FC = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-sm text-foreground">{t("bookmarks.page")} {b.page}</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{b.style === "indopak" ? "Indo-Pak" : "Uthmani"}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{b.style === "indopak" ? "Indo-Pak" : b.style === "hifz" ? "Hifz Color" : "Uthmani"}</span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">{b.context}</p>
                     <p className="text-[10px] text-muted-foreground/60 mt-0.5">{formatDate(b.createdAt)}</p>
