@@ -173,9 +173,10 @@ const ReadQuran: React.FC = () => {
       const key = getCacheKey(imageStyle, i);
       const existing = await getCachedPage(key);
       if (existing) { setDownloadProgress(i); continue; }
-      const primaryUrl = imageStyle === "indopak" ? getIndianPageImage(i) : QuranAPI.getMushafPageImage(i);
+      const primaryUrl = imageStyle === "indopak" ? getIndianPageImage(i) : (imageStyle === "hifz" ? getHifzPageImage(i) : QuranAPI.getMushafPageImage(i));
       let dataUrl = await downloadImageAsDataUrl(primaryUrl);
       if (!dataUrl && imageStyle === "indopak") dataUrl = await downloadImageAsDataUrl(getIndianPageImageFallback(i));
+      if (!dataUrl && imageStyle === "hifz") dataUrl = await downloadImageAsDataUrl(getHifzPageImageFallback(i));
       if (!dataUrl && imageStyle === "saudi") {
         for (const fb of QuranAPI.getMushafPageImageFallbacks(i)) { dataUrl = await downloadImageAsDataUrl(fb); if (dataUrl) break; }
       }

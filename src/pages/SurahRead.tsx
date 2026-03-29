@@ -3,12 +3,15 @@ import { useParams, useNavigate } from "react-router-dom";
 import { SURAHS, getSurahPageRange } from "@/data/surahs";
 import { QuranAPI } from "@/lib/quranApi";
 import { getIndianPageImage } from "@/data/indianMushaf";
+import { getHifzPageImage } from "@/data/hifzMushaf";
 import { getCachedPage, setCachedPage, downloadImageAsDataUrl } from "@/lib/quranCache";
 import { getIndianPageImageFallback } from "@/data/indianMushaf";
+import { getHifzPageImageFallback } from "@/data/hifzMushaf";
 import { Loader2, CheckCircle2, HardDriveDownload, Play, Pause } from "lucide-react";
 import QuranPageView, { type QuranStyle, getCacheKey } from "@/components/QuranPageView";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import StyleSwitcher, { type ReadingStyle } from "@/components/StyleSwitcher";
+import { QURAN_RECITERS, getAyahAudioUrl, DEFAULT_RECITER } from "@/data/quranReciters";
 
 const PAGES_PER_BATCH = 4;
 const BISMILLAH = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
