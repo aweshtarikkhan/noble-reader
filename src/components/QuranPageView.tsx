@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { getCachedPage, cacheImageFromElement } from "@/lib/quranCache";
 import { getIndianPageImageFallback } from "@/data/indianMushaf";
+import { getHifzPageImageFallback } from "@/data/hifzMushaf";
 import { usePinchZoom } from "@/hooks/usePinchZoom";
 import { isPageBookmarked, toggleBookmark } from "@/lib/bookmarks";
 import { Bookmark } from "lucide-react";
