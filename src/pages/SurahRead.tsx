@@ -22,11 +22,13 @@ interface Ayah {
   number: number; // global verse number
 }
 
-const useAyahAudio = (ayahs: Ayah[]) => {
+const useAyahAudio = (ayahs: Ayah[], reciterId: string) => {
   const [playingVerse, setPlayingVerse] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ayahsRef = useRef(ayahs);
+  const reciterRef = useRef(reciterId);
   ayahsRef.current = ayahs;
+  reciterRef.current = reciterId;
 
   const stopAudio = useCallback(() => {
     audioRef.current?.pause();
@@ -39,9 +41,8 @@ const useAyahAudio = (ayahs: Ayah[]) => {
       audioRef.current.pause();
       audioRef.current = null;
     }
-    const audio = new Audio(`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalNumber}.mp3`);
+    const audio = new Audio(getAyahAudioUrl(reciterRef.current, globalNumber));
     audio.onended = () => {
-      // Find next ayah and auto-play
       const currentIdx = ayahsRef.current.findIndex(a => a.number === globalNumber);
       if (currentIdx >= 0 && currentIdx < ayahsRef.current.length - 1) {
         const nextAyah = ayahsRef.current[currentIdx + 1];
@@ -64,6 +65,11 @@ const useAyahAudio = (ayahs: Ayah[]) => {
     }
     playFromVerse(globalNumber);
   }, [playingVerse, stopAudio, playFromVerse]);
+
+  // Stop audio when reciter changes
+  useEffect(() => {
+    stopAudio();
+  }, [reciterId, stopAudio]);
 
   useEffect(() => {
     return () => { audioRef.current?.pause(); };
