@@ -106,10 +106,7 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
   const getNetworkSrc = () => {
     if (useFallback) {
       if (style === "indopak") return getIndianPageImageFallback(page);
-      if (style === "hifz") {
-        const { getHifzPageImageFallback } = require("@/data/hifzMushaf");
-        return getHifzPageImageFallback(page);
-      }
+      if (style === "hifz") return getHifzPageImageFallback(page);
     }
     return getImgUrl(page);
   };
