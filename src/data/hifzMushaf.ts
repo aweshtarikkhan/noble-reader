@@ -1,18 +1,16 @@
 // 15-line Colored Tajweed Hifz Mushaf (604 pages, same as Saudi/Madani layout)
-// Source: easyquran.com (Hafs An Asim, color-coded tajweed rules)
+// Source: QuranHub (GitHub) with jahedev fallback
 
-const HIFZ_BASE = "https://easyquran.com/wp-content/uploads/2022/09";
+const PRIMARY_BASE = "https://raw.githubusercontent.com/QuranHub/quran-pages-images/main/easyquran.com/hafs-tajweed";
+const FALLBACK_BASE = "https://raw.githubusercontent.com/jahedev/tajweed-quran-pages/master/hafs";
 
 export function getHifzPageImage(page: number): string {
-  return `${HIFZ_BASE}/${page}-scaled.jpg`;
+  return `${PRIMARY_BASE}/${page}.jpg`;
 }
-
-// Fallback via raw GitHub (jahedev/tajweed-quran-pages repo)
-const GITHUB_BASE = "https://raw.githubusercontent.com/jahedev/tajweed-quran-pages/master/images/hafs";
 
 export function getHifzPageImageFallback(page: number): string {
-  return `${GITHUB_BASE}/${page}.jpg`;
+  const padded = String(page).padStart(3, "0");
+  return `${FALLBACK_BASE}/tajweed-${padded}.jpg`;
 }
 
-// Total pages same as Saudi mushaf
 export const TOTAL_PAGES_HIFZ = 604;
