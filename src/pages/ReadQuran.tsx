@@ -303,7 +303,7 @@ const ReadQuran: React.FC = () => {
           </div>
 
           {/* Pages */}
-          <div className="space-y-4">
+          <div className="space-y-4 snap-y snap-mandatory">
             {pages.map((p) => {
               const juz = juzData.find((j) => j.startPage === p);
               return (
