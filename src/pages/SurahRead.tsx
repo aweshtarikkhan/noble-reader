@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { SURAHS, getSurahPageRange } from "@/data/surahs";
 import { QuranAPI } from "@/lib/quranApi";
 import { getIndianPageImage } from "@/data/indianMushaf";
-import { getHifzPageImage } from "@/data/hifzMushaf";
+import { getHifzPageImage, getHifzPageImageFallback2 } from "@/data/hifzMushaf";
 import { getCachedPage, setCachedPage, downloadImageAsDataUrl } from "@/lib/quranCache";
 import { getIndianPageImageFallback } from "@/data/indianMushaf";
 import { getHifzPageImageFallback } from "@/data/hifzMushaf";
