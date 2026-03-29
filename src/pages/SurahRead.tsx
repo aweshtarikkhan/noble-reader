@@ -283,7 +283,7 @@ const SurahRead: React.FC = () => {
     localStorage.setItem("quran-reciter", id);
   };
 
-  const { startPage, endPage } = getSurahPageRange(surahNum, imageStyle === "indopak" ? "indopak" : "saudi");
+  const { startPage, endPage } = getSurahPageRange(surahNum, imageStyle);
   const pages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
   const getImgUrl = (p: number) => {
