@@ -117,7 +117,7 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
   const src = cachedSrc || networkSrc;
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-primary/10 shadow-gold bg-card relative">
+    <div className="rounded-2xl overflow-hidden border border-primary/10 shadow-gold bg-card relative snap-start snap-always" style={{ minHeight: "calc(100vh - 2rem)" }}>
       {/* Header bar */}
       <div className="flex items-center justify-between px-3 py-1.5 bg-surface">
         <div className="flex items-center gap-1.5">
