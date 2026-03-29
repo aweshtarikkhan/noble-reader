@@ -63,7 +63,7 @@ const ReadQuran: React.FC = () => {
   // Surah/Para search
   const [surahSearch, setSurahSearch] = useState("");
 
-  const totalPages = imageStyle === "indopak" ? TOTAL_PAGES_INDIAN : TOTAL_PAGES;
+  const totalPages = imageStyle === "indopak" ? TOTAL_PAGES_INDIAN : (imageStyle === "hifz" ? TOTAL_PAGES_HIFZ : TOTAL_PAGES);
   const juzData = imageStyle === "indopak" ? INDIAN_JUZ_DATA : JUZ_DATA;
 
   const currentBookmark = getBookmark(mode, readingStyle);
