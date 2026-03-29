@@ -225,7 +225,7 @@ const SurahPagesLoader: React.FC<{ pages: number[]; style: QuranStyle; getImgUrl
         )}
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 snap-y snap-mandatory">
         {visiblePages.map((p) => (
           <QuranPageView key={`${style}_${p}`} page={p} style={style} getImgUrl={getImgUrl} mode="surah" context={`Surah ${surahNum}`} surahNum={surahNum} />
         ))}
