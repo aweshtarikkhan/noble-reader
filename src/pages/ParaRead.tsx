@@ -190,10 +190,13 @@ const ParaPagesLoader: React.FC<{ pages: number[]; style: QuranStyle; getImgUrl:
       const key = getCacheKey(style, pages[i]);
       const existing = await getCachedPage(key);
       if (!existing) {
-        const primaryUrl = style === "indopak" ? getIndianPageImage(pages[i]) : QuranAPI.getMushafPageImage(pages[i]);
+        const primaryUrl = style === "indopak" ? getIndianPageImage(pages[i]) : (style === "hifz" ? getHifzPageImage(pages[i]) : QuranAPI.getMushafPageImage(pages[i]));
         let dataUrl = await downloadImageAsDataUrl(primaryUrl);
         if (!dataUrl && style === "indopak") {
           dataUrl = await downloadImageAsDataUrl(getIndianPageImageFallback(pages[i]));
+        }
+        if (!dataUrl && style === "hifz") {
+          dataUrl = await downloadImageAsDataUrl(getHifzPageImageFallback(pages[i]));
         }
         if (!dataUrl && style === "saudi") {
           for (const fb of QuranAPI.getMushafPageImageFallbacks(pages[i])) {
