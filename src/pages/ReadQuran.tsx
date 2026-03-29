@@ -159,6 +159,7 @@ const ReadQuran: React.FC = () => {
 
   const getImgUrl = (p: number) => {
     if (imageStyle === "indopak") return getIndianPageImage(p);
+    if (imageStyle === "hifz") return getHifzPageImage(p);
     return QuranAPI.getMushafPageImage(p);
   };
 
