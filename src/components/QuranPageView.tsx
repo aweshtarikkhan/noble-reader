@@ -4,8 +4,13 @@ import { getIndianPageImageFallback } from "@/data/indianMushaf";
 import { getHifzPageImageFallback, getHifzPageImageFallback2 } from "@/data/hifzMushaf";
 import { usePinchZoom } from "@/hooks/usePinchZoom";
 import { isPageBookmarked, toggleBookmark } from "@/lib/bookmarks";
-import { Bookmark } from "lucide-react";
+import { Bookmark, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+
+// Auto-save the last-viewed page (used by Continue Reading)
+const setAutoSave = (mode: "complete" | "para" | "surah", style: QuranStyle, page: number) => {
+  localStorage.setItem(`bookmark_${mode}_${style}`, String(page));
+};
 
 export type QuranStyle = "indopak" | "saudi" | "hifz";
 
@@ -19,11 +24,14 @@ interface QuranPageViewProps {
   context?: string;
   paraNum?: number;
   surahNum?: number;
+  totalPages?: number;
+  onNavigate?: (page: number) => void;
 }
 
 const QuranPageView: React.FC<QuranPageViewProps> = ({
   page, style, getImgUrl,
   mode = "complete", context = "Complete Quran", paraNum, surahNum,
+  totalPages, onNavigate,
 }) => {
   const [fallbackLevel, setFallbackLevel] = useState(0); // 0=primary, 1=fallback1, 2=fallback2
   const [error, setError] = useState(false);
@@ -33,6 +41,7 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
   const { zoom, setZoom, origin, onTouchStart: pinchStart, onTouchMove: pinchMove, onTouchEnd: pinchEnd } = usePinchZoom(1, 1, 5);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggered = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const key = getCacheKey(style, page);
@@ -43,6 +52,24 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
 
   useEffect(() => {
     setBookmarked(isPageBookmarked(page, style, mode));
+  }, [page, style, mode]);
+
+  // Auto-save current page when this page is visible in the viewport (Continue Reading)
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+            setAutoSave(mode, style, page);
+          }
+        });
+      },
+      { threshold: [0.5] }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
   }, [page, style, mode]);
 
   const handleToggleBookmark = useCallback(() => {
@@ -116,8 +143,24 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
   const networkSrc = getNetworkSrc();
   const src = cachedSrc || networkSrc;
 
+  const canPrev = page > 1;
+  const canNext = totalPages ? page < totalPages : true;
+
+  const goToPage = (target: number) => {
+    if (target < 1) return;
+    if (totalPages && target > totalPages) return;
+    setAutoSave(mode, style, target);
+    if (onNavigate) {
+      onNavigate(target);
+    } else {
+      // Fallback: scroll to the page block if it's already in the DOM (snap list)
+      const el = document.querySelector(`[data-quran-page="${style}_${target}"]`) as HTMLElement | null;
+      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   return (
-    <div className="rounded-2xl overflow-hidden border border-primary/10 shadow-gold bg-card relative snap-start snap-always" style={{ minHeight: "calc(100vh - 2rem)" }}>
+    <div ref={containerRef} data-quran-page={`${style}_${page}`} className="rounded-2xl overflow-hidden border border-primary/10 shadow-gold bg-card relative snap-start snap-always" style={{ minHeight: "calc(100vh - 2rem)" }}>
       {/* Header bar */}
       <div className="flex items-center justify-between px-3 py-1.5 bg-surface">
         <div className="flex items-center gap-1.5">
@@ -166,7 +209,31 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
         </div>
       )}
 
-      {/* Long press / context menu overlay */}
+      {/* Bottom prev/next navigation */}
+      <div className="flex items-center justify-between gap-2 px-3 py-2 bg-surface border-t border-primary/10">
+        <button
+          onClick={() => goToPage(page - 1)}
+          disabled={!canPrev}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-card border border-primary/10 text-foreground text-xs font-medium hover:border-primary/30 transition-smooth active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
+          aria-label="Previous page"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span>Prev</span>
+        </button>
+        <span className="text-[10px] text-muted-foreground">
+          {page}{totalPages ? ` / ${totalPages}` : ""}
+        </span>
+        <button
+          onClick={() => goToPage(page + 1)}
+          disabled={!canNext}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-card border border-primary/10 text-foreground text-xs font-medium hover:border-primary/30 transition-smooth active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
+          aria-label="Next page"
+        >
+          <span>Next</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+
       {showLongPressMenu && (
         <>
           <div className="fixed inset-0 z-50" onClick={() => setShowLongPressMenu(false)} />

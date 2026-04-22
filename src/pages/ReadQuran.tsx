@@ -321,7 +321,35 @@ const ReadQuran: React.FC = () => {
                       <div className="flex-1 h-px bg-primary/20" />
                     </div>
                   )}
-                  <QuranPageView page={p} style={imageStyle} getImgUrl={getImgUrl} mode="complete" context="Complete Quran" />
+                  <QuranPageView
+                    page={p}
+                    style={imageStyle}
+                    getImgUrl={getImgUrl}
+                    mode="complete"
+                    context="Complete Quran"
+                    totalPages={totalPages}
+                    onNavigate={(target) => {
+                      // Ensure target page is loaded
+                      setPages((prev) => {
+                        if (prev.includes(target)) return prev;
+                        const last = prev[prev.length - 1] || 0;
+                        if (target > last) {
+                          const additions = Array.from({ length: target - last }, (_, i) => last + 1 + i).filter((pg) => pg <= totalPages);
+                          return [...prev, ...additions];
+                        }
+                        // target before first loaded → reset window starting at target
+                        return Array.from({ length: 5 }, (_, i) => target + i).filter((pg) => pg <= totalPages);
+                      });
+                      setBookmark("complete", readingStyle, target);
+                      // Wait for render then scroll
+                      requestAnimationFrame(() => {
+                        setTimeout(() => {
+                          const el = document.querySelector(`[data-quran-page="${imageStyle}_${target}"]`) as HTMLElement | null;
+                          el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }, 50);
+                      });
+                    }}
+                  />
                 </React.Fragment>
               );
             })}

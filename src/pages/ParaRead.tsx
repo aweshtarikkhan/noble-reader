@@ -237,9 +237,31 @@ const ParaPagesLoader: React.FC<{ pages: number[]; style: QuranStyle; getImgUrl:
           </button>
         )}
       </div>
-      <div className="space-y-4">
+      <div className="space-y-4 snap-y snap-mandatory">
         {visiblePages.map((p) => (
-          <QuranPageView key={`${style}_${p}`} page={p} style={style} getImgUrl={getImgUrl} mode="para" context={`Para ${juzNum}`} paraNum={juzNum} />
+          <QuranPageView
+            key={`${style}_${p}`}
+            page={p}
+            style={style}
+            getImgUrl={getImgUrl}
+            mode="para"
+            context={`Para ${juzNum}`}
+            paraNum={juzNum}
+            totalPages={pages[pages.length - 1]}
+            onNavigate={(target) => {
+              if (!pages.includes(target)) return;
+              const idx = pages.indexOf(target);
+              if (idx >= visibleCount) {
+                setVisibleCount(idx + 1);
+              }
+              requestAnimationFrame(() => {
+                setTimeout(() => {
+                  const el = document.querySelector(`[data-quran-page="${style}_${target}"]`) as HTMLElement | null;
+                  el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }, 50);
+              });
+            }}
+          />
         ))}
       </div>
       {visibleCount < pages.length && (
