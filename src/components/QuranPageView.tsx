@@ -143,8 +143,24 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
   const networkSrc = getNetworkSrc();
   const src = cachedSrc || networkSrc;
 
+  const canPrev = page > 1;
+  const canNext = totalPages ? page < totalPages : true;
+
+  const goToPage = (target: number) => {
+    if (target < 1) return;
+    if (totalPages && target > totalPages) return;
+    setAutoSave(mode, style, target);
+    if (onNavigate) {
+      onNavigate(target);
+    } else {
+      // Fallback: scroll to the page block if it's already in the DOM (snap list)
+      const el = document.querySelector(`[data-quran-page="${style}_${target}"]`) as HTMLElement | null;
+      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   return (
-    <div className="rounded-2xl overflow-hidden border border-primary/10 shadow-gold bg-card relative snap-start snap-always" style={{ minHeight: "calc(100vh - 2rem)" }}>
+    <div ref={containerRef} data-quran-page={`${style}_${page}`} className="rounded-2xl overflow-hidden border border-primary/10 shadow-gold bg-card relative snap-start snap-always" style={{ minHeight: "calc(100vh - 2rem)" }}>
       {/* Header bar */}
       <div className="flex items-center justify-between px-3 py-1.5 bg-surface">
         <div className="flex items-center gap-1.5">
