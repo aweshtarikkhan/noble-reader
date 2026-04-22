@@ -3,7 +3,7 @@ import { getCachedPage, cacheImageFromElement } from "@/lib/quranCache";
 import { getIndianPageImageFallback } from "@/data/indianMushaf";
 import { getHifzPageImageFallback, getHifzPageImageFallback2 } from "@/data/hifzMushaf";
 import { usePinchZoom } from "@/hooks/usePinchZoom";
-import { isPageBookmarked, toggleBookmark, addBookmark } from "@/lib/bookmarks";
+import { isPageBookmarked, toggleBookmark } from "@/lib/bookmarks";
 import { Bookmark, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
