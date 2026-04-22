@@ -129,14 +129,13 @@ const TextAyahsView: React.FC<{ ayahs: Ayah[]; surahNum: number; reciterId: stri
 
 // Progressive loader with download support
 const SurahPagesLoader: React.FC<{ pages: number[]; style: QuranStyle; getImgUrl: (p: number) => string; surahNum: number }> = ({ pages, style, getImgUrl, surahNum }) => {
-  const [visibleCount, setVisibleCount] = useState(PAGES_PER_BATCH);
+  const [pageIdx, setPageIdx] = useState(0);
   const [downloading, setDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [cachedPages, setCachedPages] = useState(0);
-  const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setVisibleCount(PAGES_PER_BATCH);
+    setPageIdx(0);
     setDownloadProgress(0);
     setDownloading(false);
     const checkCached = async () => {
@@ -149,21 +148,6 @@ const SurahPagesLoader: React.FC<{ pages: number[]; style: QuranStyle; getImgUrl
     };
     checkCached();
   }, [pages, surahNum, style]);
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setVisibleCount((prev) => Math.min(prev + PAGES_PER_BATCH, pages.length));
-        }
-      },
-      { rootMargin: "600px" }
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [pages.length]);
 
   const handleDownloadAll = async () => {
     setDownloading(true);
@@ -193,17 +177,16 @@ const SurahPagesLoader: React.FC<{ pages: number[]; style: QuranStyle; getImgUrl
     }
     setCachedPages(pages.length);
     setDownloading(false);
-    setVisibleCount(pages.length);
   };
 
   const allCached = cachedPages === pages.length;
-  const visiblePages = pages.slice(0, visibleCount);
+  const currentPage = pages[pageIdx];
 
   return (
     <>
       <div className="flex items-center justify-between mb-3">
         <span className="text-[11px] text-muted-foreground">
-          {pages.length} page{pages.length > 1 ? "s" : ""}
+          Page {pageIdx + 1} of {pages.length}
         </span>
         {downloading ? (
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-primary/10 text-xs text-muted-foreground">
@@ -226,43 +209,26 @@ const SurahPagesLoader: React.FC<{ pages: number[]; style: QuranStyle; getImgUrl
         )}
       </div>
 
-      <div className="space-y-4 snap-y snap-mandatory">
-        {visiblePages.map((p) => (
-          <QuranPageView
-            key={`${style}_${p}`}
-            page={p}
-            style={style}
-            getImgUrl={getImgUrl}
-            mode="surah"
-            context={`Surah ${surahNum}`}
-            surahNum={surahNum}
-            totalPages={pages[pages.length - 1]}
-            onNavigate={(target) => {
-              if (!pages.includes(target)) return;
-              const idx = pages.indexOf(target);
-              if (idx >= visibleCount) {
-                setVisibleCount(idx + 1);
-              }
-              requestAnimationFrame(() => {
-                setTimeout(() => {
-                  const el = document.querySelector(`[data-quran-page="${style}_${target}"]`) as HTMLElement | null;
-                  el?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }, 50);
-              });
-            }}
-          />
-        ))}
-      </div>
-
-      {visibleCount < pages.length && (
-        <div ref={sentinelRef} className="flex items-center justify-center py-8">
-          <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-          <span className="ml-3 text-sm text-muted-foreground">Loading more pages...</span>
-        </div>
-      )}
+      <QuranPageView
+        key={`${style}_${currentPage}`}
+        page={currentPage}
+        style={style}
+        getImgUrl={getImgUrl}
+        mode="surah"
+        context={`Surah ${surahNum}`}
+        surahNum={surahNum}
+        totalPages={pages[pages.length - 1]}
+        onNavigate={(target) => {
+          const idx = pages.indexOf(target);
+          if (idx === -1) return;
+          setPageIdx(idx);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+      />
     </>
   );
 };
+
 
 const SurahRead: React.FC = () => {
   const { num } = useParams();
