@@ -229,11 +229,6 @@ const SurahPagesLoader: React.FC<{ pages: number[]; style: QuranStyle; getImgUrl
   );
 };
 
-        </div>
-      )}
-    </>
-  );
-};
 
 const SurahRead: React.FC = () => {
   const { num } = useParams();
