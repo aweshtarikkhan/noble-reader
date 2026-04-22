@@ -253,7 +253,7 @@ const ReadQuran: React.FC = () => {
           {/* Bookmark indicator */}
           <div className="flex items-center gap-2 mb-3 px-1 animate-fade-in">
             <Bookmark className="w-3.5 h-3.5 text-primary fill-primary" />
-            <span className="text-[11px] text-primary font-medium">{t("read.bookmarkedAt")} {pages[0] || currentBookmark}</span>
+            <span className="text-[11px] text-primary font-medium">{t("read.bookmarkedAt")} {currentPage}</span>
           </div>
 
           {/* Jump to page */}
@@ -270,62 +270,40 @@ const ReadQuran: React.FC = () => {
             <button onClick={handleJump} className="px-4 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-medium transition-smooth">{t("read.go")}</button>
           </div>
 
-          {/* Pages */}
-          <div className="space-y-4 snap-y snap-mandatory">
-            {pages.map((p) => {
-              const juz = juzData.find((j) => j.startPage === p);
-              return (
-                <React.Fragment key={`${imageStyle}_${p}`}>
-                  {juz && (
-                    <div className="flex items-center gap-3 py-3">
-                      <div className="flex-1 h-px bg-primary/20" />
-                      <div className="text-center">
-                        <p className="font-arabic text-lg text-primary">{juz.name}</p>
-                        <p className="text-[10px] text-muted-foreground">Para {juz.number} - {juz.nameTransliteration}</p>
-                      </div>
-                      <div className="flex-1 h-px bg-primary/20" />
+          {/* Single page view */}
+          {(() => {
+            const juz = juzData.find((j) => j.startPage === currentPage);
+            return (
+              <>
+                {juz && (
+                  <div className="flex items-center gap-3 py-3">
+                    <div className="flex-1 h-px bg-primary/20" />
+                    <div className="text-center">
+                      <p className="font-arabic text-lg text-primary">{juz.name}</p>
+                      <p className="text-[10px] text-muted-foreground">Para {juz.number} - {juz.nameTransliteration}</p>
                     </div>
-                  )}
-                  <QuranPageView
-                    page={p}
-                    style={imageStyle}
-                    getImgUrl={getImgUrl}
-                    mode="complete"
-                    context="Complete Quran"
-                    totalPages={totalPages}
-                    onNavigate={(target) => {
-                      // Ensure target page is loaded
-                      setPages((prev) => {
-                        if (prev.includes(target)) return prev;
-                        const last = prev[prev.length - 1] || 0;
-                        if (target > last) {
-                          const additions = Array.from({ length: target - last }, (_, i) => last + 1 + i).filter((pg) => pg <= totalPages);
-                          return [...prev, ...additions];
-                        }
-                        // target before first loaded → reset window starting at target
-                        return Array.from({ length: 5 }, (_, i) => target + i).filter((pg) => pg <= totalPages);
-                      });
-                      setBookmark("complete", readingStyle, target);
-                      // Wait for render then scroll
-                      requestAnimationFrame(() => {
-                        setTimeout(() => {
-                          const el = document.querySelector(`[data-quran-page="${imageStyle}_${target}"]`) as HTMLElement | null;
-                          el?.scrollIntoView({ behavior: "smooth", block: "start" });
-                        }, 50);
-                      });
-                    }}
-                  />
-                </React.Fragment>
-              );
-            })}
-          </div>
+                    <div className="flex-1 h-px bg-primary/20" />
+                  </div>
+                )}
+                <QuranPageView
+                  key={`${imageStyle}_${currentPage}`}
+                  page={currentPage}
+                  style={imageStyle}
+                  getImgUrl={getImgUrl}
+                  mode="complete"
+                  context="Complete Quran"
+                  totalPages={totalPages}
+                  onNavigate={(target) => {
+                    if (target < 1 || target > totalPages) return;
+                    setCurrentPage(target);
+                    setBookmark("complete", readingStyle, target);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                />
+              </>
+            );
+          })()}
 
-          {pages.length > 0 && pages[pages.length - 1] < totalPages && (
-            <div className="text-center py-8">
-              <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto" />
-              <p className="text-xs text-muted-foreground mt-2">Loading more pages...</p>
-            </div>
-          )}
         </>
       )}
 
