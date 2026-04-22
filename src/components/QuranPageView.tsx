@@ -24,11 +24,14 @@ interface QuranPageViewProps {
   context?: string;
   paraNum?: number;
   surahNum?: number;
+  totalPages?: number;
+  onNavigate?: (page: number) => void;
 }
 
 const QuranPageView: React.FC<QuranPageViewProps> = ({
   page, style, getImgUrl,
   mode = "complete", context = "Complete Quran", paraNum, surahNum,
+  totalPages, onNavigate,
 }) => {
   const [fallbackLevel, setFallbackLevel] = useState(0); // 0=primary, 1=fallback1, 2=fallback2
   const [error, setError] = useState(false);
