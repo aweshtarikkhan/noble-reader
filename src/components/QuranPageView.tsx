@@ -209,7 +209,31 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
         </div>
       )}
 
-      {/* Long press / context menu overlay */}
+      {/* Bottom prev/next navigation */}
+      <div className="flex items-center justify-between gap-2 px-3 py-2 bg-surface border-t border-primary/10">
+        <button
+          onClick={() => goToPage(page - 1)}
+          disabled={!canPrev}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-card border border-primary/10 text-foreground text-xs font-medium hover:border-primary/30 transition-smooth active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
+          aria-label="Previous page"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span>Prev</span>
+        </button>
+        <span className="text-[10px] text-muted-foreground">
+          {page}{totalPages ? ` / ${totalPages}` : ""}
+        </span>
+        <button
+          onClick={() => goToPage(page + 1)}
+          disabled={!canNext}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-card border border-primary/10 text-foreground text-xs font-medium hover:border-primary/30 transition-smooth active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
+          aria-label="Next page"
+        >
+          <span>Next</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+
       {showLongPressMenu && (
         <>
           <div className="fixed inset-0 z-50" onClick={() => setShowLongPressMenu(false)} />
