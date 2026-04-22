@@ -41,18 +41,15 @@ const ReadQuran: React.FC = () => {
 
   const imageStyle: QuranStyle = readingStyle === "text" ? "indopak" : readingStyle;
 
-  // Complete reading state
-  const [pages, setPages] = useState<number[]>(() => {
+  // Complete reading state - SINGLE page at a time
+  const [currentPage, setCurrentPage] = useState<number>(() => {
     if (isContinue && readingStyle !== "text") {
-      const start = getBookmark("complete", readingStyle);
-      const tp = readingStyle === "indopak" ? TOTAL_PAGES_INDIAN : TOTAL_PAGES;
-      return Array.from({ length: 5 }, (_, i) => start + i).filter((p) => p <= tp);
+      return getBookmark("complete", readingStyle);
     }
-    return [];
+    return 1;
   });
   const [jumpTo, setJumpTo] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
-  const loadingRef = useRef(false);
 
   // Download state
   const [downloading, setDownloading] = useState(false);
