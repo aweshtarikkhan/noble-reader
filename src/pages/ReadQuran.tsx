@@ -70,10 +70,7 @@ const ReadQuran: React.FC = () => {
     if (m === "complete") {
       setStep("reading");
       window.history.pushState({ readQuranView: "reading", mode: m }, "");
-      const start = getBookmark("complete", readingStyle);
-      const tp = readingStyle === "text" ? TOTAL_PAGES_INDIAN : (readingStyle === "indopak" ? TOTAL_PAGES_INDIAN : TOTAL_PAGES);
-      const initial = Array.from({ length: 5 }, (_, i) => start + i).filter((p) => p <= tp);
-      setPages(initial);
+      setCurrentPage(getBookmark("complete", readingStyle));
       window.scrollTo(0, 0);
     } else {
       setStep("reading");
@@ -85,10 +82,7 @@ const ReadQuran: React.FC = () => {
     setReadingStyle(s);
     localStorage.setItem("read-quran-style-full", s);
     if (mode === "complete" && s !== "text") {
-      const tp = s === "indopak" ? TOTAL_PAGES_INDIAN : TOTAL_PAGES;
-      const start = getBookmark("complete", s);
-      const initial = Array.from({ length: 5 }, (_, i) => start + i).filter((p) => p <= tp);
-      setPages(initial);
+      setCurrentPage(getBookmark("complete", s));
       window.scrollTo(0, 0);
     }
   };
@@ -98,7 +92,6 @@ const ReadQuran: React.FC = () => {
     if (step !== "reading") return;
     const handlePopState = () => {
       setStep("mode");
-      setPages([]);
       setDownloading(false);
       downloadAbort.current = true;
     };
@@ -106,11 +99,11 @@ const ReadQuran: React.FC = () => {
     return () => window.removeEventListener("popstate", handlePopState);
   }, [step]);
 
-  // Complete mode: save bookmark on scroll
+  // Auto-save bookmark whenever current page changes
   useEffect(() => {
-    if (step !== "reading" || mode !== "complete" || readingStyle === "text" || pages.length === 0) return;
-    setBookmark("complete", readingStyle, pages[0]);
-  }, [pages, step, mode, readingStyle]);
+    if (step !== "reading" || mode !== "complete" || readingStyle === "text") return;
+    setBookmark("complete", readingStyle, currentPage);
+  }, [currentPage, step, mode, readingStyle]);
 
   // Download cache count
   useEffect(() => {
@@ -119,35 +112,10 @@ const ReadQuran: React.FC = () => {
     }
   }, [imageStyle, totalPages, step, mode, readingStyle]);
 
-  // Infinite scroll
-  useEffect(() => {
-    if (step !== "reading" || mode !== "complete" || readingStyle === "text") return;
-    const handleScroll = () => {
-      if (loadingRef.current) return;
-      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 800) {
-        loadMore();
-      }
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [pages, totalPages, step, mode, readingStyle]);
-
-  const loadMore = () => {
-    if (loadingRef.current) return;
-    loadingRef.current = true;
-    setPages((prev) => {
-      const last = prev[prev.length - 1] || 0;
-      const next = Array.from({ length: 5 }, (_, i) => last + 1 + i).filter((p) => p <= totalPages);
-      loadingRef.current = false;
-      return [...prev, ...next];
-    });
-  };
-
   const handleJump = () => {
     const p = parseInt(jumpTo);
     if (p >= 1 && p <= totalPages) {
-      const newPages = Array.from({ length: 5 }, (_, i) => p + i).filter((pg) => pg <= totalPages);
-      setPages(newPages);
+      setCurrentPage(p);
       setBookmark("complete", readingStyle, p);
       window.scrollTo(0, 0);
       setJumpTo("");
