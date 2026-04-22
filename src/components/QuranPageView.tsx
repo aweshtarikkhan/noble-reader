@@ -41,6 +41,7 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
   const { zoom, setZoom, origin, onTouchStart: pinchStart, onTouchMove: pinchMove, onTouchEnd: pinchEnd } = usePinchZoom(1, 1, 5);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggered = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const key = getCacheKey(style, page);
@@ -51,6 +52,24 @@ const QuranPageView: React.FC<QuranPageViewProps> = ({
 
   useEffect(() => {
     setBookmarked(isPageBookmarked(page, style, mode));
+  }, [page, style, mode]);
+
+  // Auto-save current page when this page is visible in the viewport (Continue Reading)
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+            setAutoSave(mode, style, page);
+          }
+        });
+      },
+      { threshold: [0.5] }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
   }, [page, style, mode]);
 
   const handleToggleBookmark = useCallback(() => {
